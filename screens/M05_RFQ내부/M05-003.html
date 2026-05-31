@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M05-003 견적 비교 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto','Noto Sans KR',sans-serif; border-radius: 0 !important; }
+:root {
+  --primary-blue: #185FA5;
+  --dark-blue: #0D2B55;
+  --secondary-blue: #0D3F7A;
+  --success-green: #0F6E56;
+  --teal: #0F6E56;
+  --amber: #854F0B;
+  --error-red: #A32D2D;
+  --text-primary: #222;
+  --text-secondary: #666;
+  --bg-gray: #F1F1F1;
+  --border-gray: #DDDDDD;
+  --border-light: #CCCCCC;
+}
+html, body { height: 100%; overflow: hidden; background: #F1F1F1; }
+.page-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+.gnb-real { height: 56px; background: var(--dark-blue); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; flex-shrink: 0; }
+.gnb-left { display: flex; align-items: center; gap: 12px; }
+.gnb-logo-text { font-size: 15px; font-weight: 500; }
+.gnb-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.3); }
+.gnb-menu { font-size: 12px; color: rgba(255,255,255,0.75); }
+.gnb-right { display: flex; align-items: center; gap: 18px; font-size: 12px; color: rgba(255,255,255,0.85); }
+.gnb-icon { font-size: 16px; cursor: pointer; opacity: 0.8; }
+
+.page-title-bar { height: 40px; background: var(--bg-gray); display: flex; align-items: center; padding: 0 20px; font-size: 14px; font-weight: 700; border-bottom: 1px solid var(--border-gray); flex-shrink: 0; gap: 8px; }
+.title-path { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+/* Split layout */
+.main-split { flex: 1; display: flex; overflow: hidden; }
+.panel-left { width: 280px; border-right: 1px solid var(--border-gray); display: flex; flex-direction: column; background: #fff; flex-shrink: 0; }
+.panel-divider { width: 4px; background: #eee; cursor: col-resize; flex-shrink: 0; }
+.panel-right { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+
+/* Left panel */
+.panel-header { height: 36px; background: var(--bg-gray); display: flex; align-items: center; padding: 0 8px; border-bottom: 1px solid var(--border-gray); gap: 6px; }
+.panel-tab { font-size: 12px; font-weight: 600; color: #fff; background: var(--primary-blue); padding: 3px 8px; }
+.panel-search { flex: 1; height: 24px; border: 1px solid var(--border-light); padding: 0 6px; font-size: 11px; background: #fff; }
+.panel-filter { height: 24px; border: 1px solid var(--border-light); padding: 0 4px; font-size: 11px; background: #fff; }
+
+.rfq-list { flex: 1; overflow-y: auto; }
+.rfq-item { border-bottom: 1px solid var(--border-gray); padding: 8px 10px; cursor: pointer; }
+.rfq-item:hover { background: #F0F6FF; }
+.rfq-item.active { background: #E8F0FA; border-left: 3px solid var(--primary-blue); }
+.rfq-code { font-size: 11px; font-weight: 700; color: var(--primary-blue); }
+.rfq-name { font-size: 12px; color: var(--text-primary); margin-top: 2px; }
+.rfq-meta { display: flex; gap: 6px; margin-top: 3px; align-items: center; }
+.rfq-tag { font-size: 10px; padding: 1px 5px; border: 1px solid; }
+.tag-done { color: var(--teal); border-color: var(--teal); background: #E6F3EF; }
+.tag-ing { color: var(--amber); border-color: #F0C080; background: #FFF8F0; }
+.rfq-cnt { font-size: 10px; color: #888; }
+
+/* Right panel */
+.right-header { height: 36px; background: var(--bg-gray); border-bottom: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 10px; gap: 8px; flex-shrink: 0; }
+.rfq-info { font-size: 12px; font-weight: 600; color: var(--text-primary); flex: 1; display: flex; align-items: center; gap: 8px; }
+.rfq-status { font-size: 10px; padding: 2px 7px; font-weight: 700; }
+.status-closed { background: #E6F3EF; color: var(--teal); border: 1px solid #A8D5C5; }
+
+.btn { height: 32px; padding: 0 14px; border: 1px solid transparent; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 80px; font-family: inherit; }
+.btn-primary { background: var(--primary-blue); color: #fff; }
+.btn-success { background: var(--teal); color: #fff; }
+.btn-default { background: #f1f1f1; color: #222; border: 1px solid #999; }
+.btn-outline { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); }
+.btn-icon { min-width: 32px; width: 32px; padding: 0; background: #fff; border: 1px solid #999; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+.btn-sm { height: 28px; min-width: 60px; font-size: 11px; padding: 0 10px; }
+
+/* Comparison grid header groups */
+.compare-grid-wrap { flex: 1; overflow: auto; }
+.grid-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.grid-table th { height: 36px; background: var(--bg-gray); border: 1px solid var(--border-gray); padding: 0 6px; font-weight: 600; font-size: 11px; text-align: center; position: sticky; top: 0; z-index: 5; }
+.grid-table th.grp-target { background: #EBF2FA; color: var(--primary-blue); }
+.grid-table th.grp-a { background: #E6F3EF; color: var(--teal); }
+.grid-table th.grp-b { background: #FFF8F0; color: var(--amber); }
+.grid-table th.grp-c { background: #F0EBF8; color: #6B4FA0; }
+.grid-table th.grp-low { background: #E8F0FA; color: var(--primary-blue); }
+.grid-table td { height: 30px; border: 1px solid var(--border-gray); padding: 0 6px; font-size: 11px; }
+.td-c { text-align: center; }
+.td-r { text-align: right; }
+.text-link { color: var(--primary-blue); text-decoration: underline; cursor: pointer; }
+.gap-good { color: var(--teal); font-weight: 700; }
+.gap-warn { color: var(--amber); font-weight: 700; }
+.gap-bad { color: var(--error-red); font-weight: 700; }
+.lowest { background: #E6F3EF !important; font-weight: 700; }
+.savings-val { color: var(--teal); font-weight: 700; }
+
+/* Supplier score bar */
+.score-bar { display: flex; align-items: center; gap: 4px; }
+.score-track { width: 40px; height: 8px; background: var(--bg-gray); border: 1px solid var(--border-gray); overflow: hidden; }
+.score-fill-a { background: var(--teal); }
+.score-fill-b { background: #F0A500; }
+.score-fill-c { background: #6B4FA0; }
+
+/* Summary row */
+.summary-row { border-top: 2px solid var(--border-gray); background: #FAFAFA; }
+.summary-row td { font-weight: 700; font-size: 11px; }
+
+/* Supplier summary bar */
+.supplier-summary { height: 52px; background: var(--bg-gray); border-top: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 12px; gap: 20px; flex-shrink: 0; }
+.sup-card { display: flex; flex-direction: column; gap: 2px; padding: 6px 16px; border: 1px solid var(--border-gray); background: #fff; }
+.sup-name { font-size: 11px; font-weight: 700; }
+.sup-total { font-size: 13px; font-weight: 700; }
+.sup-gap { font-size: 11px; }
+.sup-card.winner { border-color: var(--teal); background: #E6F3EF; }
+
+.bottom-tab-bar { height: 32px; background: var(--bg-gray); display: flex; align-items: center; border-top: 1px solid var(--border-gray); flex-shrink: 0; }
+.bottom-tab-item { display: flex; align-items: center; padding: 0 14px; height: 100%; font-size: 12px; background: #E1E1E1; border-right: 1px solid var(--border-gray); cursor: pointer; gap: 6px; }
+.bottom-tab-item.active { background: var(--secondary-blue); color: #fff; }
+.tab-close { font-size: 10px; opacity: 0.7; }
+
+.grid-table input[type=checkbox] { appearance: none; width: 14px; height: 14px; border: 1px solid var(--border-light); background: transparent; cursor: pointer; position: relative; }
+.grid-table input[type=checkbox]:checked { border-color: #333; }
+.grid-table input[type=checkbox]:checked::after { content: '✔'; position: absolute; top: -2px; left: 1px; font-size: 10px; color: #333; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <div class="gnb-real">
+    <div class="gnb-left">
+      <span class="gnb-logo-text">동희산업 개발구매</span>
+      <div class="gnb-divider"></div>
+      <span class="gnb-menu">RFQ·견적 관리</span>
+    </div>
+    <div class="gnb-right">
+      <i class="bi bi-house gnb-icon"></i>
+      <i class="bi bi-grid gnb-icon"></i>
+      <span>개발구매팀 ( 김동희 )</span>
+      <i class="bi bi-box-arrow-right gnb-icon"></i>
+    </div>
+  </div>
+
+  <div class="page-title-bar">
+    <i class="bi bi-clipboard-data" style="color:var(--primary-blue);"></i>
+    견적 비교 분석
+    <span class="title-path">M05 &gt; RFQ·견적 관리(내부) &gt; 견적 비교 분석</span>
+  </div>
+
+  <div class="main-split">
+
+    <!-- Left: RFQ List -->
+    <div class="panel-left">
+      <div class="panel-header">
+        <span class="panel-tab">RFQ 목록</span>
+        <input class="panel-search" type="text" placeholder="🔍 RFQ 검색">
+        <select class="panel-filter">
+          <option>전체</option><option>마감완료</option><option>진행중</option>
+        </select>
+      </div>
+      <div class="rfq-list">
+        <div class="rfq-item active">
+          <div class="rfq-code">RFQ-2026-0023</div>
+          <div class="rfq-name">GN7 범퍼·사이드실류</div>
+          <div class="rfq-meta">
+            <span class="rfq-tag tag-done">마감완료</span>
+            <span class="rfq-cnt">3사 | 12 Part</span>
+          </div>
+        </div>
+        <div class="rfq-item">
+          <div class="rfq-code">RFQ-2026-0024</div>
+          <div class="rfq-name">GN7 도어 판넬류</div>
+          <div class="rfq-meta">
+            <span class="rfq-tag tag-ing">진행중</span>
+            <span class="rfq-cnt">2사 | 8 Part</span>
+          </div>
+        </div>
+        <div class="rfq-item">
+          <div class="rfq-code">RFQ-2026-0021</div>
+          <div class="rfq-name">GN7 후드·루프류</div>
+          <div class="rfq-meta">
+            <span class="rfq-tag tag-done">마감완료</span>
+            <span class="rfq-cnt">3사 | 6 Part</span>
+          </div>
+        </div>
+        <div class="rfq-item">
+          <div class="rfq-code">RFQ-2026-0019</div>
+          <div class="rfq-name">GN7 언더바디</div>
+          <div class="rfq-meta">
+            <span class="rfq-tag tag-done">마감완료</span>
+            <span class="rfq-cnt">4사 | 18 Part</span>
+          </div>
+        </div>
+        <div class="rfq-item">
+          <div class="rfq-code">RFQ-2026-0015</div>
+          <div class="rfq-name">NX4 프론트 모듈</div>
+          <div class="rfq-meta">
+            <span class="rfq-tag tag-ing">진행중</span>
+            <span class="rfq-cnt">3사 | 14 Part</span>
+          </div>
+        </div>
+        <div class="rfq-item">
+          <div class="rfq-code">RFQ-2026-0012</div>
+          <div class="rfq-name">NX4 크로스멤버류</div>
+          <div class="rfq-meta">
+            <span class="rfq-tag tag-done">마감완료</span>
+            <span class="rfq-cnt">3사 | 9 Part</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-divider"></div>
+
+    <!-- Right: Comparison -->
+    <div class="panel-right">
+
+      <!-- RFQ Info + Actions -->
+      <div class="right-header">
+        <div class="rfq-info">
+          <span>RFQ-2026-0023 &nbsp;|&nbsp; GN7 범퍼·사이드실류</span>
+          <span class="rfq-status status-closed">마감완료</span>
+          <span style="font-size:11px;color:#888;">마감: 2026-05-20 &nbsp;|&nbsp; 12 Part</span>
+        </div>
+        <button class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i> 공급사 선정</button>
+        <button class="btn btn-outline btn-sm"><i class="bi bi-arrow-repeat"></i> Round 2 추가</button>
+        <button class="btn btn-icon btn-sm" title="Excel"><i class="bi bi-file-earmark-excel"></i></button>
+        <button class="btn btn-icon btn-sm" title="인쇄"><i class="bi bi-printer"></i></button>
+      </div>
+
+      <!-- Comparison Grid (5-D: right grid) -->
+      <div class="compare-grid-wrap">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:36px;"><input type="checkbox"></th>
+              <th rowspan="2" style="width:36px;">No.</th>
+              <th rowspan="2" style="width:110px;">Part No.</th>
+              <th rowspan="2" style="min-width:160px;text-align:left;">품명</th>
+              <th rowspan="2" style="width:60px;">소재</th>
+              <th colspan="2" class="grp-target">목표가</th>
+              <th colspan="3" class="grp-a">성보산업 (공급사A)</th>
+              <th colspan="3" class="grp-b">한진금속 (공급사B)</th>
+              <th colspan="3" class="grp-c">동화스틸 (공급사C)</th>
+              <th rowspan="2" class="grp-low" style="width:110px;">최저가(원)</th>
+              <th rowspan="2" style="width:100px;">절감액(원)</th>
+            </tr>
+            <tr>
+              <th class="grp-target" style="width:100px;">단가(원)</th>
+              <th class="grp-target" style="width:100px;">금액(원)</th>
+              <th class="grp-a" style="width:100px;">단가(원)</th>
+              <th class="grp-a" style="width:80px;">금액(원)</th>
+              <th class="grp-a" style="width:60px;">Gap(%)</th>
+              <th class="grp-b" style="width:100px;">단가(원)</th>
+              <th class="grp-b" style="width:80px;">금액(원)</th>
+              <th class="grp-b" style="width:60px;">Gap(%)</th>
+              <th class="grp-c" style="width:100px;">단가(원)</th>
+              <th class="grp-c" style="width:80px;">금액(원)</th>
+              <th class="grp-c" style="width:60px;">Gap(%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">1</td>
+              <td class="text-link td-c">DH-GN7-F101</td>
+              <td>BUMPER COVER (FR)</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#0F6E56;">HDPE</td>
+              <td class="td-r">24,800</td>
+              <td class="td-r">24,800,000</td>
+              <td class="td-r lowest">23,600</td>
+              <td class="td-r lowest">23,600,000</td>
+              <td class="td-c gap-good">-4.8%</td>
+              <td class="td-r">25,200</td>
+              <td class="td-r">25,200,000</td>
+              <td class="td-c gap-bad">+1.6%</td>
+              <td class="td-r">24,400</td>
+              <td class="td-r">24,400,000</td>
+              <td class="td-c gap-good">-1.6%</td>
+              <td class="td-r lowest">23,600,000</td>
+              <td class="td-r savings-val">1,200,000</td>
+            </tr>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">2</td>
+              <td class="text-link td-c">DH-GN7-F102</td>
+              <td>STAY LH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</td>
+              <td class="td-r">4,200</td>
+              <td class="td-r">4,200,000</td>
+              <td class="td-r lowest">4,080</td>
+              <td class="td-r lowest">4,080,000</td>
+              <td class="td-c gap-good">-2.9%</td>
+              <td class="td-r">4,320</td>
+              <td class="td-r">4,320,000</td>
+              <td class="td-c gap-bad">+2.9%</td>
+              <td class="td-r">4,150</td>
+              <td class="td-r">4,150,000</td>
+              <td class="td-c gap-good">-1.2%</td>
+              <td class="td-r lowest">4,080,000</td>
+              <td class="td-r savings-val">120,000</td>
+            </tr>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">3</td>
+              <td class="text-link td-c">DH-GN7-F103</td>
+              <td>STAY RH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</td>
+              <td class="td-r">4,200</td>
+              <td class="td-r">4,200,000</td>
+              <td class="td-r lowest">4,080</td>
+              <td class="td-r lowest">4,080,000</td>
+              <td class="td-c gap-good">-2.9%</td>
+              <td class="td-r">4,280</td>
+              <td class="td-r">4,280,000</td>
+              <td class="td-c gap-bad">+1.9%</td>
+              <td class="td-r">4,160</td>
+              <td class="td-r">4,160,000</td>
+              <td class="td-c gap-good">-1.0%</td>
+              <td class="td-r lowest">4,080,000</td>
+              <td class="td-r savings-val">120,000</td>
+            </tr>
+            <tr style="background:#FFF8F0;">
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">4</td>
+              <td class="text-link td-c">DH-GN7-S101</td>
+              <td>SILL OUTER PANEL LH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#7A4B00;">SPFH</td>
+              <td class="td-r">18,400</td>
+              <td class="td-r">18,400,000</td>
+              <td class="td-r">22,400</td>
+              <td class="td-r">22,400,000</td>
+              <td class="td-c gap-bad">+21.7%</td>
+              <td class="td-r">21,400</td>
+              <td class="td-r">21,400,000</td>
+              <td class="td-c gap-bad">+16.3%</td>
+              <td class="td-r lowest">20,800</td>
+              <td class="td-r lowest">20,800,000</td>
+              <td class="td-c gap-bad">+13.0%</td>
+              <td class="td-r lowest" style="color:var(--error-red);">20,800,000</td>
+              <td class="td-r" style="color:var(--error-red);">-2,400,000</td>
+            </tr>
+            <tr style="background:#FFF8F0;">
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">5</td>
+              <td class="text-link td-c">DH-GN7-S102</td>
+              <td>SILL OUTER PANEL RH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#7A4B00;">SPFH</td>
+              <td class="td-r">18,400</td>
+              <td class="td-r">18,400,000</td>
+              <td class="td-r">22,400</td>
+              <td class="td-r">22,400,000</td>
+              <td class="td-c gap-bad">+21.7%</td>
+              <td class="td-r">21,600</td>
+              <td class="td-r">21,600,000</td>
+              <td class="td-c gap-bad">+17.4%</td>
+              <td class="td-r lowest">20,800</td>
+              <td class="td-r lowest">20,800,000</td>
+              <td class="td-c gap-bad">+13.0%</td>
+              <td class="td-r lowest" style="color:var(--error-red);">20,800,000</td>
+              <td class="td-r" style="color:var(--error-red);">-2,400,000</td>
+            </tr>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">6</td>
+              <td class="text-link td-c">DH-GN7-R101</td>
+              <td>BUMPER COVER (RR)</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#0F6E56;">HDPE</td>
+              <td class="td-r">22,400</td>
+              <td class="td-r">22,400,000</td>
+              <td class="td-r lowest">21,200</td>
+              <td class="td-r lowest">21,200,000</td>
+              <td class="td-c gap-good">-5.4%</td>
+              <td class="td-r">22,800</td>
+              <td class="td-r">22,800,000</td>
+              <td class="td-c gap-bad">+1.8%</td>
+              <td class="td-r">21,800</td>
+              <td class="td-r">21,800,000</td>
+              <td class="td-c gap-good">-2.7%</td>
+              <td class="td-r lowest">21,200,000</td>
+              <td class="td-r savings-val">1,200,000</td>
+            </tr>
+            <!-- Summary row -->
+            <tr class="summary-row">
+              <td></td>
+              <td colspan="4" style="text-align:right;padding-right:12px;font-size:12px;">합 계</td>
+              <td class="td-r"></td>
+              <td class="td-r" style="color:var(--primary-blue);">92,400,000</td>
+              <td class="td-r"></td>
+              <td class="td-r" style="color:var(--teal);">95,760,000</td>
+              <td class="td-c gap-good">+3.6%</td>
+              <td class="td-r"></td>
+              <td class="td-r" style="color:var(--amber);">99,600,000</td>
+              <td class="td-c gap-bad">+7.8%</td>
+              <td class="td-r"></td>
+              <td class="td-r" style="color:var(--primary-blue);">95,910,000</td>
+              <td class="td-c gap-good">+3.8%</td>
+              <td class="td-r" style="color:var(--primary-blue);">93,460,000</td>
+              <td class="td-r savings-val">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Supplier Summary Bar -->
+      <div class="supplier-summary">
+        <span style="font-size:11px;font-weight:700;color:#444;"><i class="bi bi-bar-chart-fill" style="color:var(--primary-blue);"></i> 공급사 비교 요약</span>
+        <div class="sup-card">
+          <span class="sup-name" style="color:var(--teal);">성보산업 (A)</span>
+          <span class="sup-total" style="color:var(--teal);">₩ 95,760,000</span>
+          <span class="sup-gap gap-good">+3.6% vs 목표가</span>
+        </div>
+        <div class="sup-card winner">
+          <span class="sup-name" style="color:var(--teal);">동화스틸 (C) <i class="bi bi-trophy-fill" style="font-size:10px;"></i></span>
+          <span class="sup-total" style="color:var(--teal);">₩ 93,460,000 최저</span>
+          <span class="sup-gap gap-good">+1.1% vs 목표가</span>
+        </div>
+        <div class="sup-card">
+          <span class="sup-name" style="color:var(--amber);">한진금속 (B)</span>
+          <span class="sup-total" style="color:var(--amber);">₩ 99,600,000</span>
+          <span class="sup-gap gap-bad">+7.8% vs 목표가</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;color:#666;">자동계산 기준: 최저가 합산</span>
+          <span style="font-size:11px;font-weight:700;">절감 가능액: </span>
+          <span style="font-size:14px;font-weight:700;color:var(--teal);">₩ -940,000</span>
+          <span style="font-size:10px;color:#888;">(목표가 대비)</span>
+          <button class="btn btn-success btn-sm" style="margin-left:8px;"><i class="bi bi-check-circle-fill"></i> 선정 확정</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bottom-tab-bar">
+    <div class="bottom-tab-item active">견적 비교 분석 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">RFQ 발송 관리 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">견적 접수 현황 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">협상 Round 관리 <span class="tab-close">✕</span></div>
+  </div>
+
+</div>
+</body>
+</html>

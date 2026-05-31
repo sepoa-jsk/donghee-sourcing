@@ -1,0 +1,1531 @@
+<!--
+  화면ID  : M01-002
+  화면명  : 공급사(Tier 2·3) 기본정보
+  패턴    : 리스트 + 행 클릭 상세 전환 (SPA)
+  스타일  : singlesuite-style + 개발구매 표준 규칙 전부 적용
+  생성일  : 2026-05-31
+-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M01-002 공급사 기본정보</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── §1 토큰 ─────────────────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto','Noto Sans KR',sans-serif; }
+:root {
+  --brand-primary:      #1746a3;
+  --brand-primary-alt:  #0747a6;
+  --brand-primary-dark: #003380;
+  --brand-soft-bg:      #f0f5ff;
+  --brand-soft-hover:   #dbeafe;
+  --success-green:      #16a34a;
+  --success-soft-bg:    #f0fdf4;
+  --success-soft-bd:    #bbf7d0;
+  --error-red:          #e11d48;
+  --error-soft-bg:      #fff1f2;
+  --error-soft-bd:      #fecdd3;
+  --error-outline:      #be123c;
+  --error-outline-bd:   #fda4af;
+  --required-red:       #ef4444;
+  --accent-red:         #D22C36;
+  --text-primary:       #1f2937;
+  --text-label:         #222222;
+  --text-secondary:     #475569;
+  --text-tertiary:      #64748b;
+  --text-muted:         #94a3b8;
+  --text-readonly:      #6b7280;
+  --bg-soft:            #f8fafc;
+  --bg-gray-lite:       #f1f5f9;
+  --bg-hover-soft:      #f9fafb;
+  --border-default:     #e5e7eb;
+  --border-input:       #d1d5db;
+  --border-soft:        #cbd5e1;
+  --border-strong:      #94a3b8;
+  --sidebar-bg:         #0F172A;
+  --sidebar-text:       #CBD5E1;
+  --sidebar-text-sub:   #94A3B8;
+  --sidebar-text-active:#FFFFFF;
+  --sidebar-icon:       #94A3B8;
+  --sidebar-icon-active:#60A5FA;
+  --sidebar-hover-bg:   #1E293B;
+  --tab-bg:             #f8fafc;
+  --tab-text:           #94a3b8;
+  --tab-active-bg:      #3f4e65;
+  --tab-active-text:    #ffffff;
+  --popup-header-bg:    #0747a6;
+  --gnb-height:         56px;
+  --title-bar-height:   48px;
+  --button-height:      32px;
+  --input-height:       32px;
+  --grid-header-height: 40px;
+  --grid-row-height:    32px;
+  --bottom-tab-height:  32px;
+  --radius-default:     4px;
+  --shadow-focus:       0 0 0 3px rgba(7,71,166,.15);
+  --shadow-popup:       0 10px 25px rgba(0,0,0,.18);
+  --shadow-sidebar:     4px 0 16px rgba(0,0,0,.18);
+  --font-l:17px; --font-m:14px; --font-s:13px; --font-xs:12px; --font-2xs:11px;
+}
+html, body { height:100%; background:#fff; color:var(--text-primary); overflow:hidden; }
+
+/* ── §2-2 GNB ────────────────────────────────────────────────────── */
+.ss-gnb { height:var(--gnb-height); background:#fff; border-bottom:1px solid var(--border-default); display:flex; align-items:center; justify-content:space-between; padding:0 20px; position:relative; z-index:1000; flex-shrink:0; }
+.ss-gnb-left { display:flex; align-items:center; gap:10px; }
+.ss-gnb-logo { font-size:17px; font-weight:700; color:var(--brand-primary); }
+.ss-gnb-sep  { width:1px; height:16px; background:var(--border-default); }
+.ss-gnb-product { font-size:var(--font-s); color:var(--text-secondary); }
+.ss-gnb-icon-btn { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-secondary); border:none; background:transparent; border-radius:var(--radius-default); }
+.ss-gnb-icon-btn:hover { background:var(--bg-soft); }
+.ss-gnb-right { display:flex; align-items:center; gap:18px; font-size:var(--font-s); color:var(--text-secondary); }
+.ss-gnb-icon  { display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+
+/* ── §2-3 Page Title Bar ─────────────────────────────────────────── */
+.ss-page-title { height:var(--title-bar-height); background:#fff; border-bottom:1px solid var(--border-default); display:flex; align-items:center; justify-content:space-between; padding:0 24px; flex-shrink:0; }
+.ss-page-title-text { font-size:var(--font-l); font-weight:700; color:var(--text-primary); }
+.ss-page-breadcrumb { font-size:var(--font-xs); color:var(--text-tertiary); display:flex; align-items:center; gap:4px; }
+
+/* ── §2-4 필터 바 ────────────────────────────────────────────────── */
+.ss-filter-action-row { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 24px; background:#fff; flex-shrink:0; }
+.ss-filter-group { display:flex; align-items:center; gap:6px; }
+.ss-filter-search { position:relative; width:220px; }
+.ss-filter-search input { width:100%; height:var(--input-height); border:1px solid var(--border-input); border-radius:var(--radius-default); padding:0 32px 0 10px; font-size:var(--font-s); color:var(--text-primary); background:#fff; font-family:inherit; }
+.ss-filter-search input:focus { outline:none; border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+.ss-search-icon { position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--accent-red); pointer-events:none; display:inline-flex; }
+.ss-filter-tag { display:inline-flex; align-items:center; gap:6px; height:var(--button-height); padding:0 10px; border:1px solid var(--border-input); background:#fff; border-radius:var(--radius-default); font-size:var(--font-s); color:var(--text-primary); cursor:pointer; transition:background .12s, border-color .12s; }
+.ss-filter-tag:hover { background:var(--bg-soft); }
+.ss-filter-tag.is-active { background:var(--brand-soft-bg); border-color:var(--brand-primary-alt); color:var(--brand-primary-alt); font-weight:500; }
+.ss-tag-icon svg { width:14px; height:14px; color:var(--accent-red); }
+.ss-action-bar { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+
+/* ── §3 버튼 9종 ─────────────────────────────────────────────────── */
+.btn { height:var(--button-height); padding:0 14px; border-radius:var(--radius-default); border:1px solid transparent; font-size:var(--font-s); font-weight:500; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:80px; white-space:nowrap; font-family:inherit; transition:background .12s, color .12s, border-color .12s; }
+.btn:disabled { opacity:.38; cursor:not-allowed; pointer-events:none; }
+.btn-default       { background:#f8fafc; color:#334155; border-color:#cbd5e1; }
+.btn-default:hover { background:#f1f5f9; color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-solid-blue        { background:var(--brand-primary-alt); color:#fff; border-color:var(--brand-primary-alt); }
+.btn-solid-blue:hover  { background:var(--brand-primary-dark); }
+.btn-soft-blue         { background:var(--brand-soft-bg); color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-soft-blue:hover   { background:var(--brand-soft-hover); }
+.btn-outline-blue      { background:#fff; color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-outline-blue:hover{ background:var(--brand-soft-bg); }
+.btn-soft-green        { background:var(--success-soft-bg); color:var(--success-green); border-color:var(--success-soft-bd); }
+.btn-soft-green:hover  { background:#dcfce7; }
+.btn-soft-red          { background:var(--error-soft-bg); color:var(--error-red); border-color:var(--error-soft-bd); }
+.btn-soft-red:hover    { background:#ffe4e6; }
+.btn-outline-red       { background:#fff; color:var(--error-outline); border-color:var(--error-outline-bd); }
+.btn-outline-red:hover { background:var(--error-soft-bg); }
+.btn-white        { background:#fff; color:var(--text-secondary); border-color:var(--border-input); }
+.btn-white:hover  { background:var(--bg-hover-soft); color:#1e293b; border-color:var(--border-strong); }
+.btn-gray-lite        { background:var(--bg-gray-lite); color:var(--text-secondary); border-color:var(--border-input); }
+.btn-gray-lite:hover  { background:#e2e8f0; border-color:var(--border-strong); }
+.btn-sm { height:28px; min-width:60px; font-size:var(--font-xs); padding:0 10px; }
+
+/* ── §4 그리드 ───────────────────────────────────────────────────── */
+/* 리스트 그리드 높이: GNB(56)+Title(48)+Filter(52)+BottomTab(32)+gap(5) = 193px */
+.ss-grid-container { height:calc(100vh - 193px); overflow-y:auto; margin:0 24px 5px; border:1px solid #DDDDDD; }
+.ss-grid { width:100%; border-collapse:collapse; white-space:nowrap; }
+.ss-grid th { height:var(--grid-header-height); background:var(--bg-soft); border:1px solid var(--border-default); padding:0 10px; font-size:var(--font-xs); font-weight:600; color:var(--text-primary); text-align:center; position:sticky; top:0; z-index:10; }
+.ss-grid td { height:var(--grid-row-height); border:1px solid var(--border-default); padding:0 10px; font-size:var(--font-s); color:var(--text-primary); }
+.ss-grid tbody tr:nth-child(even) td { background:#fafafa; }
+.ss-grid tbody tr:hover td { background:var(--bg-soft) !important; cursor:pointer; }
+.ss-grid tbody tr.row-selected td { background:#E6F1FB !important; }
+/* 체크박스 */
+.ss-grid input[type=checkbox] { appearance:none; -webkit-appearance:none; width:14px; height:14px; border:1px solid var(--border-input); background:#fff; cursor:pointer; position:relative; border-radius:2px; }
+.ss-grid input[type=checkbox]:checked { border-color:var(--brand-primary); background:var(--brand-primary); }
+.ss-grid input[type=checkbox]:checked::after { content:'✔'; position:absolute; top:-3px; left:1px; font-size:11px; color:#fff; }
+/* 열 색상·정렬 */
+.ss-col-default{ color:#1f2937; }
+.ss-col-blue   { color:#0747a6; }
+.ss-col-green  { color:#16a34a; }
+.ss-col-red    { color:#e11d48; }
+.ss-col-link   { color:#0747a6; text-decoration:underline; cursor:pointer; }
+.ss-col-left   { text-align:left; }
+.ss-col-center { text-align:center; }
+.ss-col-right  { text-align:right; }
+/* 공급사 텍스트 색상 (뱃지 없음 — 개발구매 표준 규칙) */
+.tier2   { color:#185FA5; font-weight:500; }
+.tier3   { color:#0F6E56; font-weight:500; }
+.grade-a { color:#0F6E56; font-weight:500; }
+.grade-b { color:#185FA5; font-weight:500; }
+.grade-c { color:#854F0B; font-weight:500; }
+.grade-d { color:#A32D2D; font-weight:500; }
+.yn-y    { color:#0F6E56; font-weight:500; }
+.yn-n    { color:#5F5E5A; font-weight:500; }
+
+/* ── 레이아웃 ────────────────────────────────────────────────────── */
+.page-wrapper { display:flex; flex-direction:column; height:100vh; }
+.view-hidden  { display:none !important; }
+
+/* ── 상세 화면 ───────────────────────────────────────────────────── */
+/* 상세 헤더 */
+.detail-header { height:52px; background:var(--bg-soft); border-bottom:1px solid var(--border-default); display:flex; align-items:center; padding:0 24px; gap:12px; flex-shrink:0; }
+.detail-company { font-size:17px; font-weight:700; color:var(--text-primary); }
+.detail-code    { font-size:var(--font-xs); color:var(--text-tertiary); padding:2px 8px; background:#fff; border:1px solid var(--border-default); border-radius:var(--radius-default); }
+.detail-tier-tag { font-size:var(--font-xs); font-weight:600; padding:2px 8px; border-radius:var(--radius-default); }
+.detail-tier-t2  { color:#185FA5; background:#f0f5ff; border:1px solid #185FA5; }
+.detail-tier-t3  { color:#0F6E56; background:var(--success-soft-bg); border:1px solid #0F6E56; }
+.detail-header-actions { margin-left:auto; display:flex; gap:6px; }
+
+/* 상세 바디: 세로 탭 + 콘텐츠 */
+.detail-body {
+  flex:1; display:flex; overflow:hidden;
+}
+/* 좌측 패널 250px 고정 (협력사 상세 표준 규칙) */
+.detail-left-panel { width:250px; flex-shrink:0; border-right:1px solid #e5e7eb; display:flex; flex-direction:column; background:var(--bg-soft); overflow:hidden; }
+.vtab-menu { flex:1; overflow-y:auto; }
+.vtab-item { height:44px; padding:0 16px; display:flex; align-items:center; font-size:var(--font-s); color:#5F5E5A; cursor:pointer; border-left:3px solid transparent; border-bottom:1px solid var(--border-default); transition:background .1s; }
+.vtab-item:hover { background:#f0f5ff; color:var(--brand-primary); }
+/* 활성 탭: #185FA5, font-weight 500, background #fff */
+.vtab-item.active { background:#fff; color:#185FA5; font-weight:500; border-left-color:#185FA5; }
+/* 좌측 파일첨부 영역 (사업자등록증) */
+.left-attach { border-top:1px solid #e5e7eb; padding:12px; flex-shrink:0; }
+.left-attach-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.left-attach-label { font-size:var(--font-s); font-weight:500; color:var(--text-primary); }
+.left-file-area { border:1px solid #e5e7eb; background:var(--bg-soft); min-height:120px; border-radius:var(--radius-default); display:flex; align-items:center; justify-content:center; font-size:var(--font-xs); color:var(--text-muted); }
+/* 우측 파일첨부 (두번째 — 첨부파일) */
+.right-file-area { border:1px solid #e5e7eb; background:var(--bg-soft); min-height:120px; border-radius:var(--radius-default); display:flex; align-items:center; justify-content:center; font-size:var(--font-xs); color:var(--text-muted); margin-top:6px; }
+
+/* 탭 콘텐츠 */
+.detail-content { flex:1; overflow-y:auto; padding:20px; }
+.tab-pane.hidden { display:none; }
+
+/* 섹션 타이틀 (개발구매 표준 규칙: font-m 500, #DDDDDD border) */
+.form-section { margin-bottom:24px; }
+.form-section-title { font-size:var(--font-m); font-weight:500; color:var(--text-primary); border-bottom:1px solid #DDDDDD; padding-bottom:8px; margin-bottom:16px; }
+
+/* 2열 폼 그리드 */
+.form-2col { display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
+.form-full  { grid-column:1/-1; }
+.form-group { display:flex; flex-direction:column; gap:4px; }
+
+/* 파일 업로드 드롭존 */
+.attach-drop-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.attach-drop-zone { height:80px; border:1px dashed #DDDDDD; border-radius:var(--radius-default); display:flex; align-items:center; justify-content:center; font-size:var(--font-xs); color:var(--text-muted); cursor:pointer; background:#fff; }
+.attach-drop-zone:hover { background:var(--bg-soft); }
+/* 우편번호 입력+버튼 조합 */
+.input-with-btn { display:flex; gap:6px; align-items:center; }
+.input-with-btn .ss-form-control { flex:1; min-width:0; }
+
+/* §5 폼 */
+.ss-form-label { font-size:var(--font-xs); font-weight:700; color:var(--text-label); display:block; }
+.ss-form-label .req { color:var(--required-red); margin-left:2px; }
+.ss-form-control { height:var(--input-height); width:100%; padding:0 10px; border-radius:var(--radius-default); font-size:var(--font-s); font-family:inherit; outline:none; transition:border-color .12s, box-shadow .12s; border:1px solid var(--border-input); color:var(--text-primary); background:#fff; }
+.ss-form-control:focus { border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+.ss-form-control.readonly,[readonly].ss-form-control { border-color:var(--border-default); color:var(--text-readonly); background:#f9fafb; cursor:not-allowed; }
+.ss-form-select { height:var(--input-height); width:100%; padding:0 28px 0 10px; border-radius:var(--radius-default); font-size:var(--font-s); font-family:inherit; border:1px solid var(--border-input); background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center; appearance:none; cursor:pointer; color:var(--text-primary); outline:none; }
+.ss-form-select:focus { border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+
+/* 파일첨부 */
+.attach-row    { display:flex; gap:12px; margin-bottom:8px; }
+.attach-box    { flex:1; border:1px dashed var(--border-soft); border-radius:var(--radius-default); padding:8px 12px; display:flex; align-items:center; gap:8px; background:var(--bg-soft); }
+.attach-label  { font-size:var(--font-xs); color:var(--text-secondary); flex-shrink:0; min-width:80px; }
+.attach-hint   { font-size:var(--font-xs); color:var(--text-muted); }
+.attach-file   { font-size:var(--font-xs); color:var(--brand-primary-alt); text-decoration:underline; cursor:pointer; }
+
+/* 인증 만료 */
+.cert-expired  { color:#A32D2D; font-weight:500; }
+.lme-y { color:#0F6E56; font-weight:500; }
+.lme-n { color:#5F5E5A; font-weight:500; }
+
+/* 콘텐츠 하단 버튼 */
+.detail-footer { display:flex; justify-content:flex-end; gap:6px; padding:14px 0 4px; border-top:1px solid var(--border-default); margin-top:8px; }
+
+/* ── §7 하단 탭바 ─────────────────────────────────────────────────── */
+.ss-bottom-tab-bar { height:var(--bottom-tab-height); background:var(--tab-bg); display:flex; align-items:center; border-top:1px solid var(--border-default); padding-right:12px; flex-shrink:0; }
+.ss-bottom-tab-summary { display:flex; align-items:center; justify-content:center; height:100%; padding:0 18px; background:#e2e8f0; border-right:1px solid var(--border-default); font-size:11px; font-weight:700; color:var(--text-secondary); letter-spacing:.5px; cursor:default; }
+.ss-bottom-tab-item { display:flex; align-items:center; gap:8px; height:100%; padding:0 14px; font-size:var(--font-xs); color:var(--tab-text); background:var(--tab-bg); border-right:1px solid var(--border-default); cursor:pointer; }
+.ss-bottom-tab-item.active { background:var(--tab-active-bg); color:var(--tab-active-text); }
+.ss-tab-close { font-size:10px; opacity:.9; }
+.ss-bottom-tab-spacer { flex:1; }
+
+/* ── §6 팝업 ─────────────────────────────────────────────────────── */
+.ss-popup-overlay { position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:2000; display:none; align-items:center; justify-content:center; }
+.ss-popup-overlay.is-open { display:flex; }
+.ss-popup-window { width:100%; max-width:600px; background:#fff; border-radius:var(--radius-default); box-shadow:var(--shadow-popup); overflow:hidden; display:flex; flex-direction:column; }
+.ss-popup-header { height:36px; background:var(--popup-header-bg); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:var(--font-s); font-weight:500; }
+.ss-popup-controls { display:flex; gap:8px; }
+.ss-popup-icon { width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; border-radius:2px; }
+.ss-popup-icon:hover { background:rgba(255,255,255,.15); }
+.ss-popup-body   { padding:20px 24px; }
+.ss-popup-footer { border-top:1px solid var(--border-default); padding:10px 16px; display:flex; justify-content:flex-end; gap:6px; }
+
+/* ── §8 사이드바 ─────────────────────────────────────────────────── */
+.ss-sidebar { position:fixed; top:var(--gnb-height); left:0; height:calc(100vh - var(--gnb-height)); width:280px; z-index:1200; background:var(--sidebar-bg); display:flex; flex-direction:column; overflow-y:auto; transform:translateX(-100%); transition:transform .24s ease-out; pointer-events:none; box-shadow:var(--shadow-sidebar); }
+.ss-sidebar.is-open { transform:translateX(0); pointer-events:auto; }
+.ss-sidebar-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px 8px 18px; }
+.ss-sidebar-title  { font-size:var(--font-s); font-weight:700; color:var(--sidebar-text-active); letter-spacing:.3px; }
+.ss-sidebar-close  { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--sidebar-text-sub); border:none; background:transparent; border-radius:4px; }
+.ss-sidebar-close:hover { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); }
+.ss-sidebar-section { padding:6px 0; }
+.ss-sidebar-section-title { padding:8px 18px 6px; font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:.5px; text-transform:uppercase; }
+.ss-sidebar-item { display:flex; align-items:center; gap:10px; height:38px; padding:0 18px; color:var(--sidebar-text); font-size:14px; font-weight:500; cursor:pointer; border-left:3px solid transparent; transition:background .12s; }
+.ss-sidebar-item:hover { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); }
+.ss-sidebar-item.active { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); border-left-color:var(--sidebar-icon-active); font-weight:600; }
+.ss-sidebar-icon { width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; color:var(--sidebar-icon); flex-shrink:0; }
+.ss-sidebar-item.active .ss-sidebar-icon { color:var(--sidebar-icon-active); }
+.ss-sidebar-label  { flex:1; }
+.ss-sidebar-chevron{ width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; color:var(--sidebar-text-sub); transition:transform .18s; }
+.ss-sidebar-item.is-expanded .ss-sidebar-chevron { transform:rotate(90deg); }
+.ss-sidebar-submenu { max-height:0; overflow:hidden; transition:max-height .22s ease; background:rgba(0,0,0,.18); }
+.ss-sidebar-submenu.is-open { max-height:500px; }
+.ss-sidebar-submenu .ss-sidebar-item { height:32px; padding-left:48px; color:var(--sidebar-text-sub); font-size:12px; font-weight:400; border-left-color:transparent; }
+.ss-sidebar-submenu .ss-sidebar-item:hover  { color:var(--sidebar-text-active); }
+.ss-sidebar-submenu .ss-sidebar-item.active { color:var(--sidebar-text-active); background:var(--sidebar-hover-bg); }
+.ss-sidebar-dim { position:fixed; top:var(--gnb-height); left:0; right:0; bottom:0; background:rgba(15,23,42,.45); z-index:1100; opacity:0; pointer-events:none; transition:opacity .18s; }
+.ss-sidebar-dim.is-open { opacity:1; pointer-events:auto; }
+body.ss-sidebar-locked { overflow:hidden; }
+</style>
+</head>
+<body>
+
+<!-- ── 딤 + 사이드바 ─────────────────────────────────────────────── -->
+<div id="sidebarDim" class="ss-sidebar-dim" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="ss-sidebar" aria-hidden="true">
+  <div class="ss-sidebar-header">
+    <span class="ss-sidebar-title">MENU</span>
+    <button class="ss-sidebar-close" onclick="closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="ss-sidebar-section">
+    <div class="ss-sidebar-section-title">동희산업 개발구매</div>
+    <!-- 기본정보 관리 — 펼침 활성 -->
+    <div class="ss-sidebar-item is-expanded active" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+      <span class="ss-sidebar-label">기본정보 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu is-open">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">신차 프로젝트 등록·조회</span></div>
+      <div class="ss-sidebar-item active"><span class="ss-sidebar-label">공급사 기본정보</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">소재·원자재 코드</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">공정·가공비 표준코드</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">사용자·권한 관리</span></div>
+    </div>
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+      <span class="ss-sidebar-label">BOM 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">통합 BOM 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">BOM 변경 이력(ECN)</span></div>
+    </div>
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+      <span class="ss-sidebar-label">원가·재료비 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">소재별 재료비 산출</span></div>
+    </div>
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <span class="ss-sidebar-label">목표가 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">목표가 설정·버전 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">Vs Target 모니터링</span></div>
+    </div>
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="ss-sidebar-label">RFQ·견적 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">RFQ 발송 관리</span></div>
+    </div>
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <span class="ss-sidebar-label">결재·승인 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">내 결재 현황</span></div>
+    </div>
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+      <span class="ss-sidebar-label">레포트·대시보드</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">개발구매 현황 대시보드</span></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── 페이지 래퍼 ─────────────────────────────────────────────── -->
+<div class="page-wrapper">
+
+  <!-- GNB -->
+  <div class="ss-gnb">
+    <div class="ss-gnb-left">
+      <span class="ss-gnb-logo">동희산업</span>
+      <div class="ss-gnb-sep"></div>
+      <span class="ss-gnb-product">개발구매 솔루션</span>
+      <button class="ss-gnb-icon-btn" title="홈">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <button class="ss-gnb-icon-btn" onclick="toggleSidebar()" aria-controls="sidebar" aria-expanded="false" title="메뉴">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ss-gnb-right">
+      <span>English</span>
+      <span class="ss-gnb-icon" title="도움말">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </span>
+      <span>개발구매팀 / 김구매</span>
+      <span class="ss-gnb-icon" title="로그아웃">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- Page Title Bar -->
+  <div class="ss-page-title">
+    <span class="ss-page-title-text">공급사 기본정보</span>
+    <div class="ss-page-breadcrumb">
+      <span>기본정보 관리</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <span style="color:var(--text-primary);font-weight:600;">공급사 기본정보</span>
+    </div>
+  </div>
+
+  <!-- ══ 화면 1: 리스트 뷰 ══════════════════════════════════════════ -->
+  <div id="listView">
+
+    <!-- 필터 바: 좌=[Search][필터][Tier2][Tier3] / 우=[신규등록][수정][삭제] -->
+    <div class="ss-filter-action-row">
+      <div class="ss-filter-group">
+        <div class="ss-filter-search">
+          <input type="text" placeholder="협력사명 검색">
+          <span class="ss-search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+        </div>
+        <span class="ss-filter-tag">
+          <span class="ss-tag-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </span>
+          <span>필터</span>
+        </span>
+        <span class="ss-filter-tag" onclick="this.classList.toggle('is-active')">Tier2</span>
+        <span class="ss-filter-tag" onclick="this.classList.toggle('is-active')">Tier3</span>
+      </div>
+      <div class="ss-action-bar">
+        <button class="btn btn-outline-blue" onclick="openNewView()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          신규등록
+        </button>
+        <button class="btn btn-default">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          수정
+        </button>
+        <button class="btn btn-outline-red">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          삭제
+        </button>
+      </div>
+    </div>
+
+    <!-- 그리드 (하단탭 5px 위까지 꽉 채움) -->
+    <div class="ss-grid-container">
+      <table class="ss-grid">
+        <thead>
+          <tr>
+            <th style="width:40px;"><input type="checkbox"></th>
+            <th style="width:90px;">업체코드</th>
+            <th style="width:180px;">협력사명</th>
+            <th style="width:120px;">사업자번호</th>
+            <th style="width:70px;">구분</th>
+            <th style="width:110px;">협력사 관리여부</th>
+            <th style="width:120px;">거래계약 체결여부</th>
+            <th style="width:80px;">평가등급</th>
+            <th style="width:80px;">담당자</th>
+            <th style="min-width:100px;">비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="openDetail('SUP-001','(주)한국정밀','Tier2')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-001</td>
+            <td class="ss-col-left  ss-col-default">(주)한국정밀</td>
+            <td class="ss-col-center ss-col-default">312-81-31399</td>
+            <td class="ss-col-center"><span class="tier2">Tier2</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="grade-a">A</span></td>
+            <td class="ss-col-center ss-col-default">김구매</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-002','대성금속(주)','Tier2')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-002</td>
+            <td class="ss-col-left  ss-col-default">대성금속(주)</td>
+            <td class="ss-col-center ss-col-default">139-81-01043</td>
+            <td class="ss-col-center"><span class="tier2">Tier2</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="yn-n">N</span></td>
+            <td class="ss-col-center"><span class="grade-b">B</span></td>
+            <td class="ss-col-center ss-col-default">이소싱</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-003','진흥스틸','Tier3')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-003</td>
+            <td class="ss-col-left  ss-col-default">진흥스틸</td>
+            <td class="ss-col-center ss-col-default">137-81-44541</td>
+            <td class="ss-col-center"><span class="tier3">Tier3</span></td>
+            <td class="ss-col-center"><span class="yn-n">N</span></td>
+            <td class="ss-col-center"><span class="yn-n">N</span></td>
+            <td class="ss-col-center"><span class="grade-a">A</span></td>
+            <td class="ss-col-center ss-col-default">박원가</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-004','한일수지(주)','Tier3')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-004</td>
+            <td class="ss-col-left  ss-col-default">한일수지(주)</td>
+            <td class="ss-col-center ss-col-default">133-81-38969</td>
+            <td class="ss-col-center"><span class="tier3">Tier3</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="grade-b">B</span></td>
+            <td class="ss-col-center ss-col-default">김구매</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-005','(주)동양알미늄','Tier2')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-005</td>
+            <td class="ss-col-left  ss-col-default">(주)동양알미늄</td>
+            <td class="ss-col-center ss-col-default">124-86-57972</td>
+            <td class="ss-col-center"><span class="tier2">Tier2</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="grade-a">A</span></td>
+            <td class="ss-col-center ss-col-default">이소싱</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-006','세진테크','Tier3')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-006</td>
+            <td class="ss-col-left  ss-col-default">세진테크</td>
+            <td class="ss-col-center ss-col-default">133-81-28097</td>
+            <td class="ss-col-center"><span class="tier3">Tier3</span></td>
+            <td class="ss-col-center"><span class="yn-n">N</span></td>
+            <td class="ss-col-center"><span class="yn-n">N</span></td>
+            <td class="ss-col-center"><span class="grade-c">C</span></td>
+            <td class="ss-col-center ss-col-default">박원가</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-007','(주)광명정밀','Tier2')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-007</td>
+            <td class="ss-col-left  ss-col-default">(주)광명정밀</td>
+            <td class="ss-col-center ss-col-default">615-81-24555</td>
+            <td class="ss-col-center"><span class="tier2">Tier2</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="yn-n">N</span></td>
+            <td class="ss-col-center"><span class="grade-b">B</span></td>
+            <td class="ss-col-center ss-col-default">김구매</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+          <tr onclick="openDetail('SUP-008','미래소재(주)','Tier3')">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">SUP-008</td>
+            <td class="ss-col-left  ss-col-default">미래소재(주)</td>
+            <td class="ss-col-center ss-col-default">134-81-04176</td>
+            <td class="ss-col-center"><span class="tier3">Tier3</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="yn-y">Y</span></td>
+            <td class="ss-col-center"><span class="grade-a">A</span></td>
+            <td class="ss-col-center ss-col-default">이소싱</td>
+            <td class="ss-col-left  ss-col-default"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /listView -->
+
+  <!-- ══ 화면 2: 상세 뷰 (행 클릭 시 전환 / 좌250px+우측 구조) ═══ -->
+  <div id="detailView" class="view-hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- 상단 타이틀바 -->
+    <div class="detail-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary-alt)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <span class="detail-company" id="detailCompanyName">(주)한국정밀</span>
+      <span class="detail-code" id="detailCode">SUP-001</span>
+      <span class="detail-tier-tag detail-tier-t2" id="detailTierTag">Tier2</span>
+      <div class="detail-header-actions">
+        <button class="btn btn-default btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          수정
+        </button>
+        <button class="btn btn-soft-red btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          거래정지
+        </button>
+        <button class="btn btn-white btn-sm" onclick="closeDetail()">닫기</button>
+      </div>
+    </div>
+
+    <!-- 본문: 좌(250px) + 우(나머지) -->
+    <div class="detail-body">
+
+      <!-- ▌좌측 패널 250px: 탭메뉴 + 사업자등록증 -->
+      <div class="detail-left-panel">
+        <nav class="vtab-menu">
+          <div class="vtab-item active" onclick="showTab('tab-general',this)">일반정보</div>
+          <div class="vtab-item" onclick="showTab('tab-extra',this)">부가정보</div>
+          <div class="vtab-item" onclick="showTab('tab-contact',this)">담당자정보</div>
+          <div class="vtab-item" onclick="showTab('tab-management',this)">경영정보</div>
+          <div class="vtab-item" onclick="showTab('tab-sales',this)">영업현황</div>
+          <div class="vtab-item" onclick="showTab('tab-cert',this)">인증정보</div>
+          <div class="vtab-item" onclick="showTab('tab-credit',this)">신용평가정보</div>
+        </nav>
+        <div class="left-attach">
+          <div class="left-attach-header">
+            <span class="left-attach-label">사업자등록증</span>
+            <button class="btn btn-gray-lite btn-sm" style="font-size:11px;min-width:auto;padding:0 8px;">+ AllDownLoad</button>
+          </div>
+          <div class="left-file-area">첨부파일 없음</div>
+        </div>
+      </div>
+
+      <!-- ▐ 우측 콘텐츠 영역 -->
+      <div class="detail-content">
+
+        <!-- ── 일반정보 탭 ── -->
+        <div id="tab-general" class="tab-pane">
+          <div class="form-section">
+            <div class="form-section-title">기본정보</div>
+            <div class="form-2col">
+              <div class="form-group">
+                <label class="ss-form-label">아이디</label>
+                <input class="ss-form-control" value="SUP-001" readonly>
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">업체코드</label>
+                <input class="ss-form-control" value="SUP-001" readonly>
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">업체구분</label>
+                <select class="ss-form-select"><option selected>Tier2</option><option>Tier3</option></select>
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">언어</label>
+                <select class="ss-form-select"><option selected>한국어</option><option>영어</option></select>
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">국가<span class="req">*</span></label>
+                <select class="ss-form-select"><option selected>KR - South Korea</option><option>US - United States</option><option>CN - China</option><option>JP - Japan</option></select>
+              </div>
+              <div class="form-group"></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">사업자 정보</div>
+            <div class="form-2col">
+              <div class="form-group">
+                <label class="ss-form-label">사업자등록번호<span class="req">*</span></label>
+                <input class="ss-form-control" value="312-81-31399">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">법인등록번호</label>
+                <input class="ss-form-control" value="130111-0023456">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">회사명<span class="req">*</span></label>
+                <input class="ss-form-control" value="(주)한국정밀">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">회사명(영문)</label>
+                <input class="ss-form-control" value="Korea Precision Co., Ltd.">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">대표자명<span class="req">*</span></label>
+                <input class="ss-form-control" value="김대표">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">설립일자</label>
+                <input class="ss-form-control" value="1998-03-15">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">대표이메일</label>
+                <input class="ss-form-control" value="ceo@korea-precision.co.kr">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">대표전화번호</label>
+                <input class="ss-form-control" value="031-456-7890">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">업종</label>
+                <input class="ss-form-control" value="금속 가공업">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">세부업종</label>
+                <input class="ss-form-control" value="자동차 부품 제조">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">우편번호<span class="req">*</span></label>
+                <div class="input-with-btn">
+                  <input class="ss-form-control" value="15588">
+                  <button class="btn btn-gray-lite btn-sm" style="flex-shrink:0;min-width:52px;">검색</button>
+                </div>
+              </div>
+              <div class="form-group"></div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">주소<span class="req">*</span></label>
+                <input class="ss-form-control" value="경기도 안산시 단원구 산업로">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">상세주소</label>
+                <input class="ss-form-control" value="한국정밀 제조동 3층">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">기업규모</label>
+                <select class="ss-form-select"><option>소기업</option><option>중소기업</option><option selected>중견기업</option><option>대기업</option></select>
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">회사상장여부</label>
+                <select class="ss-form-select"><option selected>비상장</option><option>코스피</option><option>코스닥</option></select>
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">부지현황(대지,평)</label>
+                <input class="ss-form-control" value="2,400">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">부지현황(건물,평)</label>
+                <input class="ss-form-control" value="1,800">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">전체 사업장</label>
+                <input class="ss-form-control" value="경기도 안산시 2개 사업장 운영">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">파일첨부</div>
+            <div class="form-2col">
+              <div class="form-group">
+                <div class="attach-drop-header">
+                  <span class="ss-form-label" style="flex:1;">첨부파일</span>
+                  <button class="btn btn-gray-lite btn-sm" style="font-size:11px;min-width:auto;padding:0 8px;">+ AllDownLoad</button>
+                </div>
+                <div class="right-file-area">첨부파일 없음</div>
+              </div>
+              <div class="form-group"></div>
+            </div>
+          </div>
+          <div class="detail-footer">
+            <button class="btn btn-white">취소</button>
+            <button class="btn btn-solid-blue">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              저장
+            </button>
+          </div>
+        </div><!-- /tab-general -->
+
+        <!-- ── 부가정보 탭 ── -->
+        <div id="tab-extra" class="tab-pane hidden">
+          <div class="form-section">
+            <div class="form-section-title">부가정보</div>
+            <div class="form-2col">
+              <div class="form-group">
+                <label class="ss-form-label">홈페이지 URL</label>
+                <input class="ss-form-control" value="https://www.korea-precision.co.kr">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">설립연도</label>
+                <input class="ss-form-control" value="1998">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">주요거래처</label>
+                <input class="ss-form-control" value="현대모비스, 기아, 동희산업">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">주요제품</label>
+                <input class="ss-form-control" value="자동차 범퍼 어셈블리, 도어 패널, 사이드 실">
+              </div>
+              <div class="form-group form-full">
+                <label class="ss-form-label">특이사항</label>
+                <textarea class="ss-form-control" style="height:80px;resize:none;padding:8px 10px;">2023년도 품질 우수 협력사 선정 / ISO 인증 갱신 진행 중</textarea>
+              </div>
+            </div>
+          </div>
+          <div class="detail-footer">
+            <button class="btn btn-white">취소</button>
+            <button class="btn btn-solid-blue">저장</button>
+          </div>
+        </div><!-- /tab-extra -->
+
+        <!-- ── 담당자정보 탭 ── -->
+        <div id="tab-contact" class="tab-pane hidden">
+          <div class="form-section">
+            <div class="form-section-title">담당자 목록</div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;">
+              <button class="btn btn-outline-blue btn-sm">추가</button>
+              <button class="btn btn-outline-red btn-sm">삭제</button>
+            </div>
+            <div style="border:1px solid #DDDDDD;">
+              <table class="ss-grid">
+                <thead>
+                  <tr>
+                    <th style="width:40px;"><input type="checkbox"></th>
+                    <th style="width:90px;">구분</th>
+                    <th style="width:100px;">담당자명</th>
+                    <th style="width:90px;">부서</th>
+                    <th style="width:80px;">직급</th>
+                    <th style="width:130px;">연락처</th>
+                    <th style="width:180px;">이메일</th>
+                    <th style="min-width:100px;">비고</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="ss-col-center"><input type="checkbox"></td>
+                    <td class="ss-col-center ss-col-default">구매담당</td>
+                    <td class="ss-col-center ss-col-link">홍길동</td>
+                    <td class="ss-col-center ss-col-default">영업팀</td>
+                    <td class="ss-col-center ss-col-default">과장</td>
+                    <td class="ss-col-center ss-col-default">010-1234-5678</td>
+                    <td class="ss-col-left  ss-col-default">hong@korea.co.kr</td>
+                    <td class="ss-col-left  ss-col-default"></td>
+                  </tr>
+                  <tr>
+                    <td class="ss-col-center"><input type="checkbox"></td>
+                    <td class="ss-col-center ss-col-default">기술담당</td>
+                    <td class="ss-col-center ss-col-link">김철수</td>
+                    <td class="ss-col-center ss-col-default">기술팀</td>
+                    <td class="ss-col-center ss-col-default">대리</td>
+                    <td class="ss-col-center ss-col-default">010-9876-5432</td>
+                    <td class="ss-col-left  ss-col-default">kim@korea.co.kr</td>
+                    <td class="ss-col-left  ss-col-default"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="detail-footer">
+            <button class="btn btn-white">취소</button>
+            <button class="btn btn-solid-blue">저장</button>
+          </div>
+        </div><!-- /tab-contact -->
+
+        <!-- ── 경영정보 탭 ── -->
+        <div id="tab-management" class="tab-pane hidden">
+          <div class="form-section">
+            <div class="form-section-title">경영 현황</div>
+            <div class="form-2col">
+              <div class="form-group">
+                <label class="ss-form-label">자본금</label>
+                <input class="ss-form-control" value="5,000,000,000">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">매출액(최근연도)</label>
+                <input class="ss-form-control" value="12,500,000,000">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">종업원 수</label>
+                <input class="ss-form-control" value="248">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">주거래 은행</label>
+                <input class="ss-form-control" value="KEB하나은행">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">신용등급</label>
+                <input class="ss-form-control" value="A">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">평가기관</label>
+                <input class="ss-form-control" value="NICE평가정보">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">부채비율(%)</label>
+                <input class="ss-form-control" value="42.8">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">유동비율(%)</label>
+                <input class="ss-form-control" value="182.3">
+              </div>
+            </div>
+          </div>
+          <div class="detail-footer">
+            <button class="btn btn-white">취소</button>
+            <button class="btn btn-solid-blue">저장</button>
+          </div>
+        </div><!-- /tab-management -->
+
+        <!-- ── 영업현황 탭 ── -->
+        <div id="tab-sales" class="tab-pane hidden">
+          <div class="form-section">
+            <div class="form-section-title">연도별 매출 현황</div>
+            <div style="border:1px solid #DDDDDD;">
+              <table class="ss-grid">
+                <thead>
+                  <tr>
+                    <th style="width:80px;">연도</th>
+                    <th style="width:140px;">매출액</th>
+                    <th style="width:130px;">영업이익</th>
+                    <th style="width:120px;">순이익</th>
+                    <th style="min-width:100px;">비고</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="ss-col-center ss-col-default">2024</td>
+                    <td class="ss-col-right  ss-col-default">12,500,000,000</td>
+                    <td class="ss-col-right  ss-col-default">1,250,000,000</td>
+                    <td class="ss-col-right  ss-col-default">980,000,000</td>
+                    <td class="ss-col-left   ss-col-default"></td>
+                  </tr>
+                  <tr>
+                    <td class="ss-col-center ss-col-default">2023</td>
+                    <td class="ss-col-right  ss-col-default">11,800,000,000</td>
+                    <td class="ss-col-right  ss-col-default">1,100,000,000</td>
+                    <td class="ss-col-right  ss-col-default">850,000,000</td>
+                    <td class="ss-col-left   ss-col-default"></td>
+                  </tr>
+                  <tr>
+                    <td class="ss-col-center ss-col-default">2022</td>
+                    <td class="ss-col-right  ss-col-default">10,200,000,000</td>
+                    <td class="ss-col-right  ss-col-default">950,000,000</td>
+                    <td class="ss-col-right  ss-col-default">720,000,000</td>
+                    <td class="ss-col-left   ss-col-default"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!-- /tab-sales -->
+
+        <!-- ── 인증정보 탭 ── -->
+        <div id="tab-cert" class="tab-pane hidden">
+          <div class="form-section">
+            <div class="form-section-title">인증서 목록</div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;">
+              <button class="btn btn-outline-blue btn-sm">추가</button>
+              <button class="btn btn-outline-red btn-sm">삭제</button>
+            </div>
+            <div style="border:1px solid #DDDDDD;">
+              <table class="ss-grid">
+                <thead>
+                  <tr>
+                    <th style="width:40px;"><input type="checkbox"></th>
+                    <th style="width:150px;">인증서명</th>
+                    <th style="width:120px;">인증기관</th>
+                    <th style="width:110px;">취득일</th>
+                    <th style="width:110px;">만료일</th>
+                    <th style="width:80px;">상태</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="ss-col-center"><input type="checkbox"></td>
+                    <td class="ss-col-left  ss-col-default">ISO 9001</td>
+                    <td class="ss-col-center ss-col-default">KR인증원</td>
+                    <td class="ss-col-center ss-col-blue">2022-03-01</td>
+                    <td class="ss-col-center ss-col-blue">2025-03-01</td>
+                    <td class="ss-col-center" style="color:#0F6E56;font-weight:500;">유효</td>
+                  </tr>
+                  <tr>
+                    <td class="ss-col-center"><input type="checkbox"></td>
+                    <td class="ss-col-left  ss-col-default">IATF 16949</td>
+                    <td class="ss-col-center ss-col-default">TÜV</td>
+                    <td class="ss-col-center ss-col-blue">2023-06-01</td>
+                    <td class="ss-col-center cert-expired">2026-06-01</td>
+                    <td class="ss-col-center" style="color:#0F6E56;font-weight:500;">유효</td>
+                  </tr>
+                  <tr>
+                    <td class="ss-col-center"><input type="checkbox"></td>
+                    <td class="ss-col-left  ss-col-default">ISO 14001</td>
+                    <td class="ss-col-center ss-col-default">KR인증원</td>
+                    <td class="ss-col-center ss-col-blue">2021-09-01</td>
+                    <td class="ss-col-center cert-expired">2024-09-01</td>
+                    <td class="ss-col-center cert-expired">만료</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="detail-footer">
+            <button class="btn btn-white">취소</button>
+            <button class="btn btn-solid-blue">저장</button>
+          </div>
+        </div><!-- /tab-cert -->
+
+        <!-- ── 신용평가정보 탭 ── -->
+        <div id="tab-credit" class="tab-pane hidden">
+          <div class="form-section">
+            <div class="form-section-title">신용평가 현황</div>
+            <div class="form-2col">
+              <div class="form-group">
+                <label class="ss-form-label">신용등급</label>
+                <input class="ss-form-control" value="A">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">평가기관</label>
+                <input class="ss-form-control" value="NICE평가정보">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">평가일</label>
+                <input class="ss-form-control" value="2024-03-15">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">유효기간</label>
+                <input class="ss-form-control" value="2025-03-14">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">종합점수</label>
+                <input class="ss-form-control" value="87점">
+              </div>
+              <div class="form-group">
+                <label class="ss-form-label">재무건전성</label>
+                <input class="ss-form-control" value="양호">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">평가 이력</div>
+            <div style="border:1px solid #DDDDDD;">
+              <table class="ss-grid">
+                <thead>
+                  <tr>
+                    <th style="width:90px;">평가연도</th>
+                    <th style="width:80px;">등급</th>
+                    <th style="width:80px;">점수</th>
+                    <th style="width:120px;">평가기관</th>
+                    <th style="width:120px;">평가일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="ss-col-center ss-col-default">2024</td>
+                    <td class="ss-col-center"><span class="grade-a">A</span></td>
+                    <td class="ss-col-center ss-col-default">87</td>
+                    <td class="ss-col-center ss-col-default">NICE</td>
+                    <td class="ss-col-center ss-col-blue">2024-03-15</td>
+                  </tr>
+                  <tr>
+                    <td class="ss-col-center ss-col-default">2023</td>
+                    <td class="ss-col-center"><span class="grade-b">B</span></td>
+                    <td class="ss-col-center ss-col-default">76</td>
+                    <td class="ss-col-center ss-col-default">NICE</td>
+                    <td class="ss-col-center ss-col-blue">2023-03-10</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="detail-footer">
+            <button class="btn btn-white">취소</button>
+            <button class="btn btn-solid-blue">저장</button>
+          </div>
+        </div><!-- /tab-credit -->
+
+      </div><!-- /detail-content -->
+    </div><!-- /detail-body -->
+
+  </div><!-- /detailView -->
+
+  <!-- 하단 탭바 -->
+  <div class="ss-bottom-tab-bar">
+    <div class="ss-bottom-tab-summary">SUMMARY</div>
+    <div class="ss-bottom-tab-item">
+      신차 프로젝트 등록·조회 <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-item active">
+      공급사 기본정보 <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-spacer"></div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<!-- ══ 신규등록 뷰 (팝업 → 상세 화면 동일 구조로 전환) ══════════ -->
+<div id="newView" class="view-hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- 상단 타이틀바 -->
+  <div class="detail-header">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary-alt)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    <span class="detail-company">(신규 등록)</span>
+    <div class="detail-header-actions">
+      <button class="btn btn-solid-blue btn-sm" onclick="saveNew()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        저장
+      </button>
+      <button class="btn btn-white btn-sm" onclick="closeNew()">취소</button>
+    </div>
+  </div>
+
+  <!-- 본문: 좌(250px) + 우(나머지) -->
+  <div class="detail-body">
+    <div class="detail-left-panel">
+      <nav class="vtab-menu">
+        <div class="vtab-item active" onclick="showNewTab('ntab-general',this)">일반정보</div>
+        <div class="vtab-item" onclick="showNewTab('ntab-extra',this)">부가정보</div>
+        <div class="vtab-item" onclick="showNewTab('ntab-contact',this)">담당자정보</div>
+        <div class="vtab-item" onclick="showNewTab('ntab-management',this)">경영정보</div>
+        <div class="vtab-item" onclick="showNewTab('ntab-sales',this)">영업현황</div>
+        <div class="vtab-item" onclick="showNewTab('ntab-cert',this)">인증정보</div>
+        <div class="vtab-item" onclick="showNewTab('ntab-credit',this)">신용평가정보</div>
+      </nav>
+      <div class="left-attach">
+        <div class="left-attach-header">
+          <span class="left-attach-label">사업자등록증</span>
+          <button class="btn btn-gray-lite btn-sm" style="font-size:11px;min-width:auto;padding:0 8px;">+ AllDownLoad</button>
+        </div>
+        <div class="left-file-area">첨부파일 없음</div>
+      </div>
+    </div>
+
+    <div class="detail-content">
+
+      <!-- ── 일반정보 탭 ── -->
+      <div id="ntab-general" class="tab-pane">
+
+        <div class="form-section">
+          <div class="form-section-title">기본정보</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <label class="ss-form-label">아이디</label>
+              <input class="ss-form-control" value="자동발급" readonly>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">업체코드</label>
+              <input class="ss-form-control" value="자동발급" readonly>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">업체구분</label>
+              <select class="ss-form-select"><option value="">선택</option><option>Tier2</option><option>Tier3</option></select>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">언어</label>
+              <select class="ss-form-select"><option selected>한국어</option><option>영어</option></select>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">국가<span class="req">*</span></label>
+              <select class="ss-form-select">
+                <option selected>KR - South Korea</option>
+                <option>US - United States</option>
+                <option>CN - China</option>
+                <option>JP - Japan</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">사업자 정보</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <label class="ss-form-label">사업자등록번호<span class="req">*</span></label>
+              <input class="ss-form-control" placeholder="000-00-00000">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">법인등록번호</label>
+              <input class="ss-form-control" placeholder="000000-0000000">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">회사명<span class="req">*</span></label>
+              <input class="ss-form-control" placeholder="회사명을 입력하세요">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">회사명(영문)</label>
+              <input class="ss-form-control" placeholder="Company Name in English">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">대표자명<span class="req">*</span></label>
+              <input class="ss-form-control" placeholder="대표자명 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">설립일자</label>
+              <input class="ss-form-control" placeholder="YYYY-MM-DD">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">대표이메일</label>
+              <input class="ss-form-control" placeholder="email@company.com">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">대표전화번호</label>
+              <input class="ss-form-control" placeholder="000-000-0000">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">업종</label>
+              <input class="ss-form-control" placeholder="예: 금속 가공업">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">세부업종</label>
+              <input class="ss-form-control" placeholder="예: 자동차 부품 제조">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">우편번호<span class="req">*</span></label>
+              <div class="input-with-btn">
+                <input class="ss-form-control" placeholder="우편번호">
+                <button class="btn btn-gray-lite btn-sm" style="flex-shrink:0;min-width:52px;">검색</button>
+              </div>
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">주소<span class="req">*</span></label>
+              <input class="ss-form-control" placeholder="기본 주소">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">상세주소</label>
+              <input class="ss-form-control" placeholder="상세 주소 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">기업규모</label>
+              <select class="ss-form-select"><option value="">선택</option><option>소기업</option><option>중소기업</option><option>중견기업</option><option>대기업</option></select>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">회사상장여부</label>
+              <select class="ss-form-select"><option value="">선택</option><option>비상장</option><option>코스피</option><option>코스닥</option></select>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">부지현황(대지,평)</label>
+              <input class="ss-form-control" placeholder="면적(평)">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">부지현황(건물,평)</label>
+              <input class="ss-form-control" placeholder="면적(평)">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">전체 사업장</label>
+              <input class="ss-form-control" placeholder="전체 사업장 주소 또는 개수">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">파일첨부</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <div class="attach-drop-header">
+                <span class="ss-form-label" style="flex:1;">사업자등록증</span>
+                <button class="btn btn-gray-lite btn-sm">+ AllDownload</button>
+              </div>
+              <div class="attach-drop-zone">파일을 드래그하거나 클릭하여 업로드</div>
+            </div>
+            <div class="form-group">
+              <div class="attach-drop-header">
+                <span class="ss-form-label" style="flex:1;">첨부파일</span>
+                <button class="btn btn-gray-lite btn-sm">+ AllDownload</button>
+              </div>
+              <div class="attach-drop-zone">파일을 드래그하거나 클릭하여 업로드</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /ntab-general -->
+
+      <!-- ── 부가정보 탭 ── -->
+      <div id="ntab-extra" class="tab-pane hidden">
+        <div class="form-section">
+          <div class="form-section-title">부가정보</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <label class="ss-form-label">홈페이지 URL</label>
+              <input class="ss-form-control" placeholder="https://">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">설립연도</label>
+              <input class="ss-form-control" placeholder="YYYY">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">주요거래처</label>
+              <input class="ss-form-control" placeholder="주요 거래처명 입력">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">주요제품</label>
+              <input class="ss-form-control" placeholder="주요 제품명 입력">
+            </div>
+            <div class="form-group form-full">
+              <label class="ss-form-label">특이사항</label>
+              <textarea class="ss-form-control" style="height:80px;resize:none;padding:8px 10px;" placeholder="특이사항 입력"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 담당자정보 탭 (빈 그리드) ── -->
+      <div id="ntab-contact" class="tab-pane hidden">
+        <div class="form-section">
+          <div class="form-section-title">담당자 목록</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button class="btn btn-outline-blue btn-sm">추가</button>
+            <button class="btn btn-outline-red btn-sm">삭제</button>
+          </div>
+          <div style="border:1px solid #DDDDDD;">
+            <table class="ss-grid">
+              <thead>
+                <tr>
+                  <th style="width:40px;"><input type="checkbox"></th>
+                  <th style="width:90px;">구분</th>
+                  <th style="width:100px;">담당자명</th>
+                  <th style="width:90px;">부서</th>
+                  <th style="width:80px;">직급</th>
+                  <th style="width:130px;">연락처</th>
+                  <th style="width:180px;">이메일</th>
+                  <th style="min-width:100px;">비고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="8" style="text-align:center;color:var(--text-muted);font-size:var(--font-xs);height:60px;">등록된 담당자가 없습니다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 경영정보 탭 ── -->
+      <div id="ntab-management" class="tab-pane hidden">
+        <div class="form-section">
+          <div class="form-section-title">경영 현황</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <label class="ss-form-label">자본금</label>
+              <input class="ss-form-control" placeholder="금액 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">매출액(최근연도)</label>
+              <input class="ss-form-control" placeholder="금액 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">종업원 수</label>
+              <input class="ss-form-control" placeholder="숫자 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">주거래 은행</label>
+              <input class="ss-form-control" placeholder="은행명 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">신용등급</label>
+              <select class="ss-form-select"><option value="">선택</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">평가기관</label>
+              <input class="ss-form-control" placeholder="평가기관명">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">부채비율(%)</label>
+              <input class="ss-form-control" placeholder="숫자 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">유동비율(%)</label>
+              <input class="ss-form-control" placeholder="숫자 입력">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 영업현황 탭 ── -->
+      <div id="ntab-sales" class="tab-pane hidden">
+        <div class="form-section">
+          <div class="form-section-title">연도별 매출 현황</div>
+          <div style="border:1px solid #DDDDDD;">
+            <table class="ss-grid">
+              <thead>
+                <tr>
+                  <th style="width:80px;">연도</th>
+                  <th style="width:140px;">매출액</th>
+                  <th style="width:130px;">영업이익</th>
+                  <th style="width:120px;">순이익</th>
+                  <th style="min-width:100px;">비고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" style="text-align:center;color:var(--text-muted);font-size:var(--font-xs);height:60px;">등록된 영업현황이 없습니다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 인증정보 탭 (빈 그리드) ── -->
+      <div id="ntab-cert" class="tab-pane hidden">
+        <div class="form-section">
+          <div class="form-section-title">인증서 목록</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button class="btn btn-outline-blue btn-sm">추가</button>
+            <button class="btn btn-outline-red btn-sm">삭제</button>
+          </div>
+          <div style="border:1px solid #DDDDDD;">
+            <table class="ss-grid">
+              <thead>
+                <tr>
+                  <th style="width:40px;"><input type="checkbox"></th>
+                  <th style="width:150px;">인증서명</th>
+                  <th style="width:120px;">인증기관</th>
+                  <th style="width:110px;">취득일</th>
+                  <th style="width:110px;">만료일</th>
+                  <th style="width:80px;">상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:var(--font-xs);height:60px;">등록된 인증서가 없습니다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 신용평가정보 탭 ── -->
+      <div id="ntab-credit" class="tab-pane hidden">
+        <div class="form-section">
+          <div class="form-section-title">신용평가 정보</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <label class="ss-form-label">신용등급</label>
+              <select class="ss-form-select"><option value="">선택</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">평가기관</label>
+              <input class="ss-form-control" placeholder="평가기관명">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">평가일</label>
+              <input class="ss-form-control" placeholder="YYYY-MM-DD">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">유효기간</label>
+              <input class="ss-form-control" placeholder="YYYY-MM-DD">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">종합점수</label>
+              <input class="ss-form-control" placeholder="점수 입력">
+            </div>
+            <div class="form-group">
+              <label class="ss-form-label">재무건전성</label>
+              <select class="ss-form-select"><option value="">선택</option><option>우수</option><option>양호</option><option>보통</option><option>미흡</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">평가 이력</div>
+          <div style="border:1px solid #DDDDDD;">
+            <table class="ss-grid">
+              <thead>
+                <tr>
+                  <th style="width:90px;">평가연도</th>
+                  <th style="width:80px;">등급</th>
+                  <th style="width:80px;">점수</th>
+                  <th style="width:120px;">평가기관</th>
+                  <th style="width:120px;">평가일</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" style="text-align:center;color:var(--text-muted);font-size:var(--font-xs);height:60px;">평가 이력이 없습니다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /detail-content -->
+  </div><!-- /detail-body -->
+
+</div><!-- /newView -->
+
+<script>
+/* ── 사이드바 ── */
+function toggleSidebar() {
+  var sb = document.getElementById('sidebar'), dim = document.getElementById('sidebarDim');
+  var btn = document.querySelector('[aria-controls="sidebar"]'), open = sb.classList.toggle('is-open');
+  dim.classList.toggle('is-open', open);
+  sb.setAttribute('aria-hidden', String(!open));
+  if (btn) btn.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('ss-sidebar-locked', open);
+}
+function closeSidebar() {
+  var sb = document.getElementById('sidebar'), dim = document.getElementById('sidebarDim');
+  var btn = document.querySelector('[aria-controls="sidebar"]');
+  sb.classList.remove('is-open'); dim.classList.remove('is-open');
+  sb.setAttribute('aria-hidden', 'true');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('ss-sidebar-locked');
+}
+function toggleSubmenu(el) {
+  var sub = el.nextElementSibling;
+  if (!sub || !sub.classList.contains('ss-sidebar-submenu')) return;
+  sub.classList.toggle('is-open');
+  el.classList.toggle('is-expanded', sub.classList.contains('is-open'));
+}
+
+/* ── 신규등록 뷰 ── */
+function openNewView() {
+  document.getElementById('listView').classList.add('view-hidden');
+  var nv = document.getElementById('newView');
+  nv.classList.remove('view-hidden');
+  nv.style.display = 'flex';
+  showNewTab('ntab-general', nv.querySelector('.vtab-item'));
+}
+function closeNew() {
+  var nv = document.getElementById('newView');
+  nv.classList.add('view-hidden');
+  nv.style.display = 'none';
+  document.getElementById('listView').classList.remove('view-hidden');
+}
+function saveNew() {
+  alert('저장되었습니다.');
+  closeNew();
+}
+function showNewTab(tabId, clickedItem) {
+  var nv = document.getElementById('newView');
+  nv.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.add('hidden'); });
+  nv.querySelectorAll('.vtab-item').forEach(function(i) { i.classList.remove('active'); });
+  var pane = document.getElementById(tabId);
+  if (pane) pane.classList.remove('hidden');
+  if (clickedItem) clickedItem.classList.add('active');
+}
+
+/* ── 리스트 → 상세 전환 ── */
+function openDetail(code, name, tier) {
+  document.getElementById('detailCompanyName').textContent = name;
+  document.getElementById('detailCode').textContent = code;
+  var tag = document.getElementById('detailTierTag');
+  tag.textContent = tier;
+  tag.className = 'detail-tier-tag ' + (tier === 'Tier2' ? 'detail-tier-t2' : 'detail-tier-t3');
+  document.getElementById('listView').classList.add('view-hidden');
+  var dv = document.getElementById('detailView');
+  dv.classList.remove('view-hidden');
+  dv.style.display = 'flex';
+  /* detailView 내부 탭만 스코프하여 전환 */
+  showTab('tab-general', dv.querySelector('.vtab-item'));
+}
+function closeDetail() {
+  var dv = document.getElementById('detailView');
+  dv.classList.add('view-hidden');
+  dv.style.display = 'none';
+  document.getElementById('listView').classList.remove('view-hidden');
+}
+
+/* ── 세로 탭 전환 (detailView 스코프) ── */
+function showTab(tabId, clickedItem) {
+  var dv = document.getElementById('detailView');
+  dv.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.add('hidden'); });
+  dv.querySelectorAll('.vtab-item').forEach(function(i) { i.classList.remove('active'); });
+  var pane = document.getElementById(tabId);
+  if (pane) pane.classList.remove('hidden');
+  if (clickedItem) clickedItem.classList.add('active');
+}
+
+/* ── 행 선택 ── */
+function toggleRowSelection(tr) {
+  var sel = tr.classList.contains('row-selected');
+  document.querySelectorAll('.ss-grid tbody tr').forEach(function(r) { r.classList.remove('row-selected'); });
+  if (!sel) tr.classList.add('row-selected');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeSidebar(); closePopup(); }
+});
+</script>
+</body>
+</html>

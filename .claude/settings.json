@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Project/sepoa-ux-agent/references/**)",
+      "Read(//d/Project/sepoa-ux-agent/.claude/skills/easyprocure-style/**)",
+      "Read(//d/Project/sepoa-ux-agent/.claude/skills/singlesuite-style/**)"
+    ],
+    "additionalDirectories": [
+      "D:\\Project\\sepoa-ux-agent\\.claude\\skills\\singlesuite-style"
+    ]
+  }
+}

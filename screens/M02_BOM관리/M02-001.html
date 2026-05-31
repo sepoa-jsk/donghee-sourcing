@@ -1,0 +1,893 @@
+<!--
+  화면ID  : M02-001
+  화면명  : 프로젝트별 통합 BOM 관리
+  패턴    : 5-C (좌측 BOM 그리드 60% + 우측 Part 상세 패널 40%)
+  스타일  : singlesuite-style
+  생성일  : 2026-05-31
+-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M02-001 프로젝트별 통합 BOM 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── §1 토큰 ───────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto','Noto Sans KR',sans-serif; }
+:root {
+  --brand-primary:      #1746a3;
+  --brand-primary-alt:  #0747a6;
+  --brand-primary-dark: #003380;
+  --brand-soft-bg:      #f0f5ff;
+  --brand-soft-hover:   #dbeafe;
+  --success-green:      #16a34a;
+  --success-soft-bg:    #f0fdf4;
+  --success-soft-bd:    #bbf7d0;
+  --error-red:          #e11d48;
+  --error-soft-bg:      #fff1f2;
+  --error-soft-bd:      #fecdd3;
+  --error-outline:      #be123c;
+  --error-outline-bd:   #fda4af;
+  --required-red:       #ef4444;
+  --accent-red:         #D22C36;
+  --text-primary:       #1f2937;
+  --text-label:         #222222;
+  --text-secondary:     #475569;
+  --text-tertiary:      #64748b;
+  --text-muted:         #94a3b8;
+  --text-readonly:      #6b7280;
+  --bg-page:            #ffffff;
+  --bg-soft:            #f8fafc;
+  --bg-gray-lite:       #f1f5f9;
+  --border-default:     #e5e7eb;
+  --border-input:       #d1d5db;
+  --border-soft:        #cbd5e1;
+  --border-strong:      #94a3b8;
+  --sidebar-bg:         #0F172A;
+  --sidebar-text:       #CBD5E1;
+  --sidebar-text-sub:   #94A3B8;
+  --sidebar-text-active:#FFFFFF;
+  --sidebar-icon:       #94A3B8;
+  --sidebar-icon-active:#60A5FA;
+  --sidebar-hover-bg:   #1E293B;
+  --tab-bg:             #f8fafc;
+  --tab-text:           #94a3b8;
+  --tab-active-bg:      #3f4e65;
+  --tab-active-text:    #ffffff;
+  --popup-header-bg:    #0747a6;
+  --gnb-height:         56px;
+  --title-bar-height:   48px;
+  --button-height:      32px;
+  --input-height:       32px;
+  --grid-header-height: 40px;
+  --grid-row-height:    32px;
+  --bottom-tab-height:  32px;
+  --radius-default:     4px;
+  --shadow-focus:       0 0 0 3px rgba(7,71,166,.15);
+  --shadow-sidebar:     4px 0 16px rgba(0,0,0,.18);
+  --font-l:17px; --font-m:14px; --font-s:13px; --font-xs:12px; --font-2xs:11px;
+}
+html, body { height:100%; background:#fff; color:var(--text-primary); }
+
+/* ── §2-2 GNB (흰색) ─────────────────────── */
+.ss-gnb {
+  height:var(--gnb-height); background:#fff;
+  border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px; position:relative; z-index:1000; flex-shrink:0;
+}
+.ss-gnb-left  { display:flex; align-items:center; gap:10px; }
+.ss-gnb-logo  { font-size:17px; font-weight:700; color:var(--brand-primary); }
+.ss-gnb-sep   { width:1px; height:16px; background:var(--border-default); }
+.ss-gnb-system{ font-size:var(--font-s); color:var(--text-secondary); }
+.ss-gnb-icon-btn {
+  width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--text-secondary); border:none; background:transparent;
+  border-radius:var(--radius-default);
+}
+.ss-gnb-icon-btn:hover { background:var(--bg-soft); }
+.ss-gnb-right { display:flex; align-items:center; gap:18px; font-size:var(--font-s); color:var(--text-secondary); }
+.ss-gnb-icon  { width:18px; height:18px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+
+/* ── §2-3 Page Title Bar ────────────────── */
+.ss-page-title {
+  height:var(--title-bar-height); background:#fff;
+  border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; padding:0 24px;
+  font-size:var(--font-l); font-weight:700; color:var(--text-primary);
+  flex-shrink:0; gap:10px;
+}
+.ss-page-title-path { font-size:var(--font-xs); font-weight:400; color:var(--text-tertiary); }
+
+/* ── 동희산업 VAATZ 배너 ─────────────────── */
+.dh-vaatz-banner {
+  height:30px; background:#E6F3EF; border-bottom:1px solid #A8D5C5;
+  display:flex; align-items:center; padding:0 20px; gap:14px; flex-shrink:0;
+}
+.dh-vaatz-badge { background:#0F6E56; color:#fff; font-size:10px; font-weight:700; padding:1px 8px; border-radius:var(--radius-default); }
+.dh-vaatz-text  { font-size:11px; color:#0A5240; display:flex; align-items:center; gap:4px; }
+.dh-vaatz-text + .dh-vaatz-text::before { content:'|'; color:#A8D5C5; margin-right:10px; }
+.dh-vaatz-warn  { color:#854F0B; font-weight:700; }
+.dh-vaatz-link  { margin-left:auto; font-size:11px; color:var(--brand-primary-alt); text-decoration:underline; cursor:pointer; }
+
+/* ── 툴바 ────────────────────────────────── */
+.dh-toolbar {
+  height:44px; background:#fff; border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; padding:0 20px; gap:6px; flex-shrink:0;
+}
+.dh-toolbar-info { font-size:var(--font-xs); color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.dh-toolbar-info-badge {
+  font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-default);
+  background:#FFF8EC; color:#854F0B; border:1px solid #F0C080;
+  display:inline-flex; align-items:center; gap:4px;
+}
+.dh-toolbar-divider { width:1px; height:20px; background:var(--border-default); margin:0 4px; }
+.dh-toolbar-right   { margin-left:auto; display:flex; gap:6px; }
+
+/* ── §3 버튼 9종 ─────────────────────────── */
+.btn {
+  height:var(--button-height); padding:0 14px;
+  border-radius:var(--radius-default); border:1px solid transparent;
+  font-size:var(--font-s); font-weight:500; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:6px; min-width:80px; white-space:nowrap; font-family:inherit;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.btn:disabled { opacity:.38; cursor:not-allowed; pointer-events:none; }
+.btn-default      { background:#f8fafc; color:#334155; border-color:#cbd5e1; }
+.btn-default:hover{ background:#f1f5f9; color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-solid-blue        { background:var(--brand-primary-alt); color:#fff; }
+.btn-solid-blue:hover  { background:var(--brand-primary-dark); }
+.btn-soft-blue         { background:var(--brand-soft-bg); color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-soft-blue:hover   { background:var(--brand-soft-hover); }
+.btn-outline-blue      { background:#fff; color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-outline-blue:hover{ background:var(--brand-soft-bg); }
+.btn-soft-green        { background:var(--success-soft-bg); color:var(--success-green); border-color:var(--success-soft-bd); }
+.btn-soft-green:hover  { background:#dcfce7; }
+.btn-soft-red          { background:var(--error-soft-bg); color:var(--error-red); border-color:var(--error-soft-bd); }
+.btn-soft-red:hover    { background:#ffe4e6; }
+.btn-outline-red       { background:#fff; color:var(--error-outline); border-color:var(--error-outline-bd); }
+.btn-outline-red:hover { background:var(--error-soft-bg); }
+.btn-white        { background:#fff; color:var(--text-secondary); border-color:var(--border-input); }
+.btn-white:hover  { background:#f9fafb; color:#1e293b; border-color:var(--border-strong); }
+.btn-gray-lite        { background:var(--bg-gray-lite); color:var(--text-secondary); border-color:var(--border-input); }
+.btn-gray-lite:hover  { background:#e2e8f0; border-color:var(--border-strong); }
+.btn-sm { height:28px; min-width:60px; font-size:var(--font-xs); padding:0 10px; }
+
+/* ── 패턴 5-C 레이아웃 ───────────────────── */
+.page-wrapper  { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.main-split    { flex:1; display:flex; overflow:hidden; }
+.panel-left    { flex:0 0 60%; border-right:1px solid var(--border-default); display:flex; flex-direction:column; overflow:hidden; }
+.panel-right   { flex:0 0 40%; display:flex; flex-direction:column; overflow:hidden; background:#fff; }
+
+/* ── §4 그리드 ───────────────────────────── */
+.ss-grid-container { flex:1; overflow:auto; }
+.ss-grid { width:100%; border-collapse:collapse; white-space:nowrap; }
+.ss-grid th {
+  height:var(--grid-header-height); background:var(--bg-soft);
+  border:1px solid var(--border-default);
+  padding:0 10px; font-size:var(--font-xs); font-weight:600;
+  color:var(--text-primary); text-align:center;
+  position:sticky; top:0; z-index:10;
+}
+.ss-grid td {
+  height:var(--grid-row-height); border:1px solid var(--border-default);
+  padding:0 10px; font-size:var(--font-s); color:var(--text-primary);
+}
+.ss-grid tr:hover td { background:var(--bg-soft); }
+.ss-th-required::after { content:' *'; color:var(--required-red); font-weight:700; }
+/* 열 색상 */
+.ss-col-default{ color:#1f2937; }
+.ss-col-blue   { color:#0747a6; }
+.ss-col-green  { color:#16a34a; }
+.ss-col-red    { color:#e11d48; }
+.ss-col-link   { color:#0747a6; text-decoration:underline; cursor:pointer; }
+/* 열 정렬 */
+.ss-col-left   { text-align:left; }
+.ss-col-center { text-align:center; }
+.ss-col-right  { text-align:right; }
+/* 체크박스 */
+.ss-grid input[type=checkbox] {
+  appearance:none; -webkit-appearance:none; width:14px; height:14px;
+  border:1px solid var(--border-input); background:#fff; cursor:pointer;
+  position:relative; border-radius:2px;
+}
+.ss-grid input[type=checkbox]:checked { border-color:var(--brand-primary); background:var(--brand-primary); }
+.ss-grid input[type=checkbox]:checked::after { content:'✔'; position:absolute; top:-3px; left:1px; font-size:11px; color:#fff; }
+
+/* ── 동희 BOM 특화 ───────────────────────── */
+/* 어셈블리 행: #F1F1F1 배경 + bold */
+.row-asm td   { background:#F1F1F1 !important; font-weight:700; }
+.row-asm:hover td { background:#e8e8e8 !important; }
+.row-asm.row-selected td { background:#dce8f9 !important; }
+/* ECN 변경 행: #FFF3E0 */
+.row-ecn td   { background:#FFF3E0 !important; }
+.row-ecn:hover td { background:#FFEACC !important; }
+.row-ecn.row-selected td { background:#ffe0b0 !important; }
+/* 선택 행 */
+.row-selected td { background:#f0f5ff !important; border-left:3px solid var(--brand-primary-alt) !important; }
+.row-selected td:first-child { padding-left:7px; }
+/* ECN 태그 */
+.ecn-tag {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:9px; font-weight:700; padding:1px 5px;
+  border-radius:var(--radius-default); background:#854F0B; color:#fff; margin-left:4px;
+}
+/* 소재 배지 */
+.mat-badge {
+  display:inline-block; font-size:9px; font-weight:700;
+  padding:1px 5px; border-radius:var(--radius-default); border:1px solid;
+}
+.mat-spfc { color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); background:var(--brand-soft-bg); }
+.mat-spfh { color:#854F0B; border-color:#F0C080; background:#FFF8EC; }
+.mat-hdpe { color:#0F6E56; border-color:#A8D5C5; background:#E6F3EF; }
+.mat-al   { color:#6B4FA0; border-color:#C4AEE8; background:#F5F0FF; }
+.mat-pp   { color:var(--text-secondary); border-color:var(--border-soft); background:var(--bg-soft); }
+/* 상태 배지 */
+.status-badge {
+  display:inline-flex; align-items:center;
+  font-size:10px; font-weight:700; padding:2px 7px;
+  border-radius:var(--radius-default); border:1px solid;
+}
+.s-confirmed { background:var(--success-soft-bg); color:var(--success-green); border-color:var(--success-soft-bd); }
+.s-review    { background:#FFF8EC; color:#854F0B; border-color:#F0C080; }
+.s-pending   { background:var(--error-soft-bg); color:var(--error-red); border-color:var(--error-soft-bd); }
+/* Freeze 셀 */
+.cell-frozen { background:var(--bg-soft) !important; color:var(--text-readonly) !important; }
+
+/* ── 우측 패널 ───────────────────────────── */
+/* 탭 네비게이션 */
+.rp-tab-nav {
+  display:flex; border-bottom:1px solid var(--border-default);
+  padding:0 16px; flex-shrink:0; background:#fff;
+}
+.rp-tab-item {
+  height:44px; padding:0 16px;
+  display:flex; align-items:center; font-size:var(--font-s);
+  color:var(--text-muted); cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.rp-tab-item:hover { color:var(--text-secondary); }
+.rp-tab-item.active {
+  color:var(--brand-primary-alt); font-weight:600;
+  border-bottom-color:var(--brand-primary-alt);
+}
+/* 우측 패널 헤더 (선택된 Part 정보) */
+.rp-part-header {
+  height:38px; background:var(--bg-soft); border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; padding:0 16px; gap:8px; flex-shrink:0;
+}
+.rp-part-code { font-size:var(--font-xs); font-weight:700; color:var(--brand-primary-alt); }
+.rp-part-name { font-size:var(--font-s); font-weight:600; color:var(--text-primary); }
+.rp-part-mat  { flex-shrink:0; }
+
+/* 탭 콘텐츠 */
+.rp-content { flex:1; overflow-y:auto; padding:16px; }
+.tab-pane.hidden { display:none; }
+
+/* §5 폼 */
+.ss-form-section { margin-bottom:18px; }
+.ss-form-section-title {
+  font-size:var(--font-xs); font-weight:700; color:var(--text-secondary);
+  text-transform:uppercase; letter-spacing:.4px; margin-bottom:10px;
+  padding-bottom:6px; border-bottom:1px solid var(--border-default);
+}
+.ss-form-row { display:flex; flex-wrap:wrap; gap:10px 14px; margin-bottom:10px; }
+.ss-form-group { display:flex; flex-direction:column; gap:4px; }
+.ss-form-label { font-size:var(--font-xs); font-weight:700; color:var(--text-label); }
+.ss-form-label .req { color:var(--required-red); margin-left:2px; }
+.ss-form-control {
+  height:var(--input-height); width:100%;
+  padding:0 10px; border-radius:var(--radius-default);
+  font-size:var(--font-s); font-family:inherit; outline:none;
+  transition:border-color .12s, box-shadow .12s;
+  border:1px solid var(--border-input); color:var(--text-primary); background:#fff;
+}
+.ss-form-control:focus { border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+.ss-form-control.readonly,[readonly].ss-form-control {
+  border-color:var(--border-default); color:var(--text-readonly); background:#f9fafb; cursor:not-allowed;
+}
+.w-full { width:100% !important; }
+.w-160 { width:160px; }
+.w-120 { width:120px; }
+.w-100 { width:100px; }
+.w-80  { width:80px; }
+
+/* 원가 상세 테이블 */
+.cost-table { width:100%; border-collapse:collapse; }
+.cost-table td { height:34px; padding:0 10px; font-size:var(--font-s); border-bottom:1px solid var(--border-default); }
+.cost-table .cost-label { color:var(--text-secondary); width:40%; }
+.cost-table .cost-value { text-align:right; font-weight:500; color:var(--text-primary); }
+.cost-table .cost-total td { font-weight:700; background:var(--bg-soft); }
+.cost-gap-row td { background:var(--brand-soft-bg); }
+.cost-gap-good { color:var(--success-green); font-weight:700; }
+.cost-gap-bad  { color:var(--error-red);     font-weight:700; }
+
+/* 우측 패널 액션바 */
+.rp-action-bar {
+  height:44px; background:var(--bg-soft); border-top:1px solid var(--border-default);
+  display:flex; align-items:center; justify-content:flex-end;
+  padding:0 16px; gap:6px; flex-shrink:0;
+}
+
+/* ── §7 하단 탭바 ─────────────────────────── */
+.ss-bottom-tab-bar {
+  height:var(--bottom-tab-height); background:var(--tab-bg);
+  display:flex; align-items:center; border-top:1px solid var(--border-default);
+  padding-right:12px; flex-shrink:0;
+}
+.ss-bottom-tab-summary {
+  display:flex; align-items:center; justify-content:center;
+  height:100%; padding:0 18px; background:#e2e8f0;
+  border-right:1px solid var(--border-default);
+  font-size:11px; font-weight:700; color:var(--text-secondary); letter-spacing:.5px; cursor:default;
+}
+.ss-bottom-tab-item {
+  display:flex; align-items:center; gap:8px;
+  height:100%; padding:0 14px; font-size:var(--font-xs);
+  color:var(--tab-text); background:var(--tab-bg);
+  border-right:1px solid var(--border-default); cursor:pointer;
+}
+.ss-bottom-tab-item.active { background:var(--tab-active-bg); color:var(--tab-active-text); }
+.ss-tab-close { font-size:10px; opacity:.9; cursor:pointer; }
+.ss-bottom-tab-spacer { flex:1; }
+.ss-bottom-tab-settings { width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; color:var(--text-secondary); cursor:pointer; }
+
+/* ── §8 사이드바 ─────────────────────────── */
+.ss-sidebar {
+  position:fixed; top:var(--gnb-height); left:0;
+  height:calc(100vh - var(--gnb-height)); width:280px; z-index:1200;
+  background:var(--sidebar-bg); display:flex; flex-direction:column;
+  overflow-y:auto; transform:translateX(-100%);
+  transition:transform .24s ease-out; pointer-events:none;
+  box-shadow:var(--shadow-sidebar);
+}
+.ss-sidebar.is-open { transform:translateX(0); pointer-events:auto; }
+.ss-sidebar-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px 8px 18px; }
+.ss-sidebar-title  { font-size:var(--font-s); font-weight:700; color:var(--sidebar-text-active); letter-spacing:.3px; }
+.ss-sidebar-close  {
+  width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--sidebar-text-sub); border:none; background:transparent; border-radius:4px;
+}
+.ss-sidebar-close:hover { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); }
+.ss-sidebar-section { padding:6px 0; }
+.ss-sidebar-section-title { padding:8px 18px 6px; font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:.5px; text-transform:uppercase; }
+.ss-sidebar-item {
+  display:flex; align-items:center; gap:10px; height:38px; padding:0 18px;
+  color:var(--sidebar-text); font-size:14px; font-weight:500; cursor:pointer;
+  border-left:3px solid transparent; transition:background .12s;
+}
+.ss-sidebar-item:hover { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); }
+.ss-sidebar-item.active { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); border-left-color:var(--sidebar-icon-active); font-weight:600; }
+.ss-sidebar-icon { width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; color:var(--sidebar-icon); flex-shrink:0; }
+.ss-sidebar-item.active .ss-sidebar-icon { color:var(--sidebar-icon-active); }
+.ss-sidebar-label  { flex:1; }
+.ss-sidebar-chevron{ width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; color:var(--sidebar-text-sub); transition:transform .18s; }
+.ss-sidebar-item.is-expanded .ss-sidebar-chevron { transform:rotate(90deg); }
+.ss-sidebar-submenu { max-height:0; overflow:hidden; transition:max-height .2s; background:rgba(0,0,0,.18); }
+.ss-sidebar-submenu.is-open { max-height:400px; }
+.ss-sidebar-submenu .ss-sidebar-item { height:32px; padding-left:48px; color:var(--sidebar-text-sub); font-size:12px; font-weight:400; border-left-color:transparent; }
+.ss-sidebar-submenu .ss-sidebar-item.active { color:var(--sidebar-text-active); background:var(--sidebar-hover-bg); }
+.ss-sidebar-dim {
+  position:fixed; top:var(--gnb-height); left:0; right:0; bottom:0;
+  background:rgba(15,23,42,.45); z-index:1100; opacity:0; pointer-events:none; transition:opacity .18s;
+}
+.ss-sidebar-dim.is-open { opacity:1; pointer-events:auto; }
+body.ss-sidebar-locked { overflow:hidden; }
+
+/* ── 공통 유틸 ───────────────────────────── */
+.flex-center { display:flex; align-items:center; }
+</style>
+</head>
+<body>
+
+<!-- ───── 딤 + 사이드바 ───── -->
+<div id="sidebarDim" class="ss-sidebar-dim" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="ss-sidebar" aria-hidden="true">
+  <div class="ss-sidebar-header">
+    <span class="ss-sidebar-title">MENU</span>
+    <button class="ss-sidebar-close" onclick="closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="ss-sidebar-section">
+    <div class="ss-sidebar-section-title">동희산업 개발구매</div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+      <span class="ss-sidebar-label">기본정보 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">신차 프로젝트 등록·조회</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">공급사 기본정보</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">소재·원자재 코드</span></div>
+    </div>
+
+    <div class="ss-sidebar-item is-expanded active" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+      <span class="ss-sidebar-label">BOM 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu is-open">
+      <div class="ss-sidebar-item active"><span class="ss-sidebar-label">통합 BOM 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">Part List 등록·조회</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">BOM 변경 이력(ECN)</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">BOM Import/Export</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">이전가격 BOM 연결</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+      <span class="ss-sidebar-label">원가·재료비 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">소재별 재료비 산출</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">LME·시세 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">단가 이력 관리</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <span class="ss-sidebar-label">목표가 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">목표가 설정·버전 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">Vs Target 모니터링</span></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ───── 페이지 래퍼 ───── -->
+<div class="page-wrapper">
+
+  <!-- GNB -->
+  <div class="ss-gnb">
+    <div class="ss-gnb-left">
+      <span class="ss-gnb-logo">동희산업</span>
+      <div class="ss-gnb-sep"></div>
+      <span class="ss-gnb-system">개발구매 솔루션</span>
+      <button class="ss-gnb-icon-btn" title="홈">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <button class="ss-gnb-icon-btn" onclick="toggleSidebar()" aria-controls="sidebar" aria-expanded="false" title="메뉴">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ss-gnb-right">
+      <span>English</span>
+      <span class="ss-gnb-icon" title="도움말">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </span>
+      <span>개발구매팀 / 김구매</span>
+      <span class="ss-gnb-icon" title="로그아웃">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- Page Title Bar -->
+  <div class="ss-page-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary-alt)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    프로젝트별 통합 BOM 관리
+    <span class="ss-page-title-path">BOM 관리 &rsaquo; 통합 BOM 관리</span>
+  </div>
+
+  <!-- VAATZ 배너 -->
+  <div class="dh-vaatz-banner">
+    <span class="dh-vaatz-badge">VAATZ E-BOM</span>
+    <span class="dh-vaatz-text">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+      최근 수신: <strong>2026-05-30 14:22</strong>
+    </span>
+    <span class="dh-vaatz-text">수신 건수: <strong>47건</strong></span>
+    <span class="dh-vaatz-text">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span class="dh-vaatz-warn">ECN 변경 3건 미검토</span>
+    </span>
+    <span class="dh-vaatz-text">HMC 연결: <strong style="color:#0F6E56;">정상</strong></span>
+    <a class="dh-vaatz-link">미검토 ECN 확인 →</a>
+  </div>
+
+  <!-- 툴바 -->
+  <div class="dh-toolbar">
+    <div class="dh-toolbar-info">
+      <span style="font-weight:600;color:var(--text-primary);">DH-2026-001 &nbsp;GN7 (The New Grandeur)</span>
+      <span style="color:var(--text-tertiary);">BOM Rev.03</span>
+      <span class="dh-toolbar-info-badge">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        BOM FROZEN
+      </span>
+    </div>
+    <div class="dh-toolbar-divider"></div>
+    <!-- E-BOM 수신: btn-soft-blue (파일·특이사항류) -->
+    <button class="btn btn-soft-blue">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+      E-BOM 수신
+    </button>
+    <!-- Part 추가: disabled (Freeze 상태) -->
+    <button class="btn btn-outline-blue" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Part 추가
+    </button>
+    <!-- BOM 복사: disabled (Freeze 상태) -->
+    <button class="btn btn-white" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      BOM 복사
+    </button>
+    <!-- BOM Freeze 해제: btn-soft-red (현재 Frozen 상태) -->
+    <button class="btn btn-soft-red">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Freeze 해제
+    </button>
+    <!-- Export: btn-white (엑셀) -->
+    <button class="btn btn-white">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+  </div>
+
+  <!-- ── 패턴 5-C 좌우 분할 ── -->
+  <div class="main-split">
+
+    <!-- ▌좌측 60% — BOM 계층 그리드 -->
+    <div class="panel-left">
+      <div class="ss-grid-container">
+        <table class="ss-grid">
+          <thead>
+            <tr>
+              <th style="width:36px;"><input type="checkbox"></th>
+              <th style="width:118px;" class="ss-th-required">Part No.</th>
+              <th style="min-width:180px;text-align:left;" class="ss-th-required">품명</th>
+              <th style="width:64px;">소재</th>
+              <th style="width:72px;">중량(g)</th>
+              <th style="width:92px;">목표단가</th>
+              <th style="width:92px;">산출단가</th>
+              <th style="width:92px;">확정단가</th>
+              <th style="width:76px;">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- ══ 어셈블리 1 ══ (배경 #F1F1F1, 굵은 글씨) -->
+            <tr class="row-asm">
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-F000</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:8px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="6 9 12 15 18 9"/></svg>
+                FRONT BUMPER ASSY
+              </td>
+              <td class="ss-col-center ss-col-default">—</td>
+              <td class="ss-col-right ss-col-default">4,950</td>
+              <td class="ss-col-right cell-frozen">32,200</td>
+              <td class="ss-col-right cell-frozen">30,760</td>
+              <td class="ss-col-right cell-frozen">—</td>
+              <td class="ss-col-center">—</td>
+            </tr>
+
+            <!-- Part 1-1: 확정 -->
+            <tr class="row-selected">
+              <td class="ss-col-center"><input type="checkbox" checked></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-F101</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:26px;">BUMPER COVER (FR)</td>
+              <td class="ss-col-center"><span class="mat-badge mat-hdpe">HDPE</span></td>
+              <td class="ss-col-right ss-col-default">1,850</td>
+              <td class="ss-col-right ss-col-blue">24,800</td>
+              <td class="ss-col-right ss-col-default">23,600</td>
+              <td class="ss-col-right ss-col-green">23,600</td>
+              <td class="ss-col-center"><span class="status-badge s-confirmed">확정</span></td>
+            </tr>
+
+            <!-- Part 1-2: 확정 -->
+            <tr>
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-F102</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:26px;">STAY LH</td>
+              <td class="ss-col-center"><span class="mat-badge mat-spfc">SPFC</span></td>
+              <td class="ss-col-right ss-col-default">420</td>
+              <td class="ss-col-right ss-col-blue">4,200</td>
+              <td class="ss-col-right ss-col-default">4,080</td>
+              <td class="ss-col-right ss-col-green">4,080</td>
+              <td class="ss-col-center"><span class="status-badge s-confirmed">확정</span></td>
+            </tr>
+
+            <!-- Part 1-3: ECN 변경 + 미확정 (#FFF3E0) -->
+            <tr class="row-ecn">
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-F103</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:26px;">
+                ENERGY ABSORBER FR
+                <span class="ecn-tag">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                  ECN
+                </span>
+              </td>
+              <td class="ss-col-center"><span class="mat-badge mat-pp">PP</span></td>
+              <td class="ss-col-right ss-col-default">680</td>
+              <td class="ss-col-right ss-col-blue">3,200</td>
+              <td class="ss-col-right ss-col-default">3,600</td>
+              <td class="ss-col-right ss-col-default" style="color:var(--text-muted);">—</td>
+              <td class="ss-col-center"><span class="status-badge s-pending">미확정</span></td>
+            </tr>
+
+            <!-- ══ 어셈블리 2 ══ (배경 #F1F1F1) -->
+            <tr class="row-asm">
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-R000</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:8px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="6 9 12 15 18 9"/></svg>
+                REAR BUMPER ASSY
+              </td>
+              <td class="ss-col-center ss-col-default">—</td>
+              <td class="ss-col-right ss-col-default">4,110</td>
+              <td class="ss-col-right cell-frozen">39,200</td>
+              <td class="ss-col-right cell-frozen">37,480</td>
+              <td class="ss-col-right cell-frozen">—</td>
+              <td class="ss-col-center">—</td>
+            </tr>
+
+            <!-- Part 2-1: 확정 -->
+            <tr>
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-R101</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:26px;">BUMPER COVER (RR)</td>
+              <td class="ss-col-center"><span class="mat-badge mat-hdpe">HDPE</span></td>
+              <td class="ss-col-right ss-col-default">1,620</td>
+              <td class="ss-col-right ss-col-blue">22,400</td>
+              <td class="ss-col-right ss-col-default">21,200</td>
+              <td class="ss-col-right ss-col-green">21,200</td>
+              <td class="ss-col-center"><span class="status-badge s-confirmed">확정</span></td>
+            </tr>
+
+            <!-- Part 2-2: 미확정 -->
+            <tr>
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-R102</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:26px;">STAY RH</td>
+              <td class="ss-col-center"><span class="mat-badge mat-spfc">SPFC</span></td>
+              <td class="ss-col-right ss-col-default">390</td>
+              <td class="ss-col-right ss-col-blue">4,200</td>
+              <td class="ss-col-right ss-col-default" style="color:var(--text-muted);">—</td>
+              <td class="ss-col-right ss-col-default" style="color:var(--text-muted);">—</td>
+              <td class="ss-col-center"><span class="status-badge s-pending">미확정</span></td>
+            </tr>
+
+            <!-- Part 2-3: 검토중 -->
+            <tr>
+              <td class="ss-col-center"><input type="checkbox"></td>
+              <td class="ss-col-center ss-col-link">DH-GN7-R103</td>
+              <td class="ss-col-left ss-col-default" style="padding-left:26px;">BACK PANEL</td>
+              <td class="ss-col-center"><span class="mat-badge mat-spfc">SPFC</span></td>
+              <td class="ss-col-right ss-col-default">2,100</td>
+              <td class="ss-col-right ss-col-blue">12,600</td>
+              <td class="ss-col-right ss-col-default">12,200</td>
+              <td class="ss-col-right ss-col-default" style="color:var(--text-muted);">—</td>
+              <td class="ss-col-center"><span class="status-badge s-review">검토중</span></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /panel-left -->
+
+    <!-- ▐ 우측 40% — Part 상세 패널 -->
+    <div class="panel-right">
+
+      <!-- 선택된 Part 정보 헤더 -->
+      <div class="rp-part-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary-alt)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="rp-part-code">DH-GN7-F101</span>
+        <span style="color:var(--border-soft);">|</span>
+        <span class="rp-part-name">BUMPER COVER (FR)</span>
+        <span class="rp-part-mat"><span class="mat-badge mat-hdpe">HDPE</span></span>
+        <span class="status-badge s-confirmed" style="margin-left:auto;">확정</span>
+      </div>
+
+      <!-- 탭 네비게이션 -->
+      <div class="rp-tab-nav">
+        <div class="rp-tab-item active">기본정보</div>
+        <div class="rp-tab-item">원가상세</div>
+        <div class="rp-tab-item">공급사</div>
+        <div class="rp-tab-item">이력</div>
+      </div>
+
+      <!-- ── 탭 콘텐츠: 기본정보 ── -->
+      <div class="rp-content" id="tab-basic">
+
+        <div class="ss-form-section">
+          <div class="ss-form-section-title">Part 기본정보</div>
+          <div class="ss-form-row">
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">Part No.<span class="req">*</span></label>
+              <input class="ss-form-control readonly w-160" value="DH-GN7-F101" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">도면번호</label>
+              <input class="ss-form-control readonly w-120" value="GN7-F101-A3" readonly>
+            </div>
+          </div>
+          <div class="ss-form-row">
+            <div class="ss-form-group w-full">
+              <label class="ss-form-label">품명<span class="req">*</span></label>
+              <input class="ss-form-control readonly" value="BUMPER COVER (FR) — 범퍼 커버 전면" readonly>
+            </div>
+          </div>
+          <div class="ss-form-row">
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">소재 구분<span class="req">*</span></label>
+              <input class="ss-form-control readonly w-100" value="HDPE" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">중량(g)<span class="req">*</span></label>
+              <input class="ss-form-control readonly w-100" value="1,850" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">단위</label>
+              <input class="ss-form-control readonly w-80" value="EA" readonly>
+            </div>
+          </div>
+          <div class="ss-form-row">
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">제품군</label>
+              <input class="ss-form-control readonly w-160" value="범퍼·외장류" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">BOM 레벨</label>
+              <input class="ss-form-control readonly w-80" value="B (Lv.2)" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="ss-form-section">
+          <div class="ss-form-section-title">단가 정보</div>
+          <div class="ss-form-row">
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">목표단가 (원)</label>
+              <input class="ss-form-control readonly w-120" value="24,800" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">산출단가 (원)</label>
+              <input class="ss-form-control readonly w-120" value="23,600" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">확정단가 (원)</label>
+              <input class="ss-form-control readonly w-120" value="23,600" readonly style="color:var(--success-green);font-weight:600;">
+            </div>
+          </div>
+          <div class="ss-form-row">
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">확정일자</label>
+              <input class="ss-form-control readonly w-160" value="2026-04-15" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">확정 공급사</label>
+              <input class="ss-form-control readonly w-160" value="성보산업(주)" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="ss-form-section">
+          <div class="ss-form-section-title">BOM 상태</div>
+          <div class="ss-form-row">
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">ECN 상태</label>
+              <input class="ss-form-control readonly w-120" value="변경 없음" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">BOM Rev.</label>
+              <input class="ss-form-control readonly w-80" value="Rev.03" readonly>
+            </div>
+            <div class="ss-form-group" style="flex:0 0 auto;">
+              <label class="ss-form-label">비고</label>
+              <input class="ss-form-control readonly w-160" value="HMC 승인완료" readonly>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-basic -->
+
+      <!-- ── 탭 콘텐츠: 원가상세 (숨김 — 탭 클릭 시 표시) ── -->
+      <div class="rp-content hidden" id="tab-cost">
+
+        <div class="ss-form-section">
+          <div class="ss-form-section-title">원가 구성 내역</div>
+          <table class="cost-table">
+            <tbody>
+              <tr><td class="cost-label">재료비</td><td class="cost-value">18,400 원</td></tr>
+              <tr><td class="cost-label">가공비</td><td class="cost-value">3,800 원</td></tr>
+              <tr><td class="cost-label">간접비</td><td class="cost-value">1,400 원</td></tr>
+              <tr class="cost-total"><td class="cost-label">원가 합계</td><td class="cost-value" style="color:var(--brand-primary-alt);">23,600 원</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ss-form-section">
+          <div class="ss-form-section-title">목표단가 대비 Gap 분석</div>
+          <table class="cost-table">
+            <tbody>
+              <tr><td class="cost-label">목표단가</td><td class="cost-value ss-col-blue">24,800 원</td></tr>
+              <tr><td class="cost-label">확정단가</td><td class="cost-value ss-col-green">23,600 원</td></tr>
+              <tr class="cost-gap-row">
+                <td class="cost-label" style="font-weight:700;">Gap (절감액)</td>
+                <td class="cost-value cost-gap-good">▼ &minus;1,200 원 (&minus;4.8%)</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;padding:10px;background:var(--success-soft-bg);border:1px solid var(--success-soft-bd);border-radius:var(--radius-default);font-size:var(--font-xs);color:var(--success-green);">
+            <strong>목표단가 달성</strong> — 산출단가가 목표단가 대비 4.8% 절감되었습니다.
+          </div>
+        </div>
+
+      </div><!-- /tab-cost -->
+
+      <!-- 우측 패널 액션바 (Freeze 상태: 저장·편집 disabled) -->
+      <div class="rp-action-bar">
+        <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          BOM Freeze — 편집 잠김
+        </span>
+        <button class="btn btn-white" disabled>취소</button>
+        <button class="btn btn-solid-blue" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          저장
+        </button>
+      </div>
+
+    </div><!-- /panel-right -->
+
+  </div><!-- /main-split -->
+
+  <!-- 하단 탭바 -->
+  <div class="ss-bottom-tab-bar">
+    <div class="ss-bottom-tab-summary">SUMMARY</div>
+    <div class="ss-bottom-tab-item active">
+      통합 BOM 관리 <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-item">
+      Part List 등록·조회 <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-item">
+      BOM 변경 이력(ECN) <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-spacer"></div>
+    <div class="ss-bottom-tab-settings" title="탭 설정">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    </div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<!-- 사이드바 토글 JS (singlesuite §8-4) -->
+<script>
+function toggleSidebar() {
+  var sb  = document.getElementById('sidebar');
+  var dim = document.getElementById('sidebarDim');
+  var btn = document.querySelector('[aria-controls="sidebar"]');
+  var open = sb.classList.toggle('is-open');
+  dim.classList.toggle('is-open', open);
+  sb.setAttribute('aria-hidden', String(!open));
+  if (btn) btn.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('ss-sidebar-locked', open);
+}
+function closeSidebar() {
+  var sb = document.getElementById('sidebar');
+  var dim = document.getElementById('sidebarDim');
+  var btn = document.querySelector('[aria-controls="sidebar"]');
+  sb.classList.remove('is-open'); dim.classList.remove('is-open');
+  sb.setAttribute('aria-hidden', 'true');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('ss-sidebar-locked');
+}
+function toggleSubmenu(el) {
+  var sub = el.nextElementSibling;
+  if (!sub || !sub.classList.contains('ss-sidebar-submenu')) return;
+  var open = sub.classList.toggle('is-open');
+  el.classList.toggle('is-expanded', open);
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSidebar(); });
+</script>
+</body>
+</html>

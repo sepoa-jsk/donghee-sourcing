@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M06-003 견적서 작성·제출 (Tier 포털)</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto','Noto Sans KR',sans-serif; border-radius: 0 !important; }
+:root {
+  /* Tier Portal overrides */
+  --primary-blue: #0F6E56;
+  --dark-blue: #085041;
+  --secondary-blue: #085041;
+  --teal: #0F6E56;
+  --teal-light: #E6F3EF;
+  --teal-border: #A8D5C5;
+  --amber: #854F0B;
+  --error-red: #A32D2D;
+  --text-primary: #222;
+  --text-secondary: #666;
+  --bg-gray: #F1F1F1;
+  --border-gray: #DDDDDD;
+  --border-light: #CCCCCC;
+}
+html, body { height: 100%; overflow: hidden; background: #F1F1F1; }
+.page-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+/* Tier GNB — #085041 */
+.gnb-real { height: 56px; background: var(--dark-blue); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; flex-shrink: 0; }
+.gnb-left { display: flex; align-items: center; gap: 12px; }
+.gnb-logo-text { font-size: 15px; font-weight: 500; }
+.gnb-logo-sub { font-size: 11px; color: rgba(255,255,255,0.6); }
+.gnb-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.3); }
+.gnb-menu { font-size: 12px; color: rgba(255,255,255,0.75); }
+.gnb-right { display: flex; align-items: center; gap: 18px; font-size: 12px; color: rgba(255,255,255,0.85); }
+.gnb-icon { font-size: 16px; cursor: pointer; opacity: 0.8; }
+.company-badge { font-size: 11px; background: rgba(255,255,255,0.15); padding: 2px 8px; border: 1px solid rgba(255,255,255,0.3); }
+
+/* Title Bar */
+.page-title-bar { height: 40px; background: var(--bg-gray); display: flex; align-items: center; padding: 0 20px; font-size: 14px; font-weight: 700; border-bottom: 1px solid var(--border-gray); flex-shrink: 0; gap: 8px; }
+.title-path { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+/* Main */
+.main-single { flex: 1; display: flex; flex-direction: column; padding: 8px; gap: 6px; overflow: hidden; }
+
+/* Global action bar */
+.global-actionbar { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.submit-deadline { font-size: 11px; background: #FFF8F0; border: 1px solid #F0C060; padding: 4px 12px; color: var(--amber); font-weight: 600; }
+.btn { height: 32px; padding: 0 14px; border: 1px solid transparent; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 80px; font-family: inherit; }
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-submit { background: var(--dark-blue); color: #fff; font-weight: 700; }
+.btn-warning { background: #F0A500; color: #222; }
+.btn-default { background: #f1f1f1; color: #222; border: 1px solid #999; }
+.btn-outline { background: #fff; color: var(--teal); border: 1px solid var(--teal); }
+.btn-danger { background: var(--error-red); color: #fff; }
+.btn-icon { min-width: 32px; width: 32px; padding: 0; background: #fff; border: 1px solid #999; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+
+/* Form box */
+.form-box { border: 1px solid var(--border-gray); background: #fff; padding: 14px 16px; flex-shrink: 0; }
+.form-section-title { font-size: 11px; font-weight: 700; color: var(--teal); border-left: 3px solid var(--teal); padding-left: 8px; margin-bottom: 10px; }
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; align-items: flex-end; }
+.form-row:last-child { margin-bottom: 0; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 11px; font-weight: 700; color: #333; }
+.form-label .req { color: var(--error-red); margin-left: 2px; }
+.form-control { height: 32px; border: 1px solid var(--border-light); padding: 0 8px; font-size: 12px; background: #fff; font-family: inherit; }
+.form-control.readonly { background: #F4F9F7; border-color: #C0DDD5; color: #444; }
+.form-select { height: 32px; border: 1px solid var(--border-light); padding: 0 28px 0 8px; font-size: 12px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230F6E56' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center; appearance: none; cursor: pointer; font-family: inherit; }
+.w220 { width: 220px; }
+.w180 { width: 180px; }
+.w160 { width: 160px; }
+.w130 { width: 130px; }
+.w110 { width: 110px; }
+.w100 { width: 100px; }
+
+/* Status badge */
+.rfq-status { font-size: 10px; padding: 2px 8px; font-weight: 700; }
+.status-open { background: var(--teal-light); color: var(--teal); border: 1px solid var(--teal-border); }
+.status-draft { background: #FFF8F0; color: var(--amber); border: 1px solid #F0C080; }
+
+/* Sub action bar for grid */
+.grid-actionbar { height: 36px; background: var(--bg-gray); border: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 8px; gap: 6px; flex-shrink: 0; }
+.grid-info { font-size: 11px; color: var(--text-secondary); }
+.grid-info b { color: var(--text-primary); }
+.grid-actionbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.total-label { font-size: 11px; color: var(--text-secondary); }
+.total-val { font-size: 13px; font-weight: 700; color: var(--teal); }
+.gap-indicator { font-size: 11px; font-weight: 700; padding: 2px 8px; }
+.gap-pos { background: var(--teal-light); color: var(--teal); border: 1px solid var(--teal-border); }
+.gap-neg { background: #FFF8F0; color: var(--amber); border: 1px solid #F0C080; }
+
+/* Grid */
+.grid-wrap { flex: 1; overflow: auto; border: 1px solid var(--border-gray); }
+.grid-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.grid-table th { height: 38px; background: var(--bg-gray); border: 1px solid var(--border-gray); padding: 0 8px; font-weight: 600; font-size: 11px; text-align: center; position: sticky; top: 0; z-index: 5; }
+.grid-table th.teal-header { background: var(--teal-light); color: var(--teal); border-bottom: 2px solid var(--teal-border); }
+.grid-table td { height: 32px; border: 1px solid var(--border-gray); padding: 0 8px; font-size: 11px; }
+.td-c { text-align: center; }
+.td-r { text-align: right; }
+.text-link { color: var(--teal); text-decoration: underline; cursor: pointer; }
+.text-teal { color: var(--teal); font-weight: 600; }
+.text-amber { color: var(--amber); font-weight: 600; }
+.text-red { color: var(--error-red); font-weight: 600; }
+
+/* Editable input cell */
+.cell-input { height: 26px; width: 100%; border: 1px solid var(--teal-border); padding: 0 6px; font-size: 11px; background: #FAFFFD; font-family: inherit; text-align: right; }
+.cell-input:focus { border-color: var(--teal); outline: none; background: #E6F3EF; }
+
+.mat-tag { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 4px; border: 1px solid; }
+.mat-spfc { color: #185FA5; border-color: #185FA5; background: #EBF2FA; }
+.mat-hdpe { color: #0F6E56; border-color: #0F6E56; background: #E6F3EF; }
+.mat-al { color: #6B4FA0; border-color: #6B4FA0; background: #F0EBF8; }
+.mat-spfh { color: #7A4B00; border-color: #7A4B00; background: #FFF3E0; }
+
+.gap-good { color: var(--teal); font-weight: 700; }
+.gap-bad { color: var(--error-red); font-weight: 700; }
+.gap-warn { color: var(--amber); font-weight: 700; }
+
+/* Total footer row */
+.total-row { background: #F0FAF6; font-weight: 700; }
+.total-row td { font-size: 12px; border-top: 2px solid var(--teal-border); }
+
+/* Attach box */
+.attach-area { flex-shrink: 0; border: 1px solid var(--border-gray); background: #fff; }
+.attach-header { height: 32px; background: var(--bg-gray); border-bottom: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 10px; gap: 6px; font-size: 11px; font-weight: 700; color: var(--teal); }
+.attach-body { height: 36px; display: flex; align-items: center; padding: 0 10px; gap: 8px; font-size: 11px; color: #888; }
+.attach-file { color: var(--teal); text-decoration: underline; cursor: pointer; }
+
+.bottom-tab-bar { height: 32px; background: var(--bg-gray); display: flex; align-items: center; border-top: 1px solid var(--border-gray); flex-shrink: 0; }
+.bottom-tab-item { display: flex; align-items: center; padding: 0 14px; height: 100%; font-size: 12px; background: #E1E1E1; border-right: 1px solid var(--border-gray); cursor: pointer; gap: 6px; }
+.bottom-tab-item.active { background: var(--dark-blue); color: #fff; }
+.tab-close { font-size: 10px; opacity: 0.7; }
+
+.grid-table input[type=checkbox] { appearance: none; width: 14px; height: 14px; border: 1px solid var(--teal-border); background: transparent; cursor: pointer; position: relative; }
+.grid-table input[type=checkbox]:checked { border-color: var(--teal); }
+.grid-table input[type=checkbox]:checked::after { content: '✔'; position: absolute; top: -2px; left: 1px; font-size: 10px; color: var(--teal); }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- GNB (Tier Portal — #085041) -->
+  <div class="gnb-real">
+    <div class="gnb-left">
+      <i class="bi bi-building" style="font-size:18px;opacity:0.8;"></i>
+      <span class="gnb-logo-text">동희산업 협력사 포털</span>
+      <span class="gnb-logo-sub">Donghee Tier Partner Portal</span>
+      <div class="gnb-divider"></div>
+      <span class="gnb-menu">RFQ·견적 관리</span>
+    </div>
+    <div class="gnb-right">
+      <span class="company-badge"><i class="bi bi-building-check"></i> 성보산업(주) [T2-00421]</span>
+      <i class="bi bi-house gnb-icon"></i>
+      <span>홍길동 (영업담당)</span>
+      <i class="bi bi-box-arrow-right gnb-icon"></i>
+    </div>
+  </div>
+
+  <div class="page-title-bar">
+    <i class="bi bi-pencil-square" style="color:var(--teal);"></i>
+    견적서 작성·제출
+    <span class="title-path">RFQ·견적 &gt; 견적서 작성·제출</span>
+  </div>
+
+  <div class="main-single">
+
+    <!-- Global Action Bar (패턴 3: 우측 정렬) -->
+    <div class="global-actionbar">
+      <span class="submit-deadline"><i class="bi bi-alarm"></i> 제출 마감: 2026-06-10 18:00 (D-10)</span>
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <button class="btn btn-warning"><i class="bi bi-floppy"></i> 임시저장</button>
+        <button class="btn btn-primary"><i class="bi bi-paperclip"></i> 첨부파일</button>
+        <button class="btn btn-submit"><i class="bi bi-send-fill"></i> 견적 제출</button>
+      </div>
+    </div>
+
+    <!-- Form Box (RFQ 정보 + 업체 정보) -->
+    <div class="form-box">
+      <div class="form-section-title">RFQ 기본 정보</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">RFQ 번호</label>
+          <input type="text" class="form-control readonly w160" value="RFQ-2026-0023" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">발행사</label>
+          <input type="text" class="form-control readonly w180" value="동희산업(주)" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">차종·프로젝트</label>
+          <input type="text" class="form-control readonly w180" value="GN7 범퍼·사이드실류" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">제출 마감일</label>
+          <input type="text" class="form-control readonly w160" value="2026-06-10 18:00" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">RFQ 상태</label>
+          <div style="height:32px;display:flex;align-items:center;">
+            <span class="rfq-status status-open">접수중</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">내 견적 상태</label>
+          <div style="height:32px;display:flex;align-items:center;">
+            <span class="rfq-status status-draft">임시저장</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">업체 코드</label>
+          <input type="text" class="form-control readonly w110" value="T2-00421" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">업체명</label>
+          <input type="text" class="form-control readonly w180" value="성보산업(주)" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">담당자 <span class="req">*</span></label>
+          <input type="text" class="form-control w130" value="홍길동">
+        </div>
+        <div class="form-group">
+          <label class="form-label">연락처</label>
+          <input type="text" class="form-control w130" value="010-1234-5678">
+        </div>
+        <div class="form-group">
+          <label class="form-label">견적 유효기간 <span class="req">*</span></label>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <input type="text" class="form-control w110" value="2026-06-10">
+            <span style="font-size:11px;color:#888;">~</span>
+            <input type="text" class="form-control w110" value="2026-09-10">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">납기 가능일</label>
+          <div style="display:flex;">
+            <input type="text" class="form-control w130" value="2026-10-15">
+            <button style="width:32px;height:32px;background:#fff;border:1px solid #CCC;display:flex;align-items:center;justify-content:center;cursor:pointer;border-left:none;"><i class="bi bi-calendar3" style="color:var(--teal);"></i></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">비고</label>
+          <input type="text" class="form-control" style="width:280px;" placeholder="특이사항 입력">
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid Sub-Action Bar -->
+    <div class="grid-actionbar">
+      <span class="grid-info">Part 목록: <b>12건</b> | 입력완료: <b>9건</b> | 미입력: <b style="color:var(--amber);">3건</b></span>
+      <button class="btn btn-outline" style="height:26px;min-width:70px;font-size:11px;"><i class="bi bi-arrow-repeat"></i> 단가 초기화</button>
+      <button class="btn btn-default" style="height:26px;min-width:80px;font-size:11px;"><i class="bi bi-upload"></i> Excel 일괄 입력</button>
+      <div class="grid-actionbar-right">
+        <span class="total-label">총 견적금액:</span>
+        <span class="total-val">₩ 95,760,000</span>
+        <span class="gap-indicator gap-pos"><i class="bi bi-arrow-down-short"></i> -3.7% vs 목표가</span>
+      </div>
+    </div>
+
+    <!-- Grid (패턴 3 하단 그리드 — Part별 단가 입력) -->
+    <div class="grid-wrap">
+      <table class="grid-table">
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox"></th>
+            <th style="width:40px;">No.</th>
+            <th style="width:120px;">Part No.</th>
+            <th style="min-width:180px;text-align:left;">품명</th>
+            <th style="width:70px;">소재구분</th>
+            <th style="width:50px;">단위</th>
+            <th style="width:60px;">수량</th>
+            <th style="width:110px;">목표가(원)</th>
+            <th class="teal-header" style="width:120px;">견적단가(원) <span style="font-size:9px;">입력</span></th>
+            <th class="teal-header" style="width:120px;">견적금액(원)</th>
+            <th style="width:70px;">Gap(%)</th>
+            <th style="width:60px;">납기</th>
+            <th style="min-width:100px;">비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">1</td>
+            <td style="font-size:10px;">DH-GN7-F101</td>
+            <td>BUMPER COVER (FR)</td>
+            <td class="td-c"><span class="mat-tag mat-hdpe">HDPE</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">24,800,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="23,600,000"></td>
+            <td class="td-r text-teal">23,600,000</td>
+            <td class="td-c gap-good">-4.8%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">2</td>
+            <td style="font-size:10px;">DH-GN7-F102</td>
+            <td>STAY LH</td>
+            <td class="td-c"><span class="mat-tag mat-spfc">SPFC</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">4,200,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="4,080,000"></td>
+            <td class="td-r text-teal">4,080,000</td>
+            <td class="td-c gap-good">-2.9%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">3</td>
+            <td style="font-size:10px;">DH-GN7-F103</td>
+            <td>STAY RH</td>
+            <td class="td-c"><span class="mat-tag mat-spfc">SPFC</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">4,200,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="4,080,000"></td>
+            <td class="td-r text-teal">4,080,000</td>
+            <td class="td-c gap-good">-2.9%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <tr style="background:#FFF8F0;">
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">4</td>
+            <td style="font-size:10px;">DH-GN7-S101</td>
+            <td>SILL OUTER PANEL LH</td>
+            <td class="td-c"><span class="mat-tag mat-spfh">SPFH</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">18,400,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="20,800,000" style="border-color:#F0C080;background:#FFFAEB;"></td>
+            <td class="td-r text-amber">20,800,000</td>
+            <td class="td-c gap-bad">+13.0%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td style="font-size:10px;color:var(--amber);">소재비 상승</td>
+          </tr>
+          <tr style="background:#FFF8F0;">
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">5</td>
+            <td style="font-size:10px;">DH-GN7-S102</td>
+            <td>SILL OUTER PANEL RH</td>
+            <td class="td-c"><span class="mat-tag mat-spfh">SPFH</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">18,400,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="20,800,000" style="border-color:#F0C080;background:#FFFAEB;"></td>
+            <td class="td-r text-amber">20,800,000</td>
+            <td class="td-c gap-bad">+13.0%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td style="font-size:10px;color:var(--amber);">소재비 상승</td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">6</td>
+            <td style="font-size:10px;">DH-GN7-R101</td>
+            <td>BUMPER COVER (RR)</td>
+            <td class="td-c"><span class="mat-tag mat-hdpe">HDPE</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">22,400,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="21,200,000"></td>
+            <td class="td-r text-teal">21,200,000</td>
+            <td class="td-c gap-good">-5.4%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">7</td>
+            <td style="font-size:10px;">DH-GN7-R102</td>
+            <td>BACK PANEL</td>
+            <td class="td-c"><span class="mat-tag mat-spfc">SPFC</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">12,600,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="12,200,000"></td>
+            <td class="td-r text-teal">12,200,000</td>
+            <td class="td-c gap-good">-3.2%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">8</td>
+            <td style="font-size:10px;">DH-GN7-R103</td>
+            <td>TOWING HOOK COVER</td>
+            <td class="td-c"><span class="mat-tag mat-hdpe">HDPE</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">3,200,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="3,000,000"></td>
+            <td class="td-r text-teal">3,000,000</td>
+            <td class="td-c gap-good">-6.3%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">9</td>
+            <td style="font-size:10px;">DH-GN7-F201</td>
+            <td>GRILLE UPPER (FR)</td>
+            <td class="td-c"><span class="mat-tag mat-hdpe">HDPE</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">8,400,000</td>
+            <td class="td-c"><input type="text" class="cell-input" value="8,000,000"></td>
+            <td class="td-r text-teal">8,000,000</td>
+            <td class="td-c gap-good">-4.8%</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td></td>
+          </tr>
+          <!-- Unfinished rows -->
+          <tr style="background:#FAFAFA;">
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">10</td>
+            <td style="font-size:10px;">DH-GN7-F202</td>
+            <td>FOG LAMP BEZEL LH</td>
+            <td class="td-c"><span class="mat-tag mat-hdpe">HDPE</span></td>
+            <td class="td-c">EA</td>
+            <td class="td-c">1</td>
+            <td class="td-r">2,800,000</td>
+            <td class="td-c"><input type="text" class="cell-input" placeholder="입력 필요" style="border-color:#F0C080;background:#FFFEF0;"></td>
+            <td class="td-r" style="color:#CCC;">—</td>
+            <td class="td-c" style="color:#CCC;">—</td>
+            <td class="td-c" style="font-size:10px;">10월</td>
+            <td style="font-size:10px;color:var(--error-red);">미입력</td>
+          </tr>
+          <!-- Total Row -->
+          <tr class="total-row">
+            <td></td>
+            <td colspan="6" style="text-align:right;padding-right:12px;font-size:12px;">합 계 (입력 완료분)</td>
+            <td class="td-r" style="color:#666;">99,600,000</td>
+            <td class="td-c"></td>
+            <td class="td-r" style="color:var(--teal);font-size:13px;">95,760,000</td>
+            <td class="td-c gap-good" style="font-size:12px;">-3.7%</td>
+            <td colspan="2"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Attach box -->
+    <div class="attach-area">
+      <div class="attach-header">
+        <i class="bi bi-paperclip"></i> 첨부파일
+        <button class="btn btn-outline" style="height:24px;min-width:60px;font-size:10px;margin-left:8px;"><i class="bi bi-plus"></i> 파일 추가</button>
+        <button class="btn btn-default" style="height:24px;min-width:60px;font-size:10px;margin-left:4px;"><i class="bi bi-download"></i> 전체 다운</button>
+      </div>
+      <div class="attach-body">
+        <i class="bi bi-file-earmark-pdf" style="color:var(--error-red);"></i>
+        <span class="attach-file">견적서_성보산업_GN7범퍼류_v1.pdf</span>
+        <span style="color:#AAA;">256 KB</span>
+        <span style="margin-left:12px;"></span>
+        <i class="bi bi-file-earmark-excel" style="color:var(--teal);"></i>
+        <span class="attach-file">단가산출근거_성보산업.xlsx</span>
+        <span style="color:#AAA;">48 KB</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-tab-bar">
+    <div class="bottom-tab-item active">견적서 작성·제출 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">RFQ 수신·목록 조회 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">견적 제출 이력 <span class="tab-close">✕</span></div>
+  </div>
+
+</div>
+</body>
+</html>

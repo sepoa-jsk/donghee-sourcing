@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M04-002 Vs Target 모니터링</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto','Noto Sans KR',sans-serif; border-radius: 0 !important; }
+:root {
+  --primary-blue: #185FA5;
+  --dark-blue: #0D2B55;
+  --secondary-blue: #0D3F7A;
+  --success-green: #0F6E56;
+  --teal: #0F6E56;
+  --amber: #854F0B;
+  --error-red: #A32D2D;
+  --text-primary: #222;
+  --text-secondary: #666;
+  --bg-gray: #F1F1F1;
+  --border-gray: #DDDDDD;
+  --border-light: #CCCCCC;
+  --font-m: 14px;
+  --font-s: 12px;
+  --font-xs: 10px;
+}
+html, body { height: 100%; overflow: hidden; background: #F1F1F1; }
+.page-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+.gnb-real { height: 56px; background: var(--dark-blue); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; flex-shrink: 0; }
+.gnb-left { display: flex; align-items: center; gap: 12px; }
+.gnb-logo-text { font-size: 15px; font-weight: 500; }
+.gnb-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.3); }
+.gnb-menu { font-size: 12px; color: rgba(255,255,255,0.75); }
+.gnb-right { display: flex; align-items: center; gap: 18px; font-size: 12px; color: rgba(255,255,255,0.85); }
+.gnb-icon { font-size: 16px; cursor: pointer; opacity: 0.8; }
+
+.page-title-bar { height: 40px; background: var(--bg-gray); display: flex; align-items: center; padding: 0 20px; font-size: var(--font-m); font-weight: 700; border-bottom: 1px solid var(--border-gray); flex-shrink: 0; gap: 8px; }
+.title-path { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+.main-single { flex: 1; display: flex; flex-direction: column; padding: 8px; overflow-y: auto; gap: 8px; }
+
+/* Filter + action row */
+.filter-actionbar { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.search-input { height: 32px; border: 1px solid var(--border-light); padding: 0 8px; font-size: 13px; background: #fff; width: 160px; }
+.filter-select { height: 32px; border: 1px solid var(--border-light); padding: 0 28px 0 8px; font-size: 13px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A32D2D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center; appearance: none; min-width: 140px; cursor: pointer; }
+.date-input { height: 32px; border: 1px solid var(--border-light); padding: 0 8px; font-size: 12px; background: #fff; width: 180px; text-align: center; }
+.action-right { margin-left: auto; display: flex; gap: 4px; }
+.btn { height: 32px; padding: 0 14px; border: 1px solid transparent; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 80px; font-family: inherit; }
+.btn-primary { background: var(--primary-blue); color: #fff; }
+.btn-default { background: #f1f1f1; color: #222; border: 1px solid #999; }
+.btn-success { background: var(--teal); color: #fff; }
+.btn-icon { min-width: 32px; width: 32px; padding: 0; background: #fff; border: 1px solid #999; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+
+/* KPI Cards */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-shrink: 0; }
+.kpi-card { background: #fff; border: 1px solid var(--border-gray); padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+.kpi-card-header { display: flex; align-items: center; justify-content: space-between; }
+.kpi-title { font-size: 11px; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+.kpi-icon { font-size: 18px; opacity: 0.5; }
+.kpi-value { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.kpi-sub { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.kpi-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; }
+.badge-good { background: #E6F3EF; color: var(--teal); border: 1px solid #A8D5C5; }
+.badge-warn { background: #FFF8F0; color: var(--amber); border: 1px solid #F0C080; }
+.badge-bad { background: #FAEAEA; color: var(--error-red); border: 1px solid #E0AAAA; }
+.badge-blue { background: #EBF2FA; color: var(--primary-blue); border: 1px solid #B8D4EE; }
+.kpi-trend { font-size: 11px; font-weight: 600; }
+.trend-up { color: var(--teal); }
+.trend-down { color: var(--error-red); }
+.trend-neutral { color: var(--amber); }
+
+/* Middle section (chart + table) */
+.mid-row { display: grid; grid-template-columns: 380px 1fr; gap: 8px; flex-shrink: 0; }
+.chart-panel { background: #fff; border: 1px solid var(--border-gray); padding: 12px; }
+.chart-title { font-size: 12px; font-weight: 700; color: var(--text-primary); padding-bottom: 10px; border-bottom: 1px solid var(--border-gray); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.bar-label { font-size: 11px; color: var(--text-secondary); width: 90px; text-align: right; white-space: nowrap; flex-shrink: 0; }
+.bar-track { flex: 1; height: 18px; background: var(--bg-gray); border: 1px solid var(--border-gray); overflow: hidden; }
+.bar-fill { height: 100%; }
+.bar-val { font-size: 11px; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
+.bar-fill.good { background: var(--teal); }
+.bar-fill.warn { background: #F0A500; }
+.bar-fill.bad { background: var(--error-red); }
+.bar-fill.blue { background: var(--primary-blue); }
+
+/* Right side top-item table */
+.top-item-panel { background: #fff; border: 1px solid var(--border-gray); padding: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.top-item-panel .chart-title { margin-bottom: 8px; }
+.top-grid { flex: 1; overflow-y: auto; }
+
+/* Gap table */
+.gap-panel { background: #fff; border: 1px solid var(--border-gray); flex-shrink: 0; }
+.gap-panel-header { height: 36px; background: var(--bg-gray); border-bottom: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 12px; gap: 8px; font-size: 12px; font-weight: 700; }
+.gap-panel-header .header-right { margin-left: auto; display: flex; gap: 4px; }
+
+.grid-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.grid-table th { height: 36px; background: var(--bg-gray); border: 1px solid var(--border-gray); padding: 0 8px; font-weight: 600; font-size: 11px; text-align: center; position: sticky; top: 0; z-index: 5; }
+.grid-table td { height: 30px; border: 1px solid var(--border-gray); padding: 0 8px; font-size: 11px; }
+.td-c { text-align: center; }
+.td-r { text-align: right; }
+.text-link { color: var(--primary-blue); text-decoration: underline; cursor: pointer; }
+.text-teal { color: var(--teal); font-weight: 600; }
+.text-amber { color: var(--amber); font-weight: 600; }
+.text-red { color: var(--error-red); font-weight: 600; }
+
+/* Gap cell */
+.gap-good { color: var(--teal); font-weight: 700; }
+.gap-warn { color: var(--amber); font-weight: 700; }
+.gap-bad { color: var(--error-red); font-weight: 700; }
+
+/* Progress mini-bar */
+.prog-bar { display: flex; align-items: center; gap: 4px; }
+.prog-track { width: 60px; height: 10px; background: var(--bg-gray); border: 1px solid var(--border-gray); overflow: hidden; display: inline-block; }
+.prog-fill { height: 100%; }
+
+.bottom-tab-bar { height: 32px; background: var(--bg-gray); display: flex; align-items: center; border-top: 1px solid var(--border-gray); flex-shrink: 0; }
+.bottom-tab-item { display: flex; align-items: center; padding: 0 14px; height: 100%; font-size: 12px; background: #E1E1E1; border-right: 1px solid var(--border-gray); cursor: pointer; gap: 6px; }
+.bottom-tab-item.active { background: var(--secondary-blue); color: #fff; }
+.tab-close { font-size: 10px; opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <div class="gnb-real">
+    <div class="gnb-left">
+      <span class="gnb-logo-text">동희산업 개발구매</span>
+      <div class="gnb-divider"></div>
+      <span class="gnb-menu">목표가 관리</span>
+    </div>
+    <div class="gnb-right">
+      <i class="bi bi-house gnb-icon"></i>
+      <i class="bi bi-grid gnb-icon"></i>
+      <span>개발구매팀 ( 김동희 )</span>
+      <i class="bi bi-box-arrow-right gnb-icon"></i>
+    </div>
+  </div>
+
+  <div class="page-title-bar">
+    <i class="bi bi-graph-up" style="color:var(--primary-blue);"></i>
+    Vs Target 모니터링
+    <span class="title-path">M04 &gt; 목표가 관리 &gt; Vs Target 모니터링</span>
+  </div>
+
+  <div class="main-single">
+
+    <!-- Filter + Action Bar -->
+    <div class="filter-actionbar">
+      <select class="filter-select" style="min-width:180px;">
+        <option>DH-2026-001 GN7</option>
+        <option>DH-2026-002 NX4</option>
+        <option>DH-2026-003 EV9</option>
+      </select>
+      <select class="filter-select" style="min-width:120px;">
+        <option>Ver.03 (최신)</option>
+        <option>Ver.02</option>
+        <option>Ver.01</option>
+      </select>
+      <select class="filter-select" style="min-width:120px;">
+        <option>전체 모듈</option>
+        <option>M02 BOM</option>
+        <option>M03 원가</option>
+      </select>
+      <input class="date-input" type="text" value="2026/01/01 ~ 2026/05/31">
+      <button class="btn" style="height:32px;width:32px;min-width:32px;background:#fff;border:1px solid #CCC;font-size:14px;"><i class="bi bi-calendar3" style="color:var(--error-red);"></i></button>
+      <div class="action-right">
+        <button class="btn btn-primary"><i class="bi bi-search"></i> 조회</button>
+        <button class="btn btn-default"><i class="bi bi-arrow-clockwise"></i> 초기화</button>
+        <button class="btn btn-icon" title="Excel"><i class="bi bi-file-earmark-excel"></i></button>
+        <button class="btn btn-icon" title="인쇄"><i class="bi bi-printer"></i></button>
+      </div>
+    </div>
+
+    <!-- KPI 4 Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-bullseye"></i> 목표가 총액</span>
+          <i class="bi bi-flag-fill kpi-icon" style="color:var(--primary-blue);"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--primary-blue);">₩ 1,248.5M</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge badge-blue">127 Part</span>
+          <span style="color:#888;">기준 Rev.03</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-receipt"></i> 견적 최저가 평균</span>
+          <i class="bi bi-graph-down-arrow kpi-icon" style="color:var(--teal);"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--teal);">₩ 1,196.2M</div>
+        <div class="kpi-sub">
+          <span class="kpi-trend trend-up"><i class="bi bi-arrow-down-circle-fill"></i> -4.2%</span>
+          <span style="color:#888;">vs 목표가</span>
+          <span class="kpi-badge badge-good">달성</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-percent"></i> 목표가 달성률</span>
+          <i class="bi bi-pie-chart-fill kpi-icon" style="color:var(--amber);"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--amber);">73.5%</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge badge-warn">주의</span>
+          <span style="color:#888;">Part 93/127 달성</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-scissors"></i> 원가절감(CR)</span>
+          <i class="bi bi-trophy-fill kpi-icon" style="color:#F0A500;"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--primary-blue);">₩ 52.3M</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge badge-blue">127건 CR</span>
+          <span class="kpi-trend trend-up"><i class="bi bi-arrow-up-circle-fill"></i> 목표 118%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mid row: bar chart + top gap list -->
+    <div class="mid-row">
+
+      <!-- Bar Chart -->
+      <div class="chart-panel">
+        <div class="chart-title"><i class="bi bi-bar-chart-fill" style="color:var(--primary-blue);"></i> 모듈별 목표가 달성률</div>
+        <div class="bar-row">
+          <span class="bar-label">M01 기본정보</span>
+          <div class="bar-track"><div class="bar-fill good" style="width:92%;"></div></div>
+          <span class="bar-val" style="color:var(--teal);">92%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">M02 BOM 관리</span>
+          <div class="bar-track"><div class="bar-fill good" style="width:88%;"></div></div>
+          <span class="bar-val" style="color:var(--teal);">88%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">범퍼류</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:95%;"></div></div>
+          <span class="bar-val" style="color:var(--primary-blue);">95%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">사이드 실</span>
+          <div class="bar-track"><div class="bar-fill warn" style="width:68%;"></div></div>
+          <span class="bar-val" style="color:#F0A500;">68%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">도어 판넬</span>
+          <div class="bar-track"><div class="bar-fill warn" style="width:72%;"></div></div>
+          <span class="bar-val" style="color:#F0A500;">72%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">후드·루프</span>
+          <div class="bar-track"><div class="bar-fill bad" style="width:52%;"></div></div>
+          <span class="bar-val" style="color:var(--error-red);">52%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">언더바디</span>
+          <div class="bar-track"><div class="bar-fill good" style="width:81%;"></div></div>
+          <span class="bar-val" style="color:var(--teal);">81%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">크로스멤버</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:90%;"></div></div>
+          <span class="bar-val" style="color:var(--primary-blue);">90%</span>
+        </div>
+        <div style="margin-top:12px;border-top:1px solid var(--border-gray);padding-top:8px;display:flex;gap:16px;">
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:12px;background:var(--teal);"></span> 달성 (≥80%)</span>
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:12px;background:#F0A500;"></span> 주의 (60~79%)</span>
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:12px;background:var(--error-red);"></span> 위험 (&lt;60%)</span>
+        </div>
+      </div>
+
+      <!-- Top Gap Items -->
+      <div class="top-item-panel">
+        <div class="chart-title"><i class="bi bi-exclamation-triangle-fill" style="color:var(--amber);"></i> Gap 상위 품목 TOP 10</div>
+        <div class="top-grid">
+          <table class="grid-table">
+            <thead>
+              <tr>
+                <th style="width:30px;">순위</th>
+                <th style="min-width:110px;text-align:left;">품명</th>
+                <th style="width:70px;">소재</th>
+                <th style="width:90px;">목표가(원)</th>
+                <th style="width:90px;">최저견적(원)</th>
+                <th style="width:60px;">Gap(%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="td-c">1</td><td class="text-link">HOOD INNER PANEL</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#0F6E56;">Al</span></td><td class="td-r">18,400,000</td><td class="td-r">22,600,000</td><td class="td-c gap-bad">+22.8%</td></tr>
+              <tr><td class="td-c">2</td><td class="text-link">ROOF PANEL</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</span></td><td class="td-r">24,200,000</td><td class="td-r">28,800,000</td><td class="td-c gap-bad">+19.0%</td></tr>
+              <tr><td class="td-c">3</td><td class="text-link">DOOR INNER FR LH</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#6B4FA0;">Al</span></td><td class="td-r">16,400,000</td><td class="td-r">19,200,000</td><td class="td-c gap-bad">+17.1%</td></tr>
+              <tr><td class="td-c">4</td><td class="text-link">SILL OUTER PANEL LH</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#7A4B00;">SPFH</span></td><td class="td-r">18,400,000</td><td class="td-r">21,400,000</td><td class="td-c gap-warn">+16.3%</td></tr>
+              <tr><td class="td-c">5</td><td class="text-link">FRONT SIDE MEMBER RH</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</span></td><td class="td-r">12,800,000</td><td class="td-r">14,800,000</td><td class="td-c gap-warn">+15.6%</td></tr>
+              <tr><td class="td-c">6</td><td class="text-link">REAR FLOOR PANEL</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</span></td><td class="td-r">9,200,000</td><td class="td-r">10,600,000</td><td class="td-c gap-warn">+15.2%</td></tr>
+              <tr><td class="td-c">7</td><td class="text-link">COWL TOP PANEL</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</span></td><td class="td-r">7,600,000</td><td class="td-r">8,700,000</td><td class="td-c gap-warn">+14.5%</td></tr>
+              <tr><td class="td-c">8</td><td class="text-link">REAR BUMPER COVER</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#0F6E56;">HDPE</span></td><td class="td-r">22,400,000</td><td class="td-r">25,600,000</td><td class="td-c gap-warn">+14.3%</td></tr>
+              <tr><td class="td-c">9</td><td class="text-link">TRUNK LID INNER</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</span></td><td class="td-r">8,400,000</td><td class="td-r">9,580,000</td><td class="td-c gap-warn">+14.0%</td></tr>
+              <tr><td class="td-c">10</td><td class="text-link">CENTER PILLAR INNER</td><td class="td-c"><span style="font-size:10px;font-weight:700;color:#7A4B00;">SPFH</span></td><td class="td-r">14,200,000</td><td class="td-r">16,100,000</td><td class="td-c gap-warn">+13.4%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gap Analysis Table -->
+    <div class="gap-panel">
+      <div class="gap-panel-header">
+        <i class="bi bi-table" style="color:var(--primary-blue);"></i>
+        Gap 분석 테이블 — 전체 Part
+        <span style="color:#888;font-weight:400;font-size:11px;margin-left:8px;">총 127건 | 달성 93건 | 미달성 34건</span>
+        <div class="header-right">
+          <select class="filter-select" style="height:26px;font-size:11px;min-width:100px;">
+            <option>전체 상태</option><option>미달성만</option><option>달성만</option>
+          </select>
+          <button class="btn btn-default" style="height:26px;min-width:60px;font-size:11px;">Excel</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:200px;overflow-y:auto;">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th style="width:36px;"><input type="checkbox"></th>
+              <th style="width:40px;">No.</th>
+              <th style="width:120px;">Part No.</th>
+              <th style="min-width:180px;text-align:left;">품명</th>
+              <th style="width:70px;">소재</th>
+              <th style="width:110px;">목표가(원)</th>
+              <th style="width:110px;">최저견적(원)</th>
+              <th style="width:80px;">Gap(원)</th>
+              <th style="width:70px;">Gap(%)</th>
+              <th style="width:100px;">달성률</th>
+              <th style="width:80px;">상태</th>
+              <th style="width:100px;">최저 공급사</th>
+              <th style="min-width:80px;">비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">1</td>
+              <td class="text-link td-c">DH-GN7-F101</td>
+              <td>BUMPER COVER (FR)</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#0F6E56;">HDPE</td>
+              <td class="td-r">24,800,000</td>
+              <td class="td-r">23,600,000</td>
+              <td class="td-r gap-good">-1,200,000</td>
+              <td class="td-c gap-good">-4.8%</td>
+              <td><div class="prog-bar"><div class="prog-track"><div class="prog-fill" style="width:100%;background:var(--teal);"></div></div> <span style="font-size:10px;">달성</span></div></td>
+              <td class="td-c"><span style="font-size:10px;padding:2px 6px;background:#E6F3EF;color:var(--teal);font-weight:700;">달성</span></td>
+              <td class="td-c" style="font-size:11px;">성보산업</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">2</td>
+              <td class="text-link td-c">DH-GN7-F102</td>
+              <td>STAY LH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#185FA5;">SPFC</td>
+              <td class="td-r">4,200,000</td>
+              <td class="td-r">4,080,000</td>
+              <td class="td-r gap-good">-120,000</td>
+              <td class="td-c gap-good">-2.9%</td>
+              <td><div class="prog-bar"><div class="prog-track"><div class="prog-fill" style="width:100%;background:var(--teal);"></div></div> <span style="font-size:10px;">달성</span></div></td>
+              <td class="td-c"><span style="font-size:10px;padding:2px 6px;background:#E6F3EF;color:var(--teal);font-weight:700;">달성</span></td>
+              <td class="td-c" style="font-size:11px;">한진금속</td>
+              <td></td>
+            </tr>
+            <tr style="background:#FFF8F0;">
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">3</td>
+              <td class="text-link td-c">DH-GN7-S101</td>
+              <td>SILL OUTER PANEL LH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#7A4B00;">SPFH</td>
+              <td class="td-r">18,400,000</td>
+              <td class="td-r">21,400,000</td>
+              <td class="td-r gap-bad">+3,000,000</td>
+              <td class="td-c gap-bad">+16.3%</td>
+              <td><div class="prog-bar"><div class="prog-track"><div class="prog-fill" style="width:61%;background:var(--error-red);"></div></div> <span style="font-size:10px;color:var(--error-red);">61%</span></div></td>
+              <td class="td-c"><span style="font-size:10px;padding:2px 6px;background:#FAEAEA;color:var(--error-red);font-weight:700;">미달성</span></td>
+              <td class="td-c" style="font-size:11px;">동화스틸</td>
+              <td style="font-size:10px;color:var(--amber);">협상필요</td>
+            </tr>
+            <tr style="background:#FFF8F0;">
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">4</td>
+              <td class="text-link td-c">DH-GN7-D101</td>
+              <td>DOOR INNER FR LH</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#6B4FA0;">Al</td>
+              <td class="td-r">16,400,000</td>
+              <td class="td-r">19,200,000</td>
+              <td class="td-r gap-bad">+2,800,000</td>
+              <td class="td-c gap-bad">+17.1%</td>
+              <td><div class="prog-bar"><div class="prog-track"><div class="prog-fill" style="width:55%;background:var(--error-red);"></div></div> <span style="font-size:10px;color:var(--error-red);">55%</span></div></td>
+              <td class="td-c"><span style="font-size:10px;padding:2px 6px;background:#FAEAEA;color:var(--error-red);font-weight:700;">미달성</span></td>
+              <td class="td-c" style="font-size:11px;">코리아알미늄</td>
+              <td style="font-size:10px;color:var(--amber);">ECN 검토중</td>
+            </tr>
+            <tr>
+              <td class="td-c"><input type="checkbox"></td>
+              <td class="td-c">5</td>
+              <td class="text-link td-c">DH-GN7-R101</td>
+              <td>BUMPER COVER (RR)</td>
+              <td class="td-c" style="font-size:10px;font-weight:700;color:#0F6E56;">HDPE</td>
+              <td class="td-r">22,400,000</td>
+              <td class="td-r">21,200,000</td>
+              <td class="td-r gap-good">-1,200,000</td>
+              <td class="td-c gap-good">-5.4%</td>
+              <td><div class="prog-bar"><div class="prog-track"><div class="prog-fill" style="width:100%;background:var(--teal);"></div></div> <span style="font-size:10px;">달성</span></div></td>
+              <td class="td-c"><span style="font-size:10px;padding:2px 6px;background:#E6F3EF;color:var(--teal);font-weight:700;">달성</span></td>
+              <td class="td-c" style="font-size:11px;">성보산업</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-tab-bar">
+    <div class="bottom-tab-item active">Vs Target 모니터링 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">목표가 설정·버전 관리 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">원가절감 과제(CR) 관리 <span class="tab-close">✕</span></div>
+  </div>
+
+</div>
+</body>
+</html>

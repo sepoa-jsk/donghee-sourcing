@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M03-001 소재별 재료비 산출</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto','Noto Sans KR',sans-serif; border-radius: 0 !important; }
+:root {
+  --primary-blue: #185FA5;
+  --dark-blue: #0D2B55;
+  --secondary-blue: #0D3F7A;
+  --success-green: #0F6E56;
+  --teal: #0F6E56;
+  --amber: #854F0B;
+  --error-red: #A32D2D;
+  --text-primary: #222;
+  --text-secondary: #666;
+  --bg-gray: #F1F1F1;
+  --border-gray: #DDDDDD;
+  --border-light: #CCCCCC;
+  --font-m: 14px;
+  --font-s: 12px;
+  --font-xs: 10px;
+}
+html, body { height: 100%; overflow: hidden; background: #F1F1F1; }
+.page-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+.gnb-real { height: 56px; background: var(--dark-blue); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; flex-shrink: 0; }
+.gnb-left { display: flex; align-items: center; gap: 12px; }
+.gnb-logo-text { font-size: 15px; font-weight: 500; }
+.gnb-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.3); }
+.gnb-menu { font-size: 12px; color: rgba(255,255,255,0.75); }
+.gnb-right { display: flex; align-items: center; gap: 18px; font-size: 12px; color: rgba(255,255,255,0.85); }
+.gnb-icon { font-size: 16px; cursor: pointer; opacity: 0.8; }
+
+.page-title-bar { height: 40px; background: var(--bg-gray); display: flex; align-items: center; padding: 0 20px; font-size: var(--font-m); font-weight: 700; border-bottom: 1px solid var(--border-gray); flex-shrink: 0; gap: 8px; }
+.title-path { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+/* LME Banner */
+.lme-banner { height: 30px; background: #FFF8EC; border-bottom: 1px solid #F0C060; display: flex; align-items: center; padding: 0 16px; gap: 14px; flex-shrink: 0; }
+.lme-badge { background: var(--amber); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 7px; letter-spacing: 0.3px; }
+.lme-label { font-size: 11px; color: #5A3500; font-weight: 600; }
+.lme-val { font-size: 12px; font-weight: 700; color: #3A2000; }
+.lme-change { font-size: 10px; }
+.lme-change.up { color: var(--error-red); }
+.lme-change.dn { color: var(--teal); }
+.lme-sep { color: #D0A060; }
+.lme-date { font-size: 10px; color: #888; margin-left: auto; }
+
+/* Main */
+.main-single { flex: 1; display: flex; flex-direction: column; padding: 8px; gap: 6px; overflow: hidden; }
+
+/* Global action bar */
+.global-actionbar { display: flex; justify-content: flex-end; gap: 4px; flex-shrink: 0; }
+.btn { height: 32px; padding: 0 14px; border: 1px solid transparent; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 80px; font-family: inherit; }
+.btn-primary { background: var(--primary-blue); color: #fff; }
+.btn-secondary { background: var(--secondary-blue); color: #fff; }
+.btn-default { background: #f1f1f1; color: #222; border: 1px solid #999; }
+.btn-success { background: var(--teal); color: #fff; }
+.btn-warning { background: #F0A500; color: #222; }
+.btn-outline { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); }
+.btn-icon { min-width: 32px; width: 32px; padding: 0; background: #fff; border: 1px solid #999; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+
+/* Form box */
+.form-box { border: 1px solid var(--border-gray); background: #fff; padding: 16px; flex-shrink: 0; }
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; align-items: flex-end; }
+.form-row:last-child { margin-bottom: 0; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 11px; font-weight: 700; color: #333; }
+.form-label .req { color: var(--error-red); margin-left: 2px; }
+.form-control { height: 32px; border: 1px solid var(--border-light); padding: 0 8px; font-size: 13px; background: #fff; font-family: inherit; }
+.form-control.readonly { background: #F9F9F9; border-color: #EEE; color: #666; }
+.form-select { height: 32px; border: 1px solid var(--border-light); padding: 0 28px 0 8px; font-size: 13px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A32D2D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center; appearance: none; cursor: pointer; font-family: inherit; }
+.w220 { width: 220px; }
+.w160 { width: 160px; }
+.w120 { width: 120px; }
+.w100 { width: 100px; }
+
+/* Sub action bar */
+.sub-actionbar { height: 40px; background: var(--bg-gray); border: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 8px; gap: 6px; flex-shrink: 0; }
+.sub-action-left { display: flex; align-items: center; gap: 4px; }
+.sub-action-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.sim-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+.sim-range { width: 160px; cursor: pointer; accent-color: var(--amber); }
+.sim-val { font-size: 12px; font-weight: 700; color: var(--amber); min-width: 36px; text-align: center; }
+.total-label { font-size: 11px; color: var(--text-secondary); }
+.total-val { font-size: 14px; font-weight: 700; color: var(--primary-blue); }
+.sep { width: 1px; height: 20px; background: var(--border-gray); margin: 0 4px; }
+
+/* Grid */
+.grid-wrap { flex: 1; overflow: auto; border: 1px solid var(--border-gray); }
+.grid-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.grid-table th { height: 40px; background: var(--bg-gray); border: 1px solid var(--border-gray); padding: 0 8px; font-weight: 600; font-size: 11px; text-align: center; position: sticky; top: 0; z-index: 5; }
+.grid-table td { height: 32px; border: 1px solid var(--border-gray); padding: 0 8px; font-size: 11px; }
+.td-c { text-align: center; }
+.td-r { text-align: right; }
+.text-link { color: var(--primary-blue); text-decoration: underline; cursor: pointer; }
+.text-teal { color: var(--teal); font-weight: 600; }
+.text-amber { color: var(--amber); font-weight: 600; }
+
+.mat-tag { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 4px; border: 1px solid; }
+.mat-spfc { color: #185FA5; border-color: #185FA5; background: #EBF2FA; }
+.mat-hdpe { color: #0F6E56; border-color: #0F6E56; background: #E6F3EF; }
+.mat-al { color: #6B4FA0; border-color: #6B4FA0; background: #F0EBF8; }
+.mat-spfh { color: #7A4B00; border-color: #7A4B00; background: #FFF3E0; }
+.mat-cfrp { color: #A32D2D; border-color: #A32D2D; background: #FAEAEA; }
+
+.sim-highlight { background: #FFFAEB !important; }
+
+.bottom-tab-bar { height: 32px; background: var(--bg-gray); display: flex; align-items: center; border-top: 1px solid var(--border-gray); flex-shrink: 0; }
+.bottom-tab-item { display: flex; align-items: center; padding: 0 14px; height: 100%; font-size: 12px; background: #E1E1E1; border-right: 1px solid var(--border-gray); cursor: pointer; gap: 6px; }
+.bottom-tab-item.active { background: var(--secondary-blue); color: #fff; }
+.tab-close { font-size: 10px; opacity: 0.7; }
+.grid-table input[type=checkbox] { appearance: none; width: 14px; height: 14px; border: 1px solid var(--border-light); background: transparent; cursor: pointer; position: relative; }
+.grid-table input[type=checkbox]:checked { border-color: #333; }
+.grid-table input[type=checkbox]:checked::after { content: '✔'; position: absolute; top: -2px; left: 1px; font-size: 10px; color: #333; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <div class="gnb-real">
+    <div class="gnb-left">
+      <span class="gnb-logo-text">동희산업 개발구매</span>
+      <div class="gnb-divider"></div>
+      <span class="gnb-menu">원가·재료비 관리</span>
+    </div>
+    <div class="gnb-right">
+      <i class="bi bi-house gnb-icon"></i>
+      <i class="bi bi-grid gnb-icon"></i>
+      <span>개발구매팀 ( 김동희 )</span>
+      <i class="bi bi-box-arrow-right gnb-icon"></i>
+    </div>
+  </div>
+
+  <div class="page-title-bar">
+    <i class="bi bi-calculator" style="color:var(--primary-blue);"></i>
+    소재별 재료비 산출
+    <span class="title-path">M03 &gt; 원가·재료비 관리 &gt; 소재별 재료비 산출</span>
+  </div>
+
+  <!-- LME Banner -->
+  <div class="lme-banner">
+    <span class="lme-badge">LME</span>
+    <span class="lme-label">기준일:</span>
+    <span class="lme-val">2026-05-31</span>
+    <span class="lme-sep">|</span>
+    <span class="lme-label">강판(SPFC/SPFH):</span>
+    <span class="lme-val">¥ 122,400/ton</span>
+    <span class="lme-change dn"><i class="bi bi-arrow-down-short"></i>-0.8%</span>
+    <span class="lme-sep">|</span>
+    <span class="lme-label">HDPE:</span>
+    <span class="lme-val">$ 1,320/MT</span>
+    <span class="lme-change up"><i class="bi bi-arrow-up-short"></i>+1.2%</span>
+    <span class="lme-sep">|</span>
+    <span class="lme-label">Al(알루미늄):</span>
+    <span class="lme-val">$ 2,480/MT</span>
+    <span class="lme-change up"><i class="bi bi-arrow-up-short"></i>+0.5%</span>
+    <span class="lme-sep">|</span>
+    <span class="lme-label">환율(원/USD):</span>
+    <span class="lme-val">1,385</span>
+    <span class="lme-sep">|</span>
+    <span class="lme-label">환율(원/JPY100):</span>
+    <span class="lme-val">924</span>
+    <span class="lme-date">출처: LME Official · POSCO · 기준환율 (매매기준율)</span>
+  </div>
+
+  <div class="main-single">
+
+    <!-- Global Action Bar -->
+    <div class="global-actionbar">
+      <button class="btn btn-warning"><i class="bi bi-floppy"></i> 임시저장</button>
+      <button class="btn btn-primary"><i class="bi bi-save"></i> 저장</button>
+      <button class="btn btn-secondary"><i class="bi bi-send"></i> 결재요청</button>
+      <button class="btn btn-icon" title="Excel 다운로드"><i class="bi bi-file-earmark-excel"></i></button>
+      <button class="btn btn-icon" title="인쇄"><i class="bi bi-printer"></i></button>
+    </div>
+
+    <!-- Form Box -->
+    <div class="form-box">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">프로젝트 <span class="req">*</span></label>
+          <select class="form-select w220">
+            <option>DH-2026-001 GN7 (The New Grandeur)</option>
+            <option>DH-2026-002 NX4 (SUV-e)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">BOM 버전</label>
+          <select class="form-select w120">
+            <option>Rev.03 (최신)</option>
+            <option>Rev.02</option>
+            <option>Rev.01</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">산출 기준일 <span class="req">*</span></label>
+          <div style="display:flex;">
+            <input type="text" class="form-control w160" value="2026-05-31">
+            <button style="width:32px;height:32px;background:#fff;border:1px solid #CCC;display:flex;align-items:center;justify-content:center;cursor:pointer;border-left:none;"><i class="bi bi-calendar3" style="color:var(--error-red);"></i></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">산출 문서번호</label>
+          <input type="text" class="form-control readonly w160" value="MC-2026-0142" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">소재 구분</label>
+          <select class="form-select w120">
+            <option>전체</option>
+            <option>SPFC</option>
+            <option>SPFH</option>
+            <option>HDPE</option>
+            <option>Al</option>
+            <option>CFRP</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">적용 시세</label>
+          <select class="form-select w160">
+            <option>LME 최신 (2026-05-31)</option>
+            <option>LME 월평균 (2026-05)</option>
+            <option>분기평균 (2026-Q2)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">환율(원/USD) <span class="req">*</span></label>
+          <input type="text" class="form-control w100" value="1,385">
+        </div>
+        <div class="form-group">
+          <label class="form-label">환율(원/JPY100)</label>
+          <input type="text" class="form-control w100" value="924">
+        </div>
+        <div class="form-group">
+          <label class="form-label">비고</label>
+          <input type="text" class="form-control" style="width:320px;" placeholder="산출 기준 메모">
+        </div>
+        <div class="form-group" style="margin-left:auto;justify-content:flex-end;flex-direction:row;gap:4px;">
+          <button class="btn btn-primary" style="align-self:flex-end;"><i class="bi bi-search"></i> 재산출</button>
+          <button class="btn btn-default" style="align-self:flex-end;"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub Action Bar (패턴 4: 좌 액션 + 우 시뮬레이터/요약) -->
+    <div class="sub-actionbar">
+      <div class="sub-action-left">
+        <button class="btn btn-outline" style="height:28px;min-width:70px;font-size:11px;"><i class="bi bi-plus-circle"></i> 행 추가</button>
+        <button class="btn btn-default" style="height:28px;min-width:70px;font-size:11px;"><i class="bi bi-dash-circle"></i> 행 삭제</button>
+        <button class="btn btn-outline" style="height:28px;min-width:80px;font-size:11px;"><i class="bi bi-search"></i> 소재 검색</button>
+        <button class="btn btn-default" style="height:28px;min-width:80px;font-size:11px;"><i class="bi bi-upload"></i> Excel 업로드</button>
+      </div>
+      <div class="sub-action-right">
+        <div class="sep"></div>
+        <span class="sim-label"><i class="bi bi-sliders"></i> LME 변동률 시뮬:</span>
+        <span style="font-size:11px;color:#888;">-20%</span>
+        <input type="range" class="sim-range" min="-20" max="20" value="+5">
+        <span style="font-size:11px;color:#888;">+20%</span>
+        <span class="sim-val">+5.0%</span>
+        <button class="btn btn-warning" style="height:28px;min-width:60px;font-size:11px;">시뮬</button>
+        <div class="sep"></div>
+        <span class="total-label">총 재료비:</span>
+        <span class="total-val">₩ 286,420,000</span>
+        <span style="font-size:11px;color:var(--teal);">(시뮬: ₩ 300,741,000)</span>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-wrap">
+      <table class="grid-table">
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox"></th>
+            <th style="width:40px;">No.</th>
+            <th style="width:120px;">소재 코드</th>
+            <th style="min-width:180px;text-align:left;">소재명</th>
+            <th style="width:70px;">소재구분</th>
+            <th style="width:100px;">규격</th>
+            <th style="width:80px;">중량(kg)</th>
+            <th style="width:100px;">LME단가</th>
+            <th style="width:90px;">환율</th>
+            <th style="width:110px;">환산단가(원/kg)</th>
+            <th style="width:60px;">손율(%)</th>
+            <th style="width:110px;">재료비(원)</th>
+            <th style="width:110px;">시뮬재료비(원)</th>
+            <th style="width:90px;">적용일</th>
+            <th style="min-width:80px;">비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">1</td>
+            <td class="text-link td-c">MAT-SPFC-001</td>
+            <td>SPFC 440 (1.0t)</td>
+            <td class="td-c"><span class="mat-tag mat-spfc">SPFC</span></td>
+            <td class="td-c">1.0t × 1200mm</td>
+            <td class="td-r">48.2</td>
+            <td class="td-r">¥ 122,400/t</td>
+            <td class="td-r">924</td>
+            <td class="td-r">1,131</td>
+            <td class="td-r">8.5</td>
+            <td class="td-r">59,280,000</td>
+            <td class="td-r sim-highlight">62,244,000</td>
+            <td class="td-c">2026-05-31</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">2</td>
+            <td class="text-link td-c">MAT-SPFC-002</td>
+            <td>SPFC 590 (1.2t)</td>
+            <td class="td-c"><span class="mat-tag mat-spfc">SPFC</span></td>
+            <td class="td-c">1.2t × 1000mm</td>
+            <td class="td-r">36.8</td>
+            <td class="td-r">¥ 128,600/t</td>
+            <td class="td-r">924</td>
+            <td class="td-r">1,188</td>
+            <td class="td-r">9.2</td>
+            <td class="td-r">47,820,000</td>
+            <td class="td-r sim-highlight">50,211,000</td>
+            <td class="td-c">2026-05-31</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">3</td>
+            <td class="text-link td-c">MAT-SPFH-001</td>
+            <td>SPFH 590 (1.6t) [ECN변경]</td>
+            <td class="td-c"><span class="mat-tag mat-spfh">SPFH</span></td>
+            <td class="td-c">1.6t × 1400mm</td>
+            <td class="td-r">62.4</td>
+            <td class="td-r">¥ 135,200/t</td>
+            <td class="td-r">924</td>
+            <td class="td-r">1,249</td>
+            <td class="td-r">10.0</td>
+            <td class="td-r">85,760,000</td>
+            <td class="td-r sim-highlight">90,048,000</td>
+            <td class="td-c">2026-05-31</td>
+            <td style="font-size:10px;color:var(--amber);">1.4→1.6t ECN</td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">4</td>
+            <td class="text-link td-c">MAT-HDPE-001</td>
+            <td>HDPE Compound (범퍼용)</td>
+            <td class="td-c"><span class="mat-tag mat-hdpe">HDPE</span></td>
+            <td class="td-c">Pellet</td>
+            <td class="td-r">28.6</td>
+            <td class="td-r">$ 1,320/MT</td>
+            <td class="td-r">1,385</td>
+            <td class="td-r">1,829</td>
+            <td class="td-r">5.0</td>
+            <td class="td-r">54,960,000</td>
+            <td class="td-r sim-highlight">57,708,000</td>
+            <td class="td-c">2026-05-31</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">5</td>
+            <td class="text-link td-c">MAT-AL-001</td>
+            <td>Al 6000계열 (도어판넬용)</td>
+            <td class="td-c"><span class="mat-tag mat-al">Al</span></td>
+            <td class="td-c">2.0t Sheet</td>
+            <td class="td-r">18.4</td>
+            <td class="td-r">$ 2,480/MT</td>
+            <td class="td-r">1,385</td>
+            <td class="td-r">3,435</td>
+            <td class="td-r">12.0</td>
+            <td class="td-r">73,600,000</td>
+            <td class="td-r sim-highlight">77,280,000</td>
+            <td class="td-c">2026-05-31</td>
+            <td style="font-size:10px;color:var(--amber);">ECN 검토중</td>
+          </tr>
+          <tr>
+            <td class="td-c"><input type="checkbox"></td>
+            <td class="td-c">6</td>
+            <td class="text-link td-c">MAT-SPFC-003</td>
+            <td>SPFC 270 (0.8t)</td>
+            <td class="td-c"><span class="mat-tag mat-spfc">SPFC</span></td>
+            <td class="td-c">0.8t × 800mm</td>
+            <td class="td-r">12.8</td>
+            <td class="td-r">¥ 114,800/t</td>
+            <td class="td-r">924</td>
+            <td class="td-r">1,061</td>
+            <td class="td-r">7.5</td>
+            <td class="td-r">14,590,000</td>
+            <td class="td-r sim-highlight">15,320,000</td>
+            <td class="td-c">2026-05-31</td>
+            <td></td>
+          </tr>
+          <tr style="background:#F8F8F8;font-weight:700;">
+            <td></td>
+            <td colspan="10" style="text-align:right;font-size:12px;padding-right:16px;">합 계</td>
+            <td></td>
+            <td class="td-r" style="color:var(--primary-blue);">286,420,000</td>
+            <td class="td-r" style="color:var(--amber);">300,741,000</td>
+            <td colspan="2"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="bottom-tab-bar">
+    <div class="bottom-tab-item active">소재별 재료비 산출 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">LME·시세 관리 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">단가 이력 관리 <span class="tab-close">✕</span></div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,866 @@
+<!--
+  화면ID  : M01-001
+  화면명  : 신차 프로젝트 등록·조회
+  패턴    : 패턴 2 (필터 + 요약카드 + 그리드)
+  스타일  : singlesuite-style
+  생성일  : 2026-05-31
+-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M01-001 신차 프로젝트 등록·조회</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ══ §1 토큰 (singlesuite-style) ══════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto','Noto Sans KR',sans-serif; }
+:root {
+  --brand-primary:      #1746a3;
+  --brand-primary-alt:  #0747a6;
+  --brand-primary-dark: #003380;
+  --brand-soft-bg:      #f0f5ff;
+  --brand-soft-hover:   #dbeafe;
+  --success-green:      #16a34a;
+  --success-soft-bg:    #f0fdf4;
+  --success-soft-bd:    #bbf7d0;
+  --error-red:          #e11d48;
+  --error-soft-bg:      #fff1f2;
+  --error-soft-bd:      #fecdd3;
+  --error-outline:      #be123c;
+  --error-outline-bd:   #fda4af;
+  --required-red:       #ef4444;
+  --accent-red:         #D22C36;
+  --text-primary:       #1f2937;
+  --text-label:         #222222;
+  --text-secondary:     #475569;
+  --text-tertiary:      #64748b;
+  --text-muted:         #94a3b8;
+  --text-readonly:      #6b7280;
+  --bg-soft:            #f8fafc;
+  --bg-gray-lite:       #f1f5f9;
+  --bg-hover-soft:      #f9fafb;
+  --border-default:     #e5e7eb;
+  --border-input:       #d1d5db;
+  --border-soft:        #cbd5e1;
+  --border-strong:      #94a3b8;
+  --sidebar-bg:         #0F172A;
+  --sidebar-text:       #CBD5E1;
+  --sidebar-text-sub:   #94A3B8;
+  --sidebar-text-active:#FFFFFF;
+  --sidebar-icon:       #94A3B8;
+  --sidebar-icon-active:#60A5FA;
+  --sidebar-hover-bg:   #1E293B;
+  --tab-bg:             #f8fafc;
+  --tab-text:           #94a3b8;
+  --tab-active-bg:      #3f4e65;
+  --tab-active-text:    #ffffff;
+  --popup-header-bg:    #0747a6;
+  --gnb-height:         56px;
+  --title-bar-height:   48px;
+  --button-height:      32px;
+  --input-height:       32px;
+  --grid-header-height: 40px;
+  --grid-row-height:    32px;
+  --bottom-tab-height:  32px;
+  --radius-default:     4px;
+  --shadow-focus:       0 0 0 3px rgba(7,71,166,.15);
+  --shadow-popup:       0 10px 25px rgba(0,0,0,.18);
+  --shadow-sidebar:     4px 0 16px rgba(0,0,0,.18);
+  --font-l:17px; --font-m:14px; --font-s:13px; --font-xs:12px; --font-2xs:11px;
+}
+html, body { height:100%; background:#fff; color:var(--text-primary); overflow:hidden; }
+
+/* ══ §2-2 GNB ══════════════════════════════════════════════════════ */
+.ss-gnb {
+  height:var(--gnb-height); background:#ffffff;
+  border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px; position:relative; z-index:1000; flex-shrink:0;
+}
+.ss-gnb-left { display:flex; align-items:center; gap:10px; }
+.ss-gnb-logo { font-size:17px; font-weight:700; color:var(--brand-primary); }
+.ss-gnb-sep  { width:1px; height:16px; background:var(--border-default); }
+.ss-gnb-product { font-size:var(--font-s); color:var(--text-secondary); }
+.ss-gnb-icon-btn {
+  width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--text-secondary); border:none; background:transparent;
+  border-radius:var(--radius-default);
+}
+.ss-gnb-icon-btn:hover { background:var(--bg-soft); }
+.ss-gnb-right { display:flex; align-items:center; gap:18px; font-size:var(--font-s); color:var(--text-secondary); }
+.ss-gnb-icon  { display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+
+/* ══ §2-3 Page Title Bar ═══════════════════════════════════════════ */
+.ss-page-title {
+  height:var(--title-bar-height); background:#ffffff;
+  border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; flex-shrink:0;
+}
+.ss-page-title-text { font-size:var(--font-l); font-weight:700; color:var(--text-primary); }
+.ss-page-breadcrumb { font-size:var(--font-xs); color:var(--text-tertiary); display:flex; align-items:center; gap:4px; }
+
+/* ══ §2-4 필터 바 ══════════════════════════════════════════════════ */
+.ss-filter-action-row {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; padding:10px 24px; background:#ffffff;
+  /* ⚠ 필터 바 하단 구분선 금지 */
+}
+.ss-filter-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+/* Search */
+.ss-filter-search { position:relative; width:220px; }
+.ss-filter-search input {
+  width:100%; height:var(--input-height);
+  border:1px solid var(--border-input); border-radius:var(--radius-default);
+  padding:0 32px 0 10px; font-size:var(--font-s); color:var(--text-primary); background:#fff;
+  font-family:inherit;
+}
+.ss-filter-search input:focus { outline:none; border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+.ss-search-icon {
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  color:var(--accent-red); pointer-events:none; display:inline-flex; align-items:center;
+}
+/* 드롭다운 (OEM, Phase) */
+.ss-filter-select {
+  display:inline-flex; align-items:center; height:var(--button-height);
+  padding:0 28px 0 10px; border:1px solid var(--border-input);
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center;
+  border-radius:var(--radius-default); font-size:var(--font-s);
+  color:var(--text-primary); cursor:pointer; appearance:none; font-family:inherit;
+  min-width:100px;
+}
+.ss-filter-select:focus { outline:none; border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+/* 필터 토글 버튼 */
+.ss-filter-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  height:var(--button-height); padding:0 10px;
+  border:1px solid var(--border-input); background:#fff;
+  border-radius:var(--radius-default); font-size:var(--font-s);
+  color:var(--text-primary); cursor:pointer;
+  transition:background .12s, border-color .12s;
+}
+.ss-filter-tag:hover { background:var(--bg-soft); }
+.ss-filter-tag.is-active { background:var(--brand-soft-bg); border-color:var(--brand-primary-alt); }
+.ss-filter-tag.is-active .ss-tag-x { display:inline-flex; }
+.ss-tag-icon svg { width:14px; height:14px; color:var(--accent-red); }
+.ss-tag-x { display:none; align-items:center; justify-content:center; color:var(--accent-red); font-size:15px; font-weight:700; }
+/* 날짜 범위 */
+.ss-filter-date-range {
+  display:inline-flex; align-items:center; gap:4px;
+  height:var(--button-height); padding:0 10px 0 12px;
+  border:1px solid var(--border-input); background:#fff;
+  border-radius:var(--radius-default); font-size:var(--font-s);
+  color:var(--text-primary); cursor:pointer;
+}
+.ss-filter-date-range input {
+  border:none; outline:none; background:transparent;
+  font:inherit; color:inherit; width:88px; text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.ss-date-sep { color:var(--text-tertiary); padding:0 2px; }
+.ss-date-icon { display:inline-flex; align-items:center; color:var(--accent-red); margin-left:4px; }
+/* 액션 바 */
+.ss-action-bar { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+
+/* ══ §2-5 요약 영역 (패턴 2 전용) — KPI 카드 4종 ════════════════ */
+/* ⚠ 요약 영역 상하 구분선 금지 */
+.ss-kpi-row {
+  display:flex; gap:10px; padding:10px 24px;
+  background:#ffffff; flex-shrink:0;
+}
+/* singlesuite-style 타일 기준 적용 + 개발구매 표준 규칙 2줄 구조
+   1줄: 카드 제목 (--font-s, text-secondary)
+   2줄: 숫자+단위 (--font-xl 18px, font-weight:700) */
+.ss-kpi-card {
+  flex:1;
+  background:var(--bg-soft);
+  border:1px solid var(--border-default);
+  border-radius:var(--radius-default);
+  padding:16px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.ss-kpi-label { font-size:var(--font-s); font-weight:400; color:var(--text-secondary); }
+.ss-kpi-value { font-size:var(--font-xl); font-weight:700; line-height:1.2; font-variant-numeric:tabular-nums; }
+.ss-kpi-unit  { font-size:var(--font-m); font-weight:400; color:var(--text-tertiary); }
+/* .ss-kpi-sub 제거 — 개발구매 표준 규칙: 부가 설명 텍스트 사용 금지 */
+
+
+/* ══ §3 버튼 9종 ════════════════════════════════════════════════════ */
+.btn {
+  height:var(--button-height); padding:0 14px;
+  border-radius:var(--radius-default); border:1px solid transparent;
+  font-size:var(--font-s); font-weight:500; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:6px; min-width:80px; white-space:nowrap; font-family:inherit;
+  transition:background .12s, color .12s, border-color .12s;
+}
+.btn:disabled { opacity:.38; cursor:not-allowed; pointer-events:none; }
+.btn-default       { background:#f8fafc; color:#334155; border-color:#cbd5e1; }
+.btn-default:hover { background:#f1f5f9; color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-solid-blue        { background:var(--brand-primary-alt); color:#fff; border-color:var(--brand-primary-alt); }
+.btn-solid-blue:hover  { background:var(--brand-primary-dark); }
+.btn-soft-blue         { background:var(--brand-soft-bg); color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-soft-blue:hover   { background:var(--brand-soft-hover); }
+.btn-outline-blue      { background:#fff; color:var(--brand-primary-alt); border-color:var(--brand-primary-alt); }
+.btn-outline-blue:hover{ background:var(--brand-soft-bg); }
+.btn-soft-green        { background:var(--success-soft-bg); color:var(--success-green); border-color:var(--success-soft-bd); }
+.btn-soft-green:hover  { background:#dcfce7; }
+.btn-soft-red          { background:var(--error-soft-bg); color:var(--error-red); border-color:var(--error-soft-bd); }
+.btn-soft-red:hover    { background:#ffe4e6; }
+.btn-outline-red       { background:#fff; color:var(--error-outline); border-color:var(--error-outline-bd); }
+.btn-outline-red:hover { background:var(--error-soft-bg); }
+.btn-white        { background:#fff; color:var(--text-secondary); border-color:var(--border-input); }
+.btn-white:hover  { background:var(--bg-hover-soft); color:#1e293b; border-color:var(--border-strong); }
+.btn-gray-lite        { background:var(--bg-gray-lite); color:var(--text-secondary); border-color:var(--border-input); }
+.btn-gray-lite:hover  { background:#e2e8f0; border-color:var(--border-strong); }
+
+/* ══ §4 그리드 ══════════════════════════════════════════════════════ */
+/* 그리드 높이: 하단 탭바 위 5px 띄움 (개발구매 표준 규칙)
+   GNB(56) + Title(48) + Filter(52) + KPI(76) + BottomTab(32) + gap(5) = 269px */
+.ss-grid-container {
+  height: calc(100vh - 269px);
+  overflow-y: auto;
+  margin: 0 24px 5px;
+  border: 1px solid #DDDDDD;
+}
+.ss-grid { width:100%; border-collapse:collapse; white-space:nowrap; }
+.ss-grid th {
+  height:var(--grid-header-height); background:var(--bg-soft);
+  border:1px solid var(--border-default);
+  padding:0 10px; font-size:var(--font-xs); font-weight:600;
+  color:var(--text-primary); text-align:center;
+  position:sticky; top:0; z-index:10;
+}
+.ss-grid td {
+  height:var(--grid-row-height); border:1px solid var(--border-default);
+  padding:0 10px; font-size:var(--font-s); color:var(--text-primary);
+}
+/* 홀/짝 행 (donghee 특화) */
+.ss-grid tbody tr:nth-child(even) td { background:#fafafa; }
+.ss-grid tbody tr:hover td           { background:var(--bg-soft) !important; cursor:pointer; }
+/* 행 선택: 클릭 시 #E6F1FB */
+.ss-grid tbody tr.row-selected td    { background:#E6F1FB !important; }
+/* 체크박스 */
+.ss-grid input[type=checkbox] {
+  appearance:none; -webkit-appearance:none; width:14px; height:14px;
+  border:1px solid var(--border-input); background:#fff;
+  cursor:pointer; position:relative; border-radius:2px;
+}
+.ss-grid input[type=checkbox]:checked { border-color:var(--brand-primary); background:var(--brand-primary); }
+.ss-grid input[type=checkbox]:checked::after { content:'✔'; position:absolute; top:-3px; left:1px; font-size:11px; color:#fff; }
+.ss-th-required::after { content:' *'; color:var(--required-red); font-weight:700; }
+/* 열 색상 (§4-2) */
+.ss-col-default{ color:#1f2937; }
+.ss-col-blue   { color:#0747a6; }
+.ss-col-green  { color:#16a34a; }
+.ss-col-red    { color:#e11d48; }
+.ss-col-link   { color:#0747a6; text-decoration:underline; cursor:pointer; }
+/* 열 정렬 (§4-3) */
+.ss-col-left   { text-align:left; }
+.ss-col-center { text-align:center; }
+.ss-col-right  { text-align:right; }
+
+/* ══ Phase · BOM 상태 — 텍스트+색상만 (뱃지 사용 금지, 개발구매 표준 규칙) ══ */
+.phase-p1  { color:#185FA5; font-weight:500; }
+.phase-p2  { color:#0F6E56; font-weight:500; }
+.phase-p3  { color:#854F0B; font-weight:500; }
+.phase-p4  { color:#A32D2D; font-weight:500; }
+.phase-sop { color:#5F5E5A; font-weight:500; }
+.bom-wip    { color:#185FA5; font-weight:500; }
+.bom-freeze { color:#0F6E56; font-weight:500; }
+.bom-none   { color:#5F5E5A; font-weight:500; }
+
+
+/* ══ §7 하단 탭바 ══════════════════════════════════════════════════ */
+.ss-bottom-tab-bar {
+  height:var(--bottom-tab-height); background:var(--tab-bg);
+  display:flex; align-items:center; border-top:1px solid var(--border-default);
+  padding-right:12px; flex-shrink:0;
+}
+.ss-bottom-tab-summary {
+  display:flex; align-items:center; justify-content:center;
+  height:100%; padding:0 18px; background:#e2e8f0;
+  border-right:1px solid var(--border-default);
+  font-size:11px; font-weight:700; color:var(--text-secondary); letter-spacing:.5px; cursor:default;
+}
+.ss-bottom-tab-item {
+  display:flex; align-items:center; gap:8px;
+  height:100%; padding:0 14px; font-size:var(--font-xs);
+  color:var(--tab-text); background:var(--tab-bg);
+  border-right:1px solid var(--border-default); cursor:pointer;
+}
+.ss-bottom-tab-item.active { background:var(--tab-active-bg); color:var(--tab-active-text); }
+.ss-tab-close { font-size:10px; opacity:.9; }
+.ss-bottom-tab-spacer { flex:1; }
+
+/* ══ §5 폼 ══════════════════════════════════════════════════════════ */
+.ss-form-label { font-size:var(--font-xs); font-weight:700; color:var(--text-label); margin-bottom:4px; display:block; }
+.ss-form-label .req { color:var(--required-red); margin-left:2px; }
+.ss-form-control {
+  height:var(--input-height); width:100%; padding:0 10px;
+  border-radius:var(--radius-default); font-size:var(--font-s); font-family:inherit;
+  outline:none; transition:border-color .12s, box-shadow .12s;
+  border:1px solid var(--border-input); color:var(--text-primary); background:#fff;
+}
+.ss-form-control:focus { border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+.ss-form-control.readonly,[readonly].ss-form-control { border-color:var(--border-default); color:var(--text-readonly); background:#f9fafb; cursor:not-allowed; }
+.ss-form-select {
+  height:var(--input-height); width:100%; padding:0 28px 0 10px;
+  border-radius:var(--radius-default); font-size:var(--font-s); font-family:inherit;
+  border:1px solid var(--border-input); background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center;
+  appearance:none; cursor:pointer; color:var(--text-primary); outline:none;
+}
+.ss-form-select:focus { border-color:var(--brand-primary-alt); box-shadow:var(--shadow-focus); }
+textarea.ss-form-control { height:72px; resize:none; padding:8px 10px; }
+.ss-form-row { display:flex; gap:12px 16px; flex-wrap:wrap; margin-bottom:14px; }
+.ss-form-row:last-child { margin-bottom:0; }
+.ss-form-group { display:flex; flex-direction:column; flex:1; min-width:180px; }
+.ss-form-group.w-full { flex-basis:100%; }
+.ss-form-group.w-half { flex:0 0 calc(50% - 8px); }
+
+/* ══ §6 팝업 ════════════════════════════════════════════════════════ */
+.ss-popup-overlay {
+  position:fixed; inset:0; background:rgba(15,23,42,.45);
+  z-index:2000; display:none; align-items:center; justify-content:center;
+}
+.ss-popup-overlay.is-open { display:flex; }
+.ss-popup-window {
+  width:100%; max-width:640px; background:#fff;
+  border-radius:var(--radius-default); box-shadow:var(--shadow-popup);
+  overflow:hidden; display:flex; flex-direction:column;
+}
+.ss-popup-header {
+  height:36px; background:var(--popup-header-bg); color:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 12px; font-size:var(--font-s); font-weight:500;
+}
+.ss-popup-controls { display:flex; gap:8px; }
+.ss-popup-icon {
+  width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;
+  color:#fff; cursor:pointer; border-radius:2px;
+}
+.ss-popup-icon:hover { background:rgba(255,255,255,.15); }
+.ss-popup-body   { padding:20px 24px; }
+.ss-popup-footer { border-top:1px solid var(--border-default); padding:10px 16px; display:flex; justify-content:flex-end; gap:6px; background:#fff; }
+
+/* ══ §8 사이드바 ════════════════════════════════════════════════════ */
+.ss-sidebar {
+  position:fixed; top:var(--gnb-height); left:0;
+  height:calc(100vh - var(--gnb-height)); width:280px; z-index:1200;
+  background:var(--sidebar-bg); display:flex; flex-direction:column;
+  overflow-y:auto; transform:translateX(-100%);
+  transition:transform .24s ease-out; pointer-events:none;
+  box-shadow:var(--shadow-sidebar);
+}
+.ss-sidebar.is-open { transform:translateX(0); pointer-events:auto; }
+.ss-sidebar-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px 8px 18px; }
+.ss-sidebar-title  { font-size:var(--font-s); font-weight:700; color:var(--sidebar-text-active); letter-spacing:.3px; }
+.ss-sidebar-close  {
+  width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--sidebar-text-sub); border:none; background:transparent; border-radius:4px;
+}
+.ss-sidebar-close:hover { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); }
+.ss-sidebar-section { padding:6px 0; }
+.ss-sidebar-section-title { padding:8px 18px 6px; font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:.5px; text-transform:uppercase; }
+.ss-sidebar-item {
+  display:flex; align-items:center; gap:10px; height:38px; padding:0 18px;
+  color:var(--sidebar-text); font-size:14px; font-weight:500;
+  cursor:pointer; border-left:3px solid transparent; transition:background .12s;
+}
+.ss-sidebar-item:hover { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); }
+.ss-sidebar-item.active { background:var(--sidebar-hover-bg); color:var(--sidebar-text-active); border-left-color:var(--sidebar-icon-active); font-weight:600; }
+.ss-sidebar-icon { width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; color:var(--sidebar-icon); flex-shrink:0; }
+.ss-sidebar-item.active .ss-sidebar-icon { color:var(--sidebar-icon-active); }
+.ss-sidebar-label  { flex:1; }
+.ss-sidebar-chevron{ width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; color:var(--sidebar-text-sub); transition:transform .18s; }
+.ss-sidebar-item.is-expanded .ss-sidebar-chevron { transform:rotate(90deg); }
+.ss-sidebar-submenu { max-height:0; overflow:hidden; transition:max-height .22s ease; background:rgba(0,0,0,.18); }
+.ss-sidebar-submenu.is-open { max-height:500px; }
+.ss-sidebar-submenu .ss-sidebar-item { height:32px; padding-left:48px; color:var(--sidebar-text-sub); font-size:12px; font-weight:400; border-left-color:transparent; }
+.ss-sidebar-submenu .ss-sidebar-item:hover  { color:var(--sidebar-text-active); }
+.ss-sidebar-submenu .ss-sidebar-item.active { color:var(--sidebar-text-active); background:var(--sidebar-hover-bg); }
+.ss-sidebar-dim {
+  position:fixed; top:var(--gnb-height); left:0; right:0; bottom:0;
+  background:rgba(15,23,42,.45); z-index:1100; opacity:0; pointer-events:none; transition:opacity .18s;
+}
+.ss-sidebar-dim.is-open { opacity:1; pointer-events:auto; }
+body.ss-sidebar-locked { overflow:hidden; }
+
+/* ══ 레이아웃 ════════════════════════════════════════════════════════ */
+.page-wrapper { display:flex; flex-direction:column; height:100vh; }
+.main-content  { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+</style>
+</head>
+<body>
+
+<!-- ── 딤 + 사이드바 ─────────────────────────────────────────────── -->
+<div id="sidebarDim" class="ss-sidebar-dim" onclick="closeSidebar()"></div>
+
+<aside id="sidebar" class="ss-sidebar" aria-hidden="true">
+  <div class="ss-sidebar-header">
+    <span class="ss-sidebar-title">MENU</span>
+    <button class="ss-sidebar-close" onclick="closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="ss-sidebar-section">
+    <div class="ss-sidebar-section-title">동희산업 개발구매</div>
+
+    <!-- 기본정보 관리 — 펼침 + 활성 -->
+    <div class="ss-sidebar-item is-expanded active" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+      <span class="ss-sidebar-label">기본정보 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu is-open">
+      <div class="ss-sidebar-item active"><span class="ss-sidebar-label">신차 프로젝트 등록·조회</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">공급사 기본정보</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">소재·원자재 코드</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">공정·가공비 표준코드</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">사용자·권한 관리</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+      <span class="ss-sidebar-label">BOM 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">통합 BOM 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">BOM 변경 이력(ECN)</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+      <span class="ss-sidebar-label">원가·재료비 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">소재별 재료비 산출</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">LME·시세 관리</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <span class="ss-sidebar-label">목표가 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">목표가 설정·버전 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">Vs Target 모니터링</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="ss-sidebar-label">RFQ·견적 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">RFQ 발송 관리</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">견적 비교 분석</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <span class="ss-sidebar-label">결재·승인 관리</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">내 결재 현황</span></div>
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">BOM Freeze 결재</span></div>
+    </div>
+
+    <div class="ss-sidebar-item" onclick="toggleSubmenu(this)">
+      <span class="ss-sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+      <span class="ss-sidebar-label">레포트·대시보드</span>
+      <span class="ss-sidebar-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="ss-sidebar-submenu">
+      <div class="ss-sidebar-item"><span class="ss-sidebar-label">개발구매 현황 대시보드</span></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── 페이지 래퍼 ─────────────────────────────────────────────── -->
+<div class="page-wrapper">
+
+  <!-- GNB (§2-2 흰색, 좌: 로고→홈→햄버거 / 우: English→도움말→사용자→로그아웃) -->
+  <div class="ss-gnb">
+    <div class="ss-gnb-left">
+      <span class="ss-gnb-logo">동희산업</span>
+      <div class="ss-gnb-sep"></div>
+      <span class="ss-gnb-product">개발구매 솔루션</span>
+      <button class="ss-gnb-icon-btn" title="홈">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <button class="ss-gnb-icon-btn" onclick="toggleSidebar()" aria-controls="sidebar" aria-expanded="false" title="메뉴">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ss-gnb-right">
+      <span>English</span>
+      <span class="ss-gnb-icon" title="도움말">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </span>
+      <span>개발구매팀 / 김구매</span>
+      <span class="ss-gnb-icon" title="로그아웃">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- Page Title Bar (§2-3) -->
+  <div class="ss-page-title">
+    <span class="ss-page-title-text">신차 프로젝트 등록·조회</span>
+    <div class="ss-page-breadcrumb">
+      <span>기본정보 관리</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <span style="color:var(--text-primary);font-weight:600;">신차 프로젝트 등록·조회</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- §2-4 필터 바 (텍스트 라벨 금지 — placeholder + 아이콘만) -->
+    <div class="ss-filter-action-row">
+      <div class="ss-filter-group">
+
+        <!-- 1) Search 입력창 -->
+        <div class="ss-filter-search">
+          <input type="text" placeholder="프로젝트명 검색">
+          <span class="ss-search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+        </div>
+
+        <!-- 2) 필터 토글 (깔때기 + "필터") -->
+        <span class="ss-filter-tag">
+          <span class="ss-tag-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </span>
+          <span style="font-size:var(--font-s);color:var(--text-primary);">필터</span>
+        </span>
+
+        <!-- 5) SOP 목표일 날짜 범위 (YYYY/MM/DD 형식) -->
+        <span class="ss-filter-date-range">
+          <input type="text" value="2025/01/01">
+          <span class="ss-date-sep">~</span>
+          <input type="text" value="2027/12/31">
+          <span class="ss-date-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+        </span>
+
+      </div>
+
+      <!-- 액션 버튼 (같은 행 우측 — [신규등록] [수정] [삭제]) -->
+      <div class="ss-action-bar">
+        <button class="btn btn-outline-blue" onclick="openPopup()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          신규등록
+        </button>
+        <button class="btn btn-default">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          수정
+        </button>
+        <button class="btn btn-outline-red">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          삭제
+        </button>
+      </div>
+    </div>
+
+    <!-- §2-5 요약 영역 (패턴 2 전용 — 필터 바 직후, 그리드 직전 / 구분선 금지)
+         개발구매 표준: 2줄 구조 (제목 + 숫자), 부가 설명 제거 -->
+    <div class="ss-kpi-row">
+      <div class="ss-kpi-card">
+        <div class="ss-kpi-label">전체 프로젝트</div>
+        <div style="display:flex;align-items:baseline;gap:5px;">
+          <span class="ss-kpi-value" style="color:var(--brand-primary-alt);">7</span>
+          <span class="ss-kpi-unit">건</span>
+        </div>
+      </div>
+      <div class="ss-kpi-card">
+        <div class="ss-kpi-label">진행 중 (P1~P4)</div>
+        <div style="display:flex;align-items:baseline;gap:5px;">
+          <span class="ss-kpi-value" style="color:var(--brand-primary-alt);">5</span>
+          <span class="ss-kpi-unit">건</span>
+        </div>
+      </div>
+      <div class="ss-kpi-card">
+        <div class="ss-kpi-label">이번달 SOP 예정</div>
+        <div style="display:flex;align-items:baseline;gap:5px;">
+          <span class="ss-kpi-value" style="color:#854F0B;">2</span>
+          <span class="ss-kpi-unit">건</span>
+        </div>
+      </div>
+      <div class="ss-kpi-card">
+        <div class="ss-kpi-label">목표가 미승인</div>
+        <div style="display:flex;align-items:baseline;gap:5px;">
+          <span class="ss-kpi-value" style="color:#D22C36;">3</span>
+          <span class="ss-kpi-unit">건</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- §4 그리드 (§4-2 열 색상 · §4-3 정렬 기준 준수) -->
+    <div class="ss-grid-container">
+      <table class="ss-grid">
+        <thead>
+          <tr>
+            <th style="width:40px;"><input type="checkbox"></th>
+            <th style="width:110px;">프로젝트ID</th>
+            <th style="width:200px;">프로젝트명</th>
+            <th style="width:80px;">OEM</th>
+            <th style="width:100px;">차종</th>
+            <th style="width:100px;">플랫폼</th>
+            <th style="width:90px;">진행Phase</th>
+            <th style="width:110px;">SOP 목표일</th>
+            <th style="width:80px;">담당자</th>
+            <th style="width:90px;">BOM 상태</th>
+            <th style="width:100px;">등록일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2025-001</td>
+            <td class="ss-col-left  ss-col-default">NX5 SUV</td>
+            <td class="ss-col-center ss-col-default">HMC</td>
+            <td class="ss-col-center ss-col-default">NX5</td>
+            <td class="ss-col-center ss-col-default">N플랫폼</td>
+            <td class="ss-col-center"><span class="phase-p2">P2</span></td>
+            <td class="ss-col-center ss-col-blue">2026/09/01</td>
+            <td class="ss-col-center ss-col-default">김구매</td>
+            <td class="ss-col-center"><span class="bom-wip">작성중</span></td>
+            <td class="ss-col-center ss-col-blue">2025/03/15</td>
+          </tr>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2025-002</td>
+            <td class="ss-col-left  ss-col-default">EV 세단</td>
+            <td class="ss-col-center ss-col-default">HMC</td>
+            <td class="ss-col-center ss-col-default">CE</td>
+            <td class="ss-col-center ss-col-default">CE플랫폼</td>
+            <td class="ss-col-center"><span class="phase-p1">P1</span></td>
+            <td class="ss-col-center ss-col-blue">2026/12/01</td>
+            <td class="ss-col-center ss-col-default">이소싱</td>
+            <td class="ss-col-center"><span class="bom-none">미작성</span></td>
+            <td class="ss-col-center ss-col-blue">2025/04/20</td>
+          </tr>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2025-003</td>
+            <td class="ss-col-left  ss-col-default">소형 SUV</td>
+            <td class="ss-col-center ss-col-default">기아</td>
+            <td class="ss-col-center ss-col-default">SX2</td>
+            <td class="ss-col-center ss-col-default">SX플랫폼</td>
+            <td class="ss-col-center"><span class="phase-p3">P3</span></td>
+            <td class="ss-col-center ss-col-blue">2026/06/01</td>
+            <td class="ss-col-center ss-col-default">박원가</td>
+            <td class="ss-col-center"><span class="bom-freeze">Freeze</span></td>
+            <td class="ss-col-center ss-col-blue">2025/06/10</td>
+          </tr>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2025-004</td>
+            <td class="ss-col-left  ss-col-default">수소 SUV</td>
+            <td class="ss-col-center ss-col-default">HMC</td>
+            <td class="ss-col-center ss-col-default">NX7</td>
+            <td class="ss-col-center ss-col-default">N플랫폼</td>
+            <td class="ss-col-center"><span class="phase-p2">P2</span></td>
+            <td class="ss-col-center ss-col-blue">2027/03/01</td>
+            <td class="ss-col-center ss-col-default">김구매</td>
+            <td class="ss-col-center"><span class="bom-wip">작성중</span></td>
+            <td class="ss-col-center ss-col-blue">2025/07/25</td>
+          </tr>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2024-011</td>
+            <td class="ss-col-left  ss-col-default">RV 플랫폼</td>
+            <td class="ss-col-center ss-col-default">HMC</td>
+            <td class="ss-col-center ss-col-default">RV1</td>
+            <td class="ss-col-center ss-col-default">RV플랫폼</td>
+            <td class="ss-col-center"><span class="phase-p4">P4</span></td>
+            <td class="ss-col-center ss-col-blue">2025/12/01</td>
+            <td class="ss-col-center ss-col-default">이소싱</td>
+            <td class="ss-col-center"><span class="bom-freeze">Freeze</span></td>
+            <td class="ss-col-center ss-col-blue">2024/11/05</td>
+          </tr>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2024-008</td>
+            <td class="ss-col-left  ss-col-default">경차 페달</td>
+            <td class="ss-col-center ss-col-default">기아</td>
+            <td class="ss-col-center ss-col-default">AX1</td>
+            <td class="ss-col-center ss-col-default">AX플랫폼</td>
+            <td class="ss-col-center"><span class="phase-sop">SOP완료</span></td>
+            <td class="ss-col-center ss-col-blue">2025/06/01</td>
+            <td class="ss-col-center ss-col-default">박원가</td>
+            <td class="ss-col-center"><span class="bom-freeze">Freeze</span></td>
+            <td class="ss-col-center ss-col-blue">2024/08/12</td>
+          </tr>
+          <tr onclick="toggleRowSelection(this)">
+            <td class="ss-col-center"><input type="checkbox"></td>
+            <td class="ss-col-center ss-col-link">PRJ-2024-005</td>
+            <td class="ss-col-left  ss-col-default">중형 세단</td>
+            <td class="ss-col-center ss-col-default">HMC</td>
+            <td class="ss-col-center ss-col-default">GN7</td>
+            <td class="ss-col-center ss-col-default">GN플랫폼</td>
+            <td class="ss-col-center"><span class="phase-sop">SOP완료</span></td>
+            <td class="ss-col-center ss-col-blue">2025/03/01</td>
+            <td class="ss-col-center ss-col-default">김구매</td>
+            <td class="ss-col-center"><span class="bom-freeze">Freeze</span></td>
+            <td class="ss-col-center ss-col-blue">2024/06/30</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- §7 하단 탭바 -->
+  <div class="ss-bottom-tab-bar">
+    <div class="ss-bottom-tab-summary">SUMMARY</div>
+    <div class="ss-bottom-tab-item active">
+      신차 프로젝트 등록·조회 <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-item">
+      공급사 기본정보 <span class="ss-tab-close">✕</span>
+    </div>
+    <div class="ss-bottom-tab-spacer"></div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<!-- ══ §6 신규등록 팝업 ══════════════════════════════════════════════ -->
+<div id="popupOverlay" class="ss-popup-overlay" onclick="handleOverlayClick(event)">
+  <div class="ss-popup-window" onclick="event.stopPropagation()">
+    <!-- 팝업 헤더: background #0747a6, text #ffffff -->
+    <div class="ss-popup-header">
+      <span>신차 프로젝트 등록</span>
+      <div class="ss-popup-controls">
+        <span class="ss-popup-icon" title="최소화">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <span class="ss-popup-icon" title="최대화">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        </span>
+        <span class="ss-popup-icon" title="닫기" onclick="closePopup()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 팝업 본문 -->
+    <div class="ss-popup-body">
+      <!-- 프로젝트명 (필수, 100%) -->
+      <div class="ss-form-row">
+        <div class="ss-form-group w-full">
+          <label class="ss-form-label">프로젝트명<span class="req">*</span></label>
+          <input type="text" class="ss-form-control" placeholder="신차 프로젝트명을 입력하세요">
+        </div>
+      </div>
+      <!-- OEM / 차종명 -->
+      <div class="ss-form-row">
+        <div class="ss-form-group w-half">
+          <label class="ss-form-label">OEM<span class="req">*</span></label>
+          <select class="ss-form-select">
+            <option value="">OEM 선택</option>
+            <option>HMC</option>
+            <option>기아</option>
+          </select>
+        </div>
+        <div class="ss-form-group w-half">
+          <label class="ss-form-label">차종명</label>
+          <input type="text" class="ss-form-control" placeholder="예: NX5, GN7">
+        </div>
+      </div>
+      <!-- 플랫폼 / SOP 목표일 -->
+      <div class="ss-form-row">
+        <div class="ss-form-group w-half">
+          <label class="ss-form-label">플랫폼</label>
+          <input type="text" class="ss-form-control" placeholder="예: N플랫폼">
+        </div>
+        <div class="ss-form-group w-half">
+          <label class="ss-form-label">SOP 목표일<span class="req">*</span></label>
+          <input type="text" class="ss-form-control" placeholder="YYYY/MM/DD">
+        </div>
+      </div>
+      <!-- 담당자 / 비고 -->
+      <div class="ss-form-row">
+        <div class="ss-form-group w-half">
+          <label class="ss-form-label">담당자<span class="req">*</span></label>
+          <input type="text" class="ss-form-control" placeholder="담당자명 입력">
+        </div>
+        <div class="ss-form-group w-half" style="visibility:hidden;"></div>
+      </div>
+      <!-- 비고 (100%) -->
+      <div class="ss-form-row">
+        <div class="ss-form-group w-full">
+          <label class="ss-form-label">비고</label>
+          <textarea class="ss-form-control" placeholder="추가 사항을 입력하세요"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 팝업 하단 버튼 -->
+    <div class="ss-popup-footer">
+      <button class="btn btn-white" onclick="closePopup()">취소</button>
+      <button class="btn btn-solid-blue">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        저장
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- §8-4 사이드바 JavaScript (토글 한정 예외) + 와이어프레임 인터랙션 -->
+<script>
+/* ── 사이드바 ── */
+function toggleSidebar() {
+  var sb  = document.getElementById('sidebar');
+  var dim = document.getElementById('sidebarDim');
+  var btn = document.querySelector('[aria-controls="sidebar"]');
+  var open = sb.classList.toggle('is-open');
+  dim.classList.toggle('is-open', open);
+  sb.setAttribute('aria-hidden', String(!open));
+  if (btn) btn.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('ss-sidebar-locked', open);
+}
+function closeSidebar() {
+  var sb  = document.getElementById('sidebar');
+  var dim = document.getElementById('sidebarDim');
+  var btn = document.querySelector('[aria-controls="sidebar"]');
+  sb.classList.remove('is-open'); dim.classList.remove('is-open');
+  sb.setAttribute('aria-hidden', 'true');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('ss-sidebar-locked');
+}
+function toggleSubmenu(el) {
+  var sub = el.nextElementSibling;
+  if (!sub || !sub.classList.contains('ss-sidebar-submenu')) return;
+  var open = sub.classList.toggle('is-open');
+  el.classList.toggle('is-expanded', open);
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeSidebar(); closePopup(); } });
+
+/* ── 팝업 ── */
+function openPopup()  { document.getElementById('popupOverlay').classList.add('is-open'); }
+function closePopup() { document.getElementById('popupOverlay').classList.remove('is-open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('popupOverlay')) closePopup(); }
+
+/* ── 행 클릭 선택 (체크박스 없음 — 배경색 #E6F1FB 토글) ── */
+function toggleRowSelection(tr) {
+  var isSelected = tr.classList.contains('row-selected');
+  document.querySelectorAll('.ss-grid tbody tr').forEach(function(r) {
+    r.classList.remove('row-selected');
+  });
+  if (!isSelected) tr.classList.add('row-selected');
+}
+</script>
+</body>
+</html>
