@@ -40,8 +40,8 @@ window.render_M01_001 = function(container) {
           <button class="btn btn-outline-red" onclick="m01001_delete()"><i data-lucide="trash-2"></i> 삭제</button>
         </div>
       </div>
-      <!-- 요약카드 -->
-      <div id="m01001-cards" class="summary-cards" style="margin-bottom:12px;"></div>
+      <!-- 인사이트 카드 -->
+      <div id="m01001-cards" class="insight-cards"></div>
       <!-- 그리드 -->
       <div id="m01001-grid" style="flex:1;overflow-y:auto;"></div>
     </div>
@@ -107,23 +107,36 @@ window.render_M01_001 = function(container) {
     const projects = MockData.getAll('projects');
     const inProgress = projects.filter(p => ['P1','P2','P3','P4'].includes(p.phase)).length;
     document.getElementById('m01001-cards').innerHTML = `
-      <div class="summary-card">
-        <div class="summary-card-title">전체 프로젝트</div>
-        <div class="summary-card-value">${projects.length} <span>건</span></div>
+      <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="folder"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${projects.length}</span>
+          <span class="insight-card-label">전체 프로젝트</span>
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card-title">진행 중 (P1~P4)</div>
-        <div class="summary-card-value">${inProgress} <span>건</span></div>
+      <div class="insight-card">
+        <div class="insight-card-icon green"><i data-lucide="play-circle"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${inProgress}</span>
+          <span class="insight-card-label">진행 중 (P1~P4)</span>
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card-title">이번달 SOP 예정</div>
-        <div class="summary-card-value">2 <span>건</span></div>
+      <div class="insight-card">
+        <div class="insight-card-icon amber"><i data-lucide="clock"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">2</span>
+          <span class="insight-card-label">이번달 SOP 예정</span>
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card-title">목표가 미승인</div>
-        <div class="summary-card-value danger">3 <span>건</span></div>
+      <div class="insight-card">
+        <div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">3</span>
+          <span class="insight-card-label">목표가 미승인</span>
+        </div>
       </div>
     `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
 
   window.m01001_renderGrid = function() {
@@ -319,6 +332,7 @@ window.render_M01_002 = function(container) {
           <button class="btn btn-outline-blue" onclick="m01002_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
+      <div id="m01002-insight" class="insight-cards"></div>
       <div id="m01002-grid" style="flex:1;overflow:auto;"></div>
     </div>
     <!-- 상세 뷰 -->
@@ -340,7 +354,7 @@ window.render_M01_002 = function(container) {
     </div>
   </div>`;
 
-  const TABS = ['일반정보','사업자정보','담당자정보','경영정보','영업현황','품질·인증정보','공급역량','신용평가정보'];
+  const TABS = ['일반정보','사업자정보','담당자정보','경영정보','영업현황','품질·인증정보','공급역량','신용평가정보','성과 분석'];
 
   // ── 함수 ──
   window.m01002_onSearch = function(val) {
@@ -386,6 +400,16 @@ window.render_M01_002 = function(container) {
         <td class="center">${s.creditGrade||'-'}</td>
         <td class="center">${s.cashFlowGrade||'-'}</td>
         <td class="center">${s.riskGrade||'-'}</td>
+        <td class="center">${(() => {
+          const sc = s.score||70;
+          const cls = sc>=80?'high':sc>=65?'mid':'low';
+          return `<div class="score-bar"><div class="score-bar-track"><div class="score-bar-fill ${cls}" style="width:${sc}%"></div></div><span class="score-bar-text" style="color:${sc>=80?'var(--success)':sc>=65?'#F59E0B':'var(--danger)'}">${sc}</span></div>`;
+        })()}</td>
+        <td class="center">${(() => {
+          const r = s.risk||'정상';
+          const rc = r==='정상'?'safe':r==='주의'?'caution':'danger';
+          return `<span class="risk-dot ${rc}"></span>${r}`;
+        })()}</td>
       </tr>`;
     }).join('');
 
@@ -398,6 +422,7 @@ window.render_M01_002 = function(container) {
             <col style="width:80px"><col style="width:180px"><col style="width:120px">
             <col style="width:140px"><col style="width:160px"><col style="width:120px">
             <col style="width:70px"><col style="width:90px"><col style="width:70px">
+            <col style="width:80px"><col style="width:60px">
           </colgroup>
           <thead><tr>
             <th><input type="checkbox" onclick="m01002_toggleAll(this)"></th>
@@ -405,6 +430,7 @@ window.render_M01_002 = function(container) {
             <th>수정요청</th><th>업체코드</th><th>업체명</th><th>사업자등록번호</th>
             <th>업태</th><th>업종</th><th>국가</th>
             <th>신용등급</th><th>현금흐름등급</th><th>외치등급</th>
+            <th>종합점수</th><th>리스크</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -474,6 +500,7 @@ window.render_M01_002 = function(container) {
       '품질·인증정보': () => m01002_tabQuality(supp),
       '공급역량':    () => m01002_tabCapacity(supp),
       '신용평가정보': () => m01002_tabCredit(supp),
+      '성과 분석':   () => m01002_tabPerformance(supp),
     };
     el.innerHTML = (map[tab] || (() => ''))();
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
@@ -797,6 +824,50 @@ window.render_M01_002 = function(container) {
     );
   };
 
+  // ── 탭 9: 성과 분석 ──
+  window.m01002_tabPerformance = function(supp) {
+    const s = supp || {};
+    const sc = s.score || 87;
+    const scColor = sc >= 80 ? 'var(--primary)' : sc >= 65 ? '#F59E0B' : 'var(--danger)';
+    const qcdBars = [
+      { label:'품질(Q)', val:92, color:'var(--success)' },
+      { label:'원가(C)', val:78, color:'#F59E0B' },
+      { label:'납기(D)', val:95, color:'var(--success)' },
+      { label:'서비스(S)', val:85, color:'var(--success)' },
+    ].map(b => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="width:64px;font-size:var(--font-s);color:var(--text-secondary);">${b.label}</span>
+        <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;">
+          <div style="width:${b.val}%;height:100%;background:${b.color};border-radius:4px;"></div>
+        </div>
+        <span style="width:36px;font-size:var(--font-s);font-weight:600;text-align:right;color:${b.color};">${b.val}점</span>
+      </div>`).join('');
+    const tradeRows = [
+      ['2024','NX5 SUV','로어 암 브라켓','₩850M','98.5%','12ppm','A'],
+      ['2024','소형 SUV','스태빌라이저','₩620M','97.2%','18ppm','B'],
+      ['2023','RV 플랫폼','코일 스프링 시트','₩480M','99.1%','8ppm','A'],
+    ].map(r => {
+      const gc = r[6]==='A'?'color:var(--success)':'color:var(--primary)';
+      return `<tr><td class="center">${r[0]}</td><td class="left">${r[1]}</td><td class="left">${r[2]}</td><td class="right">${r[3]}</td><td class="center">${r[4]}</td><td class="center">${r[5]}</td><td class="center" style="${gc};font-weight:500;">${r[6]}</td></tr>`;
+    }).join('');
+    return (
+      _box('공급사 스코어카드',
+        `<div class="mini-dashboard">
+          <div class="mini-kpi"><div class="mini-kpi-value" style="color:${scColor};">${sc}점</div><div class="mini-kpi-label">종합점수</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-value" style="color:var(--success);">98.5%</div><div class="mini-kpi-label">납기준수율</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-value" style="color:${12<=20?'var(--success)':'var(--danger)'};">12ppm</div><div class="mini-kpi-label">품질불량률</div></div>
+        </div>`
+      ) +
+      _box('Q·C·D 평가 현황', `<div style="padding:4px 0;">${qcdBars}</div>`) +
+      _box('최근 거래 동향',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>연도</th><th>프로젝트</th><th>납품품목</th><th>거래액</th><th>납기준수율</th><th>불량률</th><th>종합</th></tr></thead>
+          <tbody>${tradeRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
   window.m01002_save = function() {
     const name = (document.getElementById('sf-name')||{}).value;
     if (!name || !name.trim()) { Common.showToast('업체명을 입력해주세요', 'error'); return; }
@@ -841,8 +912,25 @@ window.render_M01_002 = function(container) {
     m01002_renderGrid();
   };
 
+  window.m01002_renderInsight = function() {
+    const data = MockData.getAll('suppliers');
+    const riskDanger = data.filter(s => (s.risk||'정상') === '위험').length;
+    const riskCaution = data.filter(s => (s.risk||'정상') === '주의').length;
+    const avgScore = data.length ? Math.round(data.reduce((a, s) => a + (s.score||70), 0) / data.length) : 0;
+    const el = document.getElementById('m01002-insight');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="building-2"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length}</span><span class="insight-card-label">등록 협력사</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="star"></i></div><div class="insight-card-body"><span class="insight-card-value">${avgScore}점</span><span class="insight-card-label">평균 종합점수</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="alert-triangle"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskCaution}개</span><span class="insight-card-label">주의 협력사</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="shield-alert"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskDanger}개</span><span class="insight-card-label">위험 협력사</span></div></div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
   // 모든 함수 정의 완료 후 초기 렌더
   window.m01002_renderGrid();
+  window.m01002_renderInsight();
 };
 
 
@@ -893,6 +981,7 @@ window.render_M01_004 = function(container) {
           <button class="btn btn-outline-blue" onclick="m01004_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
+      <div id="m01004-insight" class="insight-cards"></div>
       <div id="m01004-grid"></div>
     </div>
     <!-- 상세 뷰 -->
@@ -1187,8 +1276,24 @@ window.render_M01_004 = function(container) {
     m01004_renderGrid();
   };
 
+  // ── 인사이트 카드 렌더 ──
+  window.m01004_renderInsight = function() {
+    const mats = MockData.getAll('materials');
+    const lme = MockData.getAll('lmePrice')[0] || {};
+    const el = document.getElementById('m01004-insight');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="layers"></i></div><div class="insight-card-body"><span class="insight-card-value">${mats.length}</span><span class="insight-card-label">등록 소재</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="trending-up"></i></div><div class="insight-card-body"><span class="insight-card-value">$${lme.steel||621}</span><span class="insight-card-label">Steel HRC 최신</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="trending-down"></i></div><div class="insight-card-body"><span class="insight-card-value">$${(lme.al||2418).toLocaleString('ko-KR')}</span><span class="insight-card-label">Al LME 최신</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="dollar-sign"></i></div><div class="insight-card-body"><span class="insight-card-value">₩${(lme.usdKrw||1342).toLocaleString('ko-KR')}</span><span class="insight-card-label">USD/KRW 환율</span></div></div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
   // 초기 렌더
   window.m01004_renderGrid();
+  window.m01004_renderInsight();
 };
 
 
@@ -1235,6 +1340,7 @@ window.render_M01_005 = function(container) {
           <button class="btn btn-outline-blue" onclick="m01005_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
+      <div id="m01005-insight" class="insight-cards"></div>
       <div id="m01005-grid"></div>
     </div>
     <div id="m01005-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
@@ -1470,8 +1576,23 @@ window.render_M01_005 = function(container) {
     m01005_renderGrid();
   };
 
+  window.m01005_renderInsight = function() {
+    const data = MockData.getAll('processes');
+    const totalCost = data.reduce((a, p) => a + (p.unitCost||0), 0);
+    const automated = data.filter(p => (p.method||'').includes('자동') || (p.method||'').includes('CNC')).length;
+    const el = document.getElementById('m01005-insight');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="settings-2"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length}</span><span class="insight-card-label">등록 공정</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="cpu"></i></div><div class="insight-card-body"><span class="insight-card-value">${automated}</span><span class="insight-card-label">자동화 공정</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="coins"></i></div><div class="insight-card-body"><span class="insight-card-value">₩${Number(totalCost).toLocaleString('ko-KR')}</span><span class="insight-card-label">총 단위 가공비</span></div></div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
   // 초기 렌더
   window.m01005_renderGrid();
+  window.m01005_renderInsight();
 };
 
 
@@ -1512,6 +1633,7 @@ window.render_M01_003 = function(container) {
           <button class="btn btn-outline-blue" onclick="m01003_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
+      <div id="m01003-insight" class="insight-cards"></div>
       <div id="m01003-grid"></div>
     </div>
 
@@ -1825,6 +1947,22 @@ window.render_M01_003 = function(container) {
     m01003_renderGrid();
   };
 
+  window.m01003_renderInsight = function() {
+    const data = MockData.getAll('items');
+    const active = data.filter(i => (i.status||'활성') === '활성').length;
+    const withBom = data.filter(i => i.bomCount > 0 || i.hasBom).length;
+    const el = document.getElementById('m01003-insight');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="package"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length}</span><span class="insight-card-label">등록 품목</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="check-circle"></i></div><div class="insight-card-body"><span class="insight-card-value">${active}</span><span class="insight-card-label">활성 품목</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="git-branch"></i></div><div class="insight-card-body"><span class="insight-card-value">${withBom}</span><span class="insight-card-label">BOM 등록</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length - active}</span><span class="insight-card-label">비활성 품목</span></div></div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
   // 초기 렌더
   window.m01003_renderGrid();
+  window.m01003_renderInsight();
 };

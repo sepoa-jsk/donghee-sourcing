@@ -734,6 +734,53 @@ body {
 }
 .file-drop-area:hover { border-color: var(--primary); background: var(--primary-light); }
 
+/* ═══ 인사이트 카드 (엠로·아리바 패턴) ═══ */
+.insight-cards { display: flex; gap: 12px; margin-bottom: 12px; }
+.insight-card {
+  flex: 1;
+  padding: 14px 18px;
+  border: 1px solid var(--tile-border);
+  border-radius: var(--radius);
+  background: var(--tile-bg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.insight-card-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.insight-card-icon.blue  { background: #DBEAFE; color: var(--primary); }
+.insight-card-icon.green { background: #DCFCE7; color: var(--success); }
+.insight-card-icon.red   { background: #FFE4E6; color: var(--danger); }
+.insight-card-icon.amber { background: #FEF3C7; color: #92400E; }
+.insight-card-body { display: flex; flex-direction: column; }
+.insight-card-value { font-size: var(--font-xl); font-weight: 700; color: var(--text-primary); line-height: 1; }
+.insight-card-label { font-size: var(--font-xs); color: var(--text-secondary); margin-top: 2px; }
+
+/* ═══ 스코어 바 ═══ */
+.score-bar { display: flex; align-items: center; gap: 6px; }
+.score-bar-track { width: 48px; height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; }
+.score-bar-fill.high { background: var(--success); }
+.score-bar-fill.mid  { background: #F59E0B; }
+.score-bar-fill.low  { background: var(--danger); }
+.score-bar-text { font-size: var(--font-xs); font-weight: 500; min-width: 24px; }
+
+/* ═══ 리스크 점 ═══ */
+.risk-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.risk-dot.safe    { background: var(--success); }
+.risk-dot.caution { background: #F59E0B; }
+.risk-dot.danger  { background: var(--danger); }
+
+/* ═══ 미니 대시보드 ═══ */
+.mini-dashboard { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.mini-kpi { padding: 12px 16px; border: 1px solid var(--tile-border); border-radius: var(--radius); background: var(--tile-bg); text-align: center; }
+.mini-kpi-value { font-size: var(--font-xl); font-weight: 700; line-height: 1; }
+.mini-kpi-label { font-size: var(--font-xs); color: var(--text-secondary); margin-top: 4px; }
+
 /* ═══ 모달/팝업 ═══ */
 .modal-overlay {
   position: fixed;
