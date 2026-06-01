@@ -71,14 +71,23 @@ singlesuite-style > LayoutGuide.html > CLAUDE.md 동희 특화 규칙
   - `.ss-col-red` #e11d48 / `.ss-col-link` #0747a6 + underline
 - 열 정렬: `.ss-col-left` / `.ss-col-center` / `.ss-col-right` 중 하나 필수
 
-### 필터 바 규칙 (§2-4, 5요소 순서 고정)
-1. Search 입력창 (검색 아이콘 **#D22C36**)
-2. 필터 토글 버튼 (Filter 아이콘 **#D22C36**)
-3. 상태 토글 버튼 (BarChart2 아이콘 **#0747a6** — 단 하나 파랑)
-4. 날짜 유형 드롭다운 (다중 날짜 컬럼 화면에만 선택 포함)
-5. 날짜 범위 입력 (Calendar 아이콘 **#D22C36**, 형식 YYYY/MM/DD)
-- 필터 바와 액션 버튼은 같은 행 (행 분리 금지)
-- 필터 바에 `<label>` 텍스트 라벨 금지
+### 필터 바 규칙 — 확정 표준 (변경 금지)
+
+한 줄 구성: 좌측 검색그룹 + 우측 액션버튼 (행 분리 금지)
+
+좌측 순서 (고정):
+1. `.filter-search` — 400px, placeholder **"Search"**, lucide search 아이콘 `#94A3B8`
+2. `.filter-btn` — lucide filter 아이콘 `var(--primary)` + "필터" 텍스트
+3. `.filter-btn` (선택) — lucide bar-chart-2 `var(--primary)` + 구분/상태 텍스트
+4. `.filter-date-range` (선택) — 시작일~종료일 + lucide calendar `var(--danger)`
+
+우측: `.filter-right` (margin-left:auto)
+- 신규: `btn-outline-blue` / 수정: `btn` / 삭제: `btn-outline-red`
+
+금지 사항:
+- `<label>` 텍스트 라벨 금지
+- 인라인 style 금지 — CSS 클래스만 사용
+- 한국어 placeholder 금지 (항상 "Search")
 
 ---
 
