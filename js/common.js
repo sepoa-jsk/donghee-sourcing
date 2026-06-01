@@ -5,13 +5,14 @@ const Common = {
     const gnb = document.getElementById('gnb');
     if (!gnb) return;
     gnb.innerHTML = `
-      <span class="gnb-icon" onclick="Common.toggleSidebar()" style="cursor:pointer;margin-right:8px;">☰</span>
+      <span class="gnb-hamburger" onclick="Common.toggleSidebar()">☰</span>
       <span class="gnb-logo">${isPortal ? '동희산업 협력사 포털' : '동희산업'}</span>
       <span class="gnb-divider">|</span>
       <span class="gnb-system">${isPortal ? 'Supplier Portal' : '개발구매 솔루션'}</span>
+      <span class="gnb-home" title="홈" onclick="App.navigate('M09-001')">🏠</span>
       <span class="gnb-right">
-        <span>English</span>
-        <span class="gnb-icon">❓</span>
+        <span style="color:var(--text-muted)">English</span>
+        <span class="gnb-icon" title="도움말">❓</span>
         <span>${isPortal ? '(주)한국정밀 / 홍길동' : '개발구매팀 / 김구매'}</span>
         <span class="gnb-icon" title="로그아웃">⎋</span>
       </span>
