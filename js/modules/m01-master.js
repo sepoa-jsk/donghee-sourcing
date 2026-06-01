@@ -321,8 +321,8 @@ window.render_M01_002 = function(container) {
       </div>
       <!-- 좌우 2단 -->
       <div class="detail-layout" style="flex:1;overflow:hidden;">
-        <!-- 좌측 세로탭 (140px, 파일첨부 없음) -->
-        <div class="detail-left" style="width:140px;">
+        <!-- 좌측 세로탭 (160px, 파일첨부 없음) -->
+        <div class="detail-left" style="width:160px;">
           <div class="detail-left-tabs" id="m01002-vtabs"></div>
         </div>
         <!-- 우측 콘텐츠 -->
@@ -331,7 +331,7 @@ window.render_M01_002 = function(container) {
     </div>
   </div>`;
 
-  const TABS = ['일반정보', '추가정보'];
+  const TABS = ['일반정보','사업자정보','담당자정보','경영정보','영업현황','품질·인증정보','공급역량','신용평가정보'];
 
   // ── 함수 ──
   window.m01002_onSearch = function(val) {
@@ -453,286 +453,301 @@ window.render_M01_002 = function(container) {
 
   window.m01002_renderTabContent = function(tab, supp) {
     const el = document.getElementById('m01002-tab-content');
-    if (tab === '일반정보') el.innerHTML = m01002_tabGeneral(supp);
-    else                    el.innerHTML = m01002_tabExtra(supp);
+    const map = {
+      '일반정보':    () => m01002_tabGeneral(supp),
+      '사업자정보':  () => m01002_tabBizInfo(supp),
+      '담당자정보':  () => m01002_tabContacts(supp),
+      '경영정보':    () => m01002_tabFinance(supp),
+      '영업현황':    () => m01002_tabSales(supp),
+      '품질·인증정보': () => m01002_tabQuality(supp),
+      '공급역량':    () => m01002_tabCapacity(supp),
+      '신용평가정보': () => m01002_tabCredit(supp),
+    };
+    el.innerHTML = (map[tab] || (() => ''))();
   };
 
+  // ── 탭 헬퍼 ──
+  function _inp(id, val, ph, ro) {
+    return `<input class="form-input" id="${id}" value="${val||''}" placeholder="${ph||''}" ${ro?'readonly':''}>`;
+  }
+  function _sel(id, opts, cur) {
+    return `<select class="form-input form-select" id="${id}">${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+  }
+  function _fg(cls, lbl, req, html) {
+    return `<div class="form-group ${cls}"><label class="form-label">${lbl}${req?' <span class="required">*</span>':''}</label>${html}</div>`;
+  }
+  function _addDel() {
+    return `<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-outline-blue">+ 추가</button><button class="btn btn-outline-red">삭제</button></div>`;
+  }
+  function _fileBox(label) {
+    return `<div class="file-attach-box"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><label style="margin:0;">${label}</label><button class="btn btn-gray-lite" style="height:24px;padding:0 8px;font-size:11px;">+ AllDownload</button></div><div class="file-drop-area" style="min-height:120px;">파일을 드래그하거나<br>클릭하여 업로드</div></div>`;
+  }
+  function _fileRow(l1, l2) {
+    return `<div class="file-attach-row" style="gap:24px;">${_fileBox(l1)}${_fileBox(l2)}</div>`;
+  }
+  function _box(title, content) {
+    return `<div class="section-box"><div class="section-box-title">${title}</div>${content}</div>`;
+  }
+  function _row(...fields) {
+    return `<div class="form-row">${fields.join('')}</div>`;
+  }
+
+  // ── 탭 1: 일반정보 ──
   window.m01002_tabGeneral = function(supp) {
     const s = supp || {};
-    const inp = (id, val, ph, ro) =>
-      `<input class="form-input" id="${id}" value="${val||''}" placeholder="${ph||''}" ${ro?'readonly':''}>`;
-    const sel = (id, opts, cur) =>
-      `<select class="form-input form-select" id="${id}">${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
-    return `
-      <!-- 섹션1: 기본정보 -->
-      <div class="section-box">
-        <div class="section-box-title">기본정보</div>
-        <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">업체코드</label>
-            ${inp('sf-code', s.code||'자동발급', '', true)}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">업체구분</label>
-            ${sel('sf-tier', ['Tier2','Tier3'], s.tier||'Tier2')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">평가등급</label>
-            ${sel('sf-grade', ['A','B','C','D'], s.grade||'B')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">언어</label>
-            ${sel('sf-lang', ['한국어','English'], '한국어')}
-          </div>
-          <div class="form-group form-group-l">
-            <label class="form-label">국가 <span class="required">*</span></label>
-            ${sel('sf-country', ['KR - South Korea','US - United States','JP - Japan','CN - China'], s.country||'KR - South Korea')}
-          </div>
-        </div>
-      </div>
-
-      <!-- 섹션2: 사업자 정보 -->
-      <div class="section-box">
-        <div class="section-box-title">사업자 정보</div>
-        <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">사업자등록번호 <span class="required">*</span></label>
-            ${inp('sf-bizno', s.bizNo, '000-00-00000')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">법인등록번호</label>
-            ${inp('sf-corpno', s.corpNo, '-')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-full">
-            <label class="form-label">회사명 <span class="required">*</span></label>
-            ${inp('sf-name', s.name, '회사명 입력')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-full">
-            <label class="form-label">회사명(영문)</label>
-            ${inp('sf-nameEn', s.nameEn, 'Company Name')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">대표자명 <span class="required">*</span></label>
-            ${inp('sf-ceo', s.ceo, '대표자명')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">설립일자</label>
-            <input type="date" class="form-input" id="sf-founded" value="${s.founded||''}">
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">대표이메일</label>
-            ${inp('sf-email', s.email, 'email@company.com')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">대표전화번호</label>
-            ${inp('sf-tel', s.tel, '000-0000-0000')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">업종</label>
-            ${inp('sf-biztype', s.bizType, '예: 제조')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-l">
-            <label class="form-label">세부업종</label>
-            ${inp('sf-bizdetail', s.bizCategory, '예: 자동차부품')}
-          </div>
-        </div>
-        <div class="form-row" style="align-items:flex-end;">
-          <div class="form-group form-group-s">
-            <label class="form-label">우편번호</label>
-            ${inp('sf-zip', s.zip, '12345')}
-          </div>
-          <button class="btn" style="flex-shrink:0;">검색</button>
-          <div class="form-group form-group-full">
-            <label class="form-label">주소 <span class="required">*</span></label>
-            ${inp('sf-addr', s.addr, '기본주소 입력')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-full">
-            <label class="form-label">상세주소</label>
-            ${inp('sf-addr2', s.addr2, '상세주소 입력')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">기업규모</label>
-            ${sel('sf-corpsize', ['대기업','중견기업','중소기업','소기업'], '')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">회사상장여부</label>
-            ${sel('sf-listed', ['비상장','유가증권','코스닥'], '')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">부지현황-대지(평)</label>
-            ${inp('sf-land', '', '숫자 입력')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">부지현황-건물(평)</label>
-            ${inp('sf-building', '', '숫자 입력')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">전체사업장(개소)</label>
-            ${inp('sf-plants', '', '숫자 입력')}
-          </div>
-        </div>
-      </div>
-
-      <!-- 섹션3: 공급 역량 -->
-      <div class="section-box">
-        <div class="section-box-title">공급 역량</div>
-        <div class="form-row">
-          <div class="form-group form-group-l">
-            <label class="form-label">주요공급소재</label>
-            ${inp('sf-matsupply', s.bizCategory, '예: SPFC440, Al6061')}
-          </div>
-          <div class="form-group form-group-l">
-            <label class="form-label">주요공급공정</label>
-            ${inp('sf-process', '', '예: 프레스, 단조, CNC')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">월생산능력</label>
-            ${inp('sf-capacity', '', '예: 50,000 EA')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">납기리드타임(일)</label>
-            ${inp('sf-leadtime', '', '예: 14')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">LME연동소재여부</label>
-            ${sel('sf-lme', ['Y','N'], '')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">계열사여부</label>
-            ${sel('sf-affiliate', ['N','Y - 계열사명 입력'], '')}
-          </div>
-        </div>
-      </div>
-
-      <!-- 섹션4: 파일첨부 -->
-      <div class="section-box">
-        <div class="section-box-title">파일첨부</div>
-        <div class="file-attach-row" style="gap:24px;">
-          <div class="file-attach-box">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <label style="margin:0;">사업자등록증</label>
-              <button class="btn btn-gray-lite" style="height:24px;padding:0 8px;font-size:11px;">+ AllDownload</button>
-            </div>
-            <div class="file-drop-area" style="min-height:140px;">파일을 드래그하거나<br>클릭하여 업로드</div>
-          </div>
-          <div class="file-attach-box">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <label style="margin:0;">첨부파일</label>
-              <button class="btn btn-gray-lite" style="height:24px;padding:0 8px;font-size:11px;">+ AllDownload</button>
-            </div>
-            <div class="file-drop-area" style="min-height:140px;">파일을 드래그하거나<br>클릭하여 업로드</div>
-          </div>
-        </div>
-      </div>`;
+    return (
+      _box('기본정보',
+        _row(_fg('form-group-m','업체코드',false,_inp('sf-code',s.code||'자동발급','',true)),
+             _fg('form-group-m','업체구분',false,_sel('sf-tier',['Tier2','Tier3','계열사'],s.tier||'Tier2')),
+             _fg('form-group-m','협력사등급',false,_sel('sf-grade',['A','B','C','D','신규'],s.grade||'B'))) +
+        _row(_fg('form-group-m','관리상태',false,_sel('sf-status',['정상','거래중단','블랙리스트','휴면'],'정상')),
+             _fg('form-group-m','등록일',false,_inp('sf-regdate',s.regDate||'2025/03/15','',true)),
+             _fg('form-group-m','최종수정일',false,_inp('sf-moddate','2025/12/01','',true))) +
+        _row(_fg('form-group-m','담당 구매자',false,_inp('sf-buyer',s.manager,'')),
+             _fg('form-group-m','VAATZ 업체코드',false,_inp('sf-vaatz','','')),
+             _fg('form-group-m','ERP 거래처코드',false,_inp('sf-erp','','')))
+      ) +
+      _box('회사정보',
+        _row(_fg('form-group-full','회사명',true,_inp('sf-name',s.name,'회사명 입력'))) +
+        _row(_fg('form-group-full','회사명(영문)',false,_inp('sf-nameEn',s.nameEn,'Company Name'))) +
+        _row(_fg('form-group-m','대표자명',true,_inp('sf-ceo',s.ceo,'대표자명')),
+             _fg('form-group-m','설립일자',false,`<input type="date" class="form-input" id="sf-founded" value="${s.founded||''}">`),
+             _fg('form-group-m','법인형태',false,_sel('sf-corptype',['법인','개인','외국법인'],'법인'))) +
+        _row(_fg('form-group-m','대표이메일',false,_inp('sf-email',s.email,'email@co.kr')),
+             _fg('form-group-m','대표전화번호',false,_inp('sf-tel',s.tel,'031-000-0000')),
+             _fg('form-group-m','팩스',false,_inp('sf-fax','','031-000-0001'))) +
+        _row(_fg('form-group-l','홈페이지',false,_inp('sf-web','','https://www.company.co.kr')))
+      ) +
+      _box('소재지 정보',
+        `<div class="form-row" style="align-items:flex-end;">${_fg('form-group-s','우편번호',false,_inp('sf-zip',s.zip,'12345'))}<button class="btn" style="flex-shrink:0;">검색</button>${_fg('form-group-full','주소',true,_inp('sf-addr',s.addr,'기본주소'))}</div>` +
+        _row(_fg('form-group-full','상세주소',false,_inp('sf-addr2',s.addr2,'상세주소'))) +
+        `<div class="form-row" style="align-items:flex-end;">${_fg('form-group-s','공장 우편번호',false,_inp('sf-fzip','','12345'))}<button class="btn" style="flex-shrink:0;">검색</button>${_fg('form-group-full','공장주소',false,_inp('sf-faddr','','공장 기본주소'))}</div>` +
+        _row(_fg('form-group-full','공장 상세주소',false,_inp('sf-faddr2','','공장 상세주소'))) +
+        _row(_fg('form-group-m','국가',false,_sel('sf-country',['KR - South Korea','CN - China','VN - Vietnam','US - USA','기타'],s.country||'KR - South Korea')),
+             _fg('form-group-m','지역',false,_sel('sf-region',['수도권','충청','영남','호남','강원','제주','해외'],'수도권')))
+      ) +
+      _box('파일첨부', _fileRow('사업자등록증','회사소개서'))
+    );
   };
 
-  window.m01002_tabExtra = function(supp) {
+  // ── 탭 2: 사업자정보 ──
+  window.m01002_tabBizInfo = function(supp) {
+    const s = supp || {};
+    return (
+      _box('사업자 등록 정보',
+        _row(_fg('form-group-m','사업자등록번호',true,_inp('sf-bizno',s.bizNo,'000-00-00000')),
+             _fg('form-group-m','법인등록번호',false,_inp('sf-corpno',s.corpNo,'-')),
+             _fg('form-group-m','종사업장번호',false,_inp('sf-subno','','-'))) +
+        _row(_fg('form-group-l','업태',false,_inp('sf-biztype',s.bizType,'예: 제조업')),
+             _fg('form-group-l','종목',false,_inp('sf-bizcat',s.bizCategory,'예: 자동차부품'))) +
+        _row(_fg('form-group-m','세부업종',false,_sel('sf-bizdetail',['자동차부품','금속가공','수지성형','전자부품','화학','기타'],'자동차부품')),
+             _fg('form-group-m','과세유형',false,_sel('sf-taxtype',['일반과세','간이과세','면세','영세'],'일반과세'))) +
+        _row(_fg('form-group-m','사업개시일',false,`<input type="date" class="form-input">`),
+             _fg('form-group-m','법인설립일',false,`<input type="date" class="form-input" value="${s.founded||''}">`),
+             _fg('form-group-m','폐업여부',false,_sel('sf-closedbiz',['정상','휴업','폐업'],'정상')))
+      ) +
+      _box('기업 규모',
+        _row(_fg('form-group-m','기업규모',false,_sel('sf-corpsize',['대기업','중견기업','중소기업','소기업'],'중소기업')),
+             _fg('form-group-m','벤처기업여부',false,_sel('sf-venture',['N','Y'],'N')),
+             _fg('form-group-m','여성기업여부',false,_sel('sf-women',['N','Y'],'N'))) +
+        _row(_fg('form-group-m','장애인기업여부',false,_sel('sf-disabled',['N','Y'],'N')),
+             _fg('form-group-m','사회적기업여부',false,_sel('sf-social',['N','Y'],'N')),
+             _fg('form-group-m','상장여부',false,_sel('sf-listed',['비상장','상장','코스닥'],'비상장'))) +
+        _row(_fg('form-group-m','자본금(백만원)',false,_inp('sf-capital','','')),
+             _fg('form-group-m','종업원수(명)',false,_inp('sf-employees','','')),
+             _fg('form-group-m','부지면적-대지(평)',false,_inp('sf-land','','')),
+             _fg('form-group-m','부지면적-건물(평)',false,_inp('sf-building','','')))
+      )
+    );
+  };
+
+  // ── 탭 3: 담당자정보 ──
+  window.m01002_tabContacts = function(supp) {
     const isNew = !supp;
+    const rows = isNew
+      ? `<tr><td colspan="9" class="center" style="color:var(--text-muted);padding:20px;">등록된 담당자가 없습니다</td></tr>`
+      : [['대표','박대표','대표이사','대표','031-123-4567','010-1111-2222','ceo@hankook.co.kr','N','-'],
+         ['영업','홍길동','영업팀','과장','031-123-4568','010-1234-5678','hong@hankook.co.kr','Y','-'],
+         ['기술','김철수','기술팀','대리','031-123-4569','010-9876-5432','kim@hankook.co.kr','Y','-'],
+         ['품질','이품질','품질팀','차장','031-123-4570','010-5555-6666','lee@hankook.co.kr','Y','-']
+        ].map(r=>`<tr>${r.map(v=>`<td class="center">${v}</td>`).join('')}</tr>`).join('');
+    return _box('담당자 목록',
+      _addDel() +
+      `<div class="grid-container"><table class="grid-table">
+        <thead><tr><th>구분</th><th>담당자명</th><th>부서</th><th>직급</th><th>전화번호</th><th>휴대폰</th><th>이메일</th><th>포털계정</th><th>비고</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`
+    );
+  };
+
+  // ── 탭 4: 경영정보 ──
+  window.m01002_tabFinance = function(supp) {
+    const custRows = [
+      ['동희산업','매출','2,500','35%','서스펜션 부품'],
+      ['HMC 직납','매출','1,800','25%','보수용 부품'],
+      ['포스코','매입','3,200','60%','강판 소재']
+    ].map(r=>`<tr>${r.map((v,i)=>`<td class="${i>=2?'right':'left'}">${v}</td>`).join('')}</tr>`).join('');
+    return (
+      _box('재무 현황',
+        _row(_fg('form-group-m','기준연도',false,_sel('sf-fiscyr',['2024','2023','2022'],'2024')),
+             _fg('form-group-m','결산월',false,_sel('sf-fiscmo',['12월','3월','6월'],'12월'))) +
+        _row(_fg('form-group-m','매출액(백만원)',false,_inp('sf-sales','','')),
+             _fg('form-group-m','영업이익(백만원)',false,_inp('sf-opincome','','')),
+             _fg('form-group-m','당기순이익(백만원)',false,_inp('sf-netincome','',''))) +
+        _row(_fg('form-group-m','자산총계(백만원)',false,_inp('sf-assets','','')),
+             _fg('form-group-m','부채총계(백만원)',false,_inp('sf-liabilities','','')),
+             _fg('form-group-m','자본총계(백만원)',false,_inp('sf-equity','',''))) +
+        _row(_fg('form-group-m','부채비율(%)',false,_inp('sf-debtratio','','')),
+             _fg('form-group-m','유동비율(%)',false,_inp('sf-currentratio','','')),
+             _fg('form-group-m','영업이익률(%)',false,_inp('sf-opmargin','','')))
+      ) +
+      _box('주요 거래처',
+        _addDel() +
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>거래처명</th><th>거래유형</th><th>연간거래액(백만원)</th><th>거래비중(%)</th><th>비고</th></tr></thead>
+          <tbody>${custRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
+  // ── 탭 5: 영업현황 ──
+  window.m01002_tabSales = function(supp) {
+    const salesRows = [
+      ['2024','12,500','1,250','980','185','-'],
+      ['2023','11,800','1,100','850','178','-'],
+      ['2022','10,200','950','720','165','-']
+    ].map(r=>`<tr><td class="center">${r[0]}</td>${r.slice(1).map(v=>`<td class="right">${v}</td>`).join('')}</tr>`).join('');
+    const dhRows = [
+      ['2024','NX5 SUV','로어 암 브라켓','850','98.5%','12','A'],
+      ['2024','소형 SUV','스태빌라이저','620','97.2%','18','B'],
+      ['2023','RV 플랫폼','코일 스프링 시트','480','99.1%','8','A']
+    ].map(r=>`<tr>${r.map((v,i)=>i===0||i===6?`<td class="center">${v}</td>`:`<td class="${i===3?'right':'left'}">${v}</td>`).join('')}</tr>`).join('');
+    return (
+      _box('연도별 매출 실적',
+        _addDel() +
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>연도</th><th>매출액(백만원)</th><th>영업이익(백만원)</th><th>순이익(백만원)</th><th>종업원수(명)</th><th>비고</th></tr></thead>
+          <tbody>${salesRows}</tbody>
+        </table></div>`
+      ) +
+      _box('동희산업 거래 실적',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>연도</th><th>프로젝트</th><th>납품품목</th><th>거래액(백만)</th><th>납기준수율</th><th>품질불량률(ppm)</th><th>종합평가</th></tr></thead>
+          <tbody>${dhRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
+  // ── 탭 6: 품질·인증정보 ──
+  window.m01002_tabQuality = function(supp) {
     const today = new Date();
-
-    // 담당자 그리드
-    const contactRows = isNew
-      ? `<tr><td colspan="7" class="center" style="color:var(--text-muted);padding:20px;">등록된 담당자가 없습니다</td></tr>`
-      : `<tr><td class="center">구매담당</td><td class="center">홍길동</td><td class="center">영업팀</td><td class="center">과장</td><td class="center">010-1234-5678</td><td class="center">hong@korea.co.kr</td><td class="center">-</td></tr>
-         <tr><td class="center">기술담당</td><td class="center">김철수</td><td class="center">기술팀</td><td class="center">대리</td><td class="center">010-9876-5432</td><td class="center">kim@korea.co.kr</td><td class="center">-</td></tr>`;
-
-    // 인증정보 그리드
-    const certRows = [
-      { name:'ISO 9001',   org:'KR인증원', get:'2022-03-01', exp:'2025-03-01', status:'유효' },
-      { name:'IATF 16949', org:'TÜV',     get:'2023-06-01', exp:'2026-06-01', status:'유효' },
-      { name:'ISO 14001',  org:'KR인증원', get:'2021-09-01', exp:'2024-09-01', status:'만료' }
+    const certs = [
+      { cat:'품질', name:'ISO 9001:2015', org:'KR인증원', no:'Q-2022-1234', get:'2022-03-01', exp:'2025-03-01', status:'유효' },
+      { cat:'자동차', name:'IATF 16949:2016', org:'TÜV', no:'A-2023-5678', get:'2023-06-01', exp:'2026-06-01', status:'유효' },
+      { cat:'환경', name:'ISO 14001:2015', org:'KR인증원', no:'E-2021-9012', get:'2021-09-01', exp:'2024-09-01', status:'만료' },
+      { cat:'안전', name:'ISO 45001:2018', org:'BSI', no:'S-2023-3456', get:'2023-01-15', exp:'2026-01-15', status:'유효' },
+      { cat:'소재', name:'IMDS 등록', org:'IMDS', no:'IMDS-78901', get:'2024-01-01', exp:'-', status:'유효' }
     ].map(c => {
-      const diff = (new Date(c.exp) - today) / 86400000;
-      const ec = diff < 0 ? 'color:var(--danger);font-weight:500;' : diff < 30 ? 'color:var(--danger);' : '';
+      const diff = c.exp === '-' ? 9999 : (new Date(c.exp) - today) / 86400000;
+      const ec = diff < 0 ? 'color:var(--danger);font-weight:500;' : diff < 30 ? 'color:var(--danger);' : diff < 90 ? 'color:var(--warning);' : '';
       const sc = c.status === '만료' ? 'color:var(--danger);font-weight:500;' : 'color:var(--success);font-weight:500;';
-      return `<tr><td class="center">${c.name}</td><td class="center">${c.org}</td><td class="center">${c.get}</td><td class="center" style="${ec}">${c.exp}</td><td class="center" style="${sc}">${c.status}</td></tr>`;
+      return `<tr><td class="center">${c.cat}</td><td class="left">${c.name}</td><td class="center">${c.org}</td><td class="center">${c.no}</td><td class="center">${c.get}</td><td class="center" style="${ec}">${c.exp}</td><td class="center" style="${sc}">${c.status}</td></tr>`;
     }).join('');
+    return (
+      _box('품질 인증 현황',
+        _addDel() +
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>인증구분</th><th>인증서명</th><th>인증기관</th><th>인증번호</th><th>취득일</th><th>만료일</th><th>상태</th></tr></thead>
+          <tbody>${certs}</tbody>
+        </table></div>`
+      ) +
+      _box('품질 성과',
+        _row(_fg('form-group-m','최근 불량률(ppm)',false,_inp('',`12`,'',true)),
+             _fg('form-group-m','클레임건수(최근1년)',false,_inp('','2건','',true)),
+             _fg('form-group-m','시정조치 이행률(%)',false,_inp('','96%','',true))) +
+        _row(_fg('form-group-m','PPAP 승인현황',false,_inp('','레벨3 승인','',true)),
+             _fg('form-group-m','공정능력지수(Cpk)',false,_inp('','1.42','',true)),
+             _fg('form-group-m','검사성적서 유효여부',false,_inp('','유효','',true)))
+      ) +
+      _box('파일첨부', _fileRow('인증서 사본','검사성적서'))
+    );
+  };
 
-    // 소재·품목 그리드
+  // ── 탭 7: 공급역량 ──
+  window.m01002_tabCapacity = function(supp) {
     const matRows = [
-      { g:'강판', n:'SPFC440', p:'프레스·단조', l:'Y' },
-      { g:'수지', n:'HDPE', p:'블로우성형', l:'N' },
-      { g:'알루미늄', n:'Al5052', p:'다이캐스팅', l:'Y' }
-    ].map(m => `<tr><td class="center">${m.g}</td><td class="center">${m.n}</td><td class="center">${m.p}</td><td class="center" style="color:${m.l==='Y'?'var(--success)':'var(--text-muted)'};font-weight:500;">${m.l}</td></tr>`).join('');
-
-    const addDelBtns = `<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-outline-blue">+ 추가</button><button class="btn btn-outline-red">삭제</button></div>`;
-
-    return `
-      <div class="section-box">
-        <div class="section-box-title">담당자정보</div>
-        ${addDelBtns}
-        <div class="grid-container"><table class="grid-table">
-          <thead><tr><th>구분</th><th>담당자명</th><th>부서</th><th>직급</th><th>연락처</th><th>이메일</th><th>비고</th></tr></thead>
-          <tbody>${contactRows}</tbody>
-        </table></div>
-      </div>
-      <div class="section-box">
-        <div class="section-box-title">거래조건</div>
-        <div class="form-row">
-          <div class="form-group form-group-m"><label class="form-label">결제조건</label><select class="form-input form-select"><option>현금</option><option>어음</option><option>외상</option></select></div>
-          <div class="form-group form-group-m"><label class="form-label">결제주기</label><input class="form-input" placeholder="예: 월 1회"></div>
-          <div class="form-group form-group-m"><label class="form-label">납기리드타임(일)</label><input type="number" class="form-input" placeholder="14"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m"><label class="form-label">최소발주수량</label><input type="number" class="form-input" placeholder="100"></div>
-          <div class="form-group form-group-m"><label class="form-label">계약시작일</label><input type="date" class="form-input"></div>
-          <div class="form-group form-group-m"><label class="form-label">계약종료일</label><input type="date" class="form-input"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m"><label class="form-label">거래상태</label><select class="form-input form-select"><option>거래중</option><option>거래중단</option><option>신규검토</option></select></div>
-        </div>
-      </div>
-      <div class="section-box">
-        <div class="section-box-title">인증정보</div>
-        ${addDelBtns}
-        <div class="grid-container"><table class="grid-table">
-          <thead><tr><th>인증서명</th><th>인증기관</th><th>취득일</th><th>만료일</th><th>상태</th></tr></thead>
-          <tbody>${certRows}</tbody>
-        </table></div>
-      </div>
-      <div class="section-box">
-        <div class="section-box-title">소재·품목</div>
-        ${addDelBtns}
-        <div class="grid-container"><table class="grid-table">
-          <thead><tr><th>소재구분</th><th>소재명</th><th>주요공정</th><th>LME연동여부</th></tr></thead>
+      { g:'강판', n:'SPFC440', ks:'KS D3530', p:'프레스·단조', l:'Y', qty:'500 ton', lt:'14', note:'포스코 직납' },
+      { g:'강판', n:'SCM440',  ks:'KS D3711', p:'열간단조',    l:'Y', qty:'200 ton', lt:'21', note:'수입강 병행' },
+      { g:'수지',  n:'HDPE',   ks:'-',        p:'블로우성형',  l:'N', qty:'100 ton', lt:'10', note:'한화솔루션' },
+      { g:'알루미늄', n:'Al5052', ks:'KS D6759', p:'다이캐스팅', l:'Y', qty:'80 ton', lt:'18', note:'수입' }
+    ].map(m=>`<tr><td class="center">${m.g}</td><td class="center">${m.n}</td><td class="center">${m.ks}</td><td class="center">${m.p}</td><td class="center" style="color:${m.l==='Y'?'var(--success)':'var(--text-muted)'};font-weight:500;">${m.l}</td><td class="right">${m.qty}</td><td class="center">${m.lt}</td><td class="left">${m.note}</td></tr>`).join('');
+    const eqRows = [
+      ['서보프레스','아이다','300','5','2020','85%','24시간 가동'],
+      ['서보프레스','코마츠','800','2','2022','78%','-'],
+      ['CNC 5축','화낙','-','3','2021','72%','정밀가공 전용']
+    ].map(r=>`<tr>${r.map((v,i)=>`<td class="${i>=2&&i<=4?'center':'left'}">${v}</td>`).join('')}</tr>`).join('');
+    return (
+      _box('공급 가능 소재',
+        _addDel() +
+        `<div class="grid-container"><table class="grid-table grid-table-wide">
+          <thead><tr><th>소재구분</th><th>소재명</th><th>KS규격</th><th>주요공정</th><th>LME연동</th><th>월공급가능량</th><th>리드타임(일)</th><th>비고</th></tr></thead>
           <tbody>${matRows}</tbody>
-        </table></div>
-      </div>
-      <div class="section-box">
-        <div class="section-box-title">신용평가정보</div>
-        <div class="form-row">
-          <div class="form-group form-group-m"><label class="form-label">신용등급</label><input class="form-input" placeholder="예: A+"></div>
-          <div class="form-group form-group-m"><label class="form-label">평가기관</label><input class="form-input" placeholder="예: NICE, 한국기업평가"></div>
-          <div class="form-group form-group-m"><label class="form-label">평가일</label><input type="date" class="form-input"></div>
-          <div class="form-group form-group-m"><label class="form-label">유효기간</label><input type="date" class="form-input"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m"><label class="form-label">종합점수</label><input class="form-input" placeholder="예: 87"></div>
-          <div class="form-group form-group-m"><label class="form-label">재무건전성</label><input class="form-input" placeholder="예: 양호"></div>
-        </div>
-        <div style="font-size:var(--font-xs);color:var(--text-secondary);font-weight:500;margin:12px 0 8px;">평가 이력</div>
-        <div class="grid-container"><table class="grid-table">
-          <thead><tr><th>평가연도</th><th>등급</th><th>점수</th><th>평가기관</th><th>평가일</th></tr></thead>
-          <tbody>
-            <tr><td class="center">2024</td><td class="center" style="color:var(--success);font-weight:500;">A</td><td class="center">87</td><td class="center">NICE</td><td class="center">2024-03-15</td></tr>
-            <tr><td class="center">2023</td><td class="center" style="color:var(--primary);font-weight:500;">B</td><td class="center">76</td><td class="center">NICE</td><td class="center">2023-03-10</td></tr>
-          </tbody>
-        </table></div>
-      </div>`;
+        </table></div>`
+      ) +
+      _box('보유 설비',
+        _addDel() +
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>설비명</th><th>제조사</th><th>용량(톤)</th><th>수량(대)</th><th>설치년도</th><th>가동률(%)</th><th>비고</th></tr></thead>
+          <tbody>${eqRows}</tbody>
+        </table></div>`
+      ) +
+      _box('생산 능력',
+        _row(_fg('form-group-m','월 최대 생산량',false,_inp('','','')),
+             _fg('form-group-m','현재 가동률(%)',false,_inp('','82%','')),
+             _fg('form-group-m','잔여 Capa(%)',false,_inp('','18%',''))) +
+        _row(_fg('form-group-m','교대제',false,_sel('sf-shift',['1교대','2교대','3교대'],'2교대')),
+             _fg('form-group-m','일 가동시간(h)',false,_inp('','16','')),
+             _fg('form-group-m','월 가동일수(일)',false,_inp('','25',''))) +
+        _row(_fg('form-group-l','주요 납품 OEM',false,_inp('','HMC · 기아 · GM','')),
+             _fg('form-group-l','동종업계 경쟁사',false,_inp('','','')))
+      )
+    );
+  };
+
+  // ── 탭 8: 신용평가정보 ──
+  window.m01002_tabCredit = function(supp) {
+    const s = supp || {};
+    const histRows = [
+      ['2024','A','87','NICE','2024-03-15','-'],
+      ['2023','B+','76','NICE','2023-03-10','부채비율 개선'],
+      ['2022','B','71','NICE','2022-03-12','매출 감소']
+    ].map(r=>{
+      const gc = r[1].startsWith('A')?'var(--success)':r[1].startsWith('B')?'var(--primary)':'var(--warning)';
+      return `<tr><td class="center">${r[0]}</td><td class="center" style="color:${gc};font-weight:500;">${r[1]}</td><td class="center">${r[2]}</td><td class="center">${r[3]}</td><td class="center">${r[4]}</td><td class="left">${r[5]}</td></tr>`;
+    }).join('');
+    return (
+      _box('최신 신용평가',
+        _row(_fg('form-group-m','신용등급',false,_inp('sf-creditgrade',s.creditGrade,'')),
+             _fg('form-group-m','평가기관',false,_sel('sf-creditorg',['NICE','한국기업데이터','이크레더블'],'NICE')),
+             _fg('form-group-m','평가일',false,`<input type="date" class="form-input">`),
+             _fg('form-group-m','유효기간',false,`<input type="date" class="form-input">`)) +
+        _row(_fg('form-group-m','종합점수(점)',false,_inp('sf-creditscore','','')),
+             _fg('form-group-m','재무건전성',false,_sel('sf-financial',['양호','보통','취약'],'양호')),
+             _fg('form-group-m','기업존속 전망',false,_sel('sf-outlook',['양호','보통','주의'],'양호'))) +
+        _row(_fg('form-group-m','현금흐름등급',false,_inp('sf-cashflow',s.cashFlowGrade,'')),
+             _fg('form-group-m','외치등급',false,_inp('sf-riskgrade',s.riskGrade,'')),
+             _fg('form-group-m','Watch여부',false,_sel('sf-watch',['N','Y-주의','Y-경고'],'N')))
+      ) +
+      _box('신용평가 이력',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>평가연도</th><th>등급</th><th>점수</th><th>평가기관</th><th>평가일</th><th>특이사항</th></tr></thead>
+          <tbody>${histRows}</tbody>
+        </table></div>`
+      ) +
+      _box('파일첨부', _fileRow('신용평가서','재무제표'))
+    );
   };
 
   window.m01002_save = function() {
