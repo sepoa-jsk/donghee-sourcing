@@ -342,6 +342,16 @@ window.render_M01_002 = function(container) {
         <span id="m01002-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
         <div id="m01002-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
+      <!-- 등록 프로그레스 바 -->
+      <div class="reg-progress" id="m01002-progress">
+        <div class="reg-step active" id="m01002-ps1"><span class="reg-step-num">1</span><span class="reg-step-label">기본정보</span></div>
+        <div class="reg-step-line" id="m01002-pl1"></div>
+        <div class="reg-step" id="m01002-ps2"><span class="reg-step-num">2</span><span class="reg-step-label">사업자 검증</span></div>
+        <div class="reg-step-line" id="m01002-pl2"></div>
+        <div class="reg-step" id="m01002-ps3"><span class="reg-step-num">3</span><span class="reg-step-label">공급 역량</span></div>
+        <div class="reg-step-line" id="m01002-pl3"></div>
+        <div class="reg-step" id="m01002-ps4"><span class="reg-step-num">4</span><span class="reg-step-label">서류·승인</span></div>
+      </div>
       <!-- 좌우 2단 -->
       <div class="detail-layout" style="flex:1;overflow:hidden;">
         <!-- 좌측 세로탭 (160px, 파일첨부 없음) -->
@@ -482,11 +492,41 @@ window.render_M01_002 = function(container) {
     ).join('');
   };
 
+  window.m01002_updateProgress = function(tab) {
+    const steps = [
+      { id:'m01002-ps1', line:'m01002-pl1', tabs:['일반정보'] },
+      { id:'m01002-ps2', line:'m01002-pl2', tabs:['사업자정보'] },
+      { id:'m01002-ps3', line:'m01002-pl3', tabs:['공급역량'] },
+      { id:'m01002-ps4', line:null,         tabs:['품질·인증정보','신용평가정보'] },
+    ];
+    let reachedActive = false;
+    steps.forEach((s, i) => {
+      const el = document.getElementById(s.id);
+      const lineEl = s.line ? document.getElementById(s.line) : null;
+      if (!el) return;
+      const isActive = s.tabs.includes(tab);
+      if (isActive) {
+        el.className = 'reg-step active';
+        el.querySelector('.reg-step-num').textContent = String(i + 1);
+        reachedActive = true;
+      } else if (!reachedActive) {
+        el.className = 'reg-step done';
+        el.querySelector('.reg-step-num').innerHTML = '✓';
+        if (lineEl) lineEl.className = 'reg-step-line done';
+      } else {
+        el.className = 'reg-step';
+        el.querySelector('.reg-step-num').textContent = String(i + 1);
+        if (lineEl) lineEl.className = 'reg-step-line';
+      }
+    });
+  };
+
   window.m01002_switchTab = function(tab) {
     activeTab = tab;
     const supp = detailMode === 'edit' ? MockData.getById('suppliers', selectedSuppId) : null;
     m01002_renderVtabs(supp);
     m01002_renderTabContent(tab, supp);
+    m01002_updateProgress(tab);
   };
 
   window.m01002_renderTabContent = function(tab, supp) {
@@ -609,7 +649,9 @@ window.render_M01_002 = function(container) {
     const s = supp || {};
     return (
       _box('사업자 등록 정보',
-        _row(_fg('form-group-m','사업자등록번호',true,_inp('sf-bizno',s.bizNo,'000-00-00000')),
+        _row(_fg('form-group-m','사업자등록번호',true,
+               `<div class="verify-group"><input class="form-input" id="sf-bizno" value="${s.bizNo||''}" placeholder="000-00-00000" style="flex:1"><button class="verify-btn" onclick="verifySup(this)">검증</button><span class="verify-status wait" id="m01002-biz-status"><i data-lucide="minus-circle"></i> 미확인</span></div>
+                <div id="m01002-biz-detail" style="display:none;margin-top:4px;"><span class="verify-status ok" style="font-size:11px"><i data-lucide="shield-check"></i> 중복없음 · 신용등급 A · 정상사업자</span></div>`),
              _fg('form-group-m','법인등록번호',false,_inp('sf-corpno',s.corpNo,'-')),
              _fg('form-group-m','종사업장번호',false,_inp('sf-subno','','-'))) +
         _row(_fg('form-group-l','업태',false,_inp('sf-biztype',s.bizType,'예: 제조업')),
@@ -926,6 +968,22 @@ window.render_M01_002 = function(container) {
       <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="shield-alert"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskDanger}개</span><span class="insight-card-label">위험 협력사</span></div></div>
     `;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.verifySup = function(btn) {
+    const statusEl = btn.nextElementSibling;
+    statusEl.className = 'verify-status wait';
+    statusEl.innerHTML = '<i data-lucide="loader"></i> 확인 중...';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => {
+      statusEl.id = 'm01002-biz-status';
+      statusEl.className = 'verify-status ok';
+      statusEl.innerHTML = '<i data-lucide="check-circle"></i> 정상 사업자';
+      const detail = document.getElementById('m01002-biz-detail');
+      if (detail) detail.style.display = 'block';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      Common.showToast('사업자등록번호가 확인되었습니다', 'success');
+    }, 1500);
   };
 
   // 모든 함수 정의 완료 후 초기 렌더
@@ -1643,6 +1701,16 @@ window.render_M01_003 = function(container) {
         <span id="m01003-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
         <div id="m01003-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
+      <!-- 등록 프로그레스 바 -->
+      <div class="reg-progress" id="m01003-progress">
+        <div class="reg-step active" id="m01003-ps1"><span class="reg-step-num">1</span><span class="reg-step-label">기본정보</span></div>
+        <div class="reg-step-line" id="m01003-pl1"></div>
+        <div class="reg-step" id="m01003-ps2"><span class="reg-step-num">2</span><span class="reg-step-label">물성·공정</span></div>
+        <div class="reg-step-line" id="m01003-pl2"></div>
+        <div class="reg-step" id="m01003-ps3"><span class="reg-step-num">3</span><span class="reg-step-label">단가·LME</span></div>
+        <div class="reg-step-line" id="m01003-pl3"></div>
+        <div class="reg-step" id="m01003-ps4"><span class="reg-step-num">4</span><span class="reg-step-label">도면·확정</span></div>
+      </div>
       <div class="detail-layout" style="flex:1;overflow:hidden;">
         <div class="detail-left" style="width:140px;">
           <div id="m01003-vtabs"></div>
@@ -1754,11 +1822,41 @@ window.render_M01_003 = function(container) {
     ).join('');
   };
 
+  window.m01003_updateProgress = function(tab) {
+    const steps = [
+      { id:'m01003-ps1', line:'m01003-pl1', tabs:['기본정보'] },
+      { id:'m01003-ps2', line:'m01003-pl2', tabs:['물성정보','공정정보'] },
+      { id:'m01003-ps3', line:'m01003-pl3', tabs:['단가·LME'] },
+      { id:'m01003-ps4', line:null,         tabs:['도면·사양서'] },
+    ];
+    let reachedActive = false;
+    steps.forEach((s, i) => {
+      const el = document.getElementById(s.id);
+      const lineEl = s.line ? document.getElementById(s.line) : null;
+      if (!el) return;
+      const isActive = s.tabs.includes(tab);
+      if (isActive) {
+        el.className = 'reg-step active';
+        el.querySelector('.reg-step-num').textContent = String(i + 1);
+        reachedActive = true;
+      } else if (!reachedActive) {
+        el.className = 'reg-step done';
+        el.querySelector('.reg-step-num').innerHTML = '✓';
+        if (lineEl) lineEl.className = 'reg-step-line done';
+      } else {
+        el.className = 'reg-step';
+        el.querySelector('.reg-step-num').textContent = String(i + 1);
+        if (lineEl) lineEl.className = 'reg-step-line';
+      }
+    });
+  };
+
   window.m01003_switchTab = function(tab) {
     activeTab = tab;
     const item = detailMode === 'edit' ? MockData.getById('items', selectedItemId) : null;
     m01003_renderVtabs();
     m01003_renderTabContent(tab, item);
+    m01003_updateProgress(tab);
   };
 
   window.m01003_renderTabContent = function(tab, item) {
@@ -1780,7 +1878,8 @@ window.render_M01_003 = function(container) {
     const d = item || {};
     return (
       box3('품목 기본정보',
-        row3(fg3('품목코드',false,i3('it-code',d.id||'자동발급','',true)),
+        row3(fg3('품목코드',false,
+               `<div class="verify-group"><input class="form-input" id="it-code" value="${d.id||'자동발급'}" readonly style="flex:1"><button class="verify-btn" onclick="verifyItemCode(this)">중복확인</button><span class="verify-status ok" id="m01003-code-status"><i data-lucide="check-circle"></i> 사용 가능</span></div>`),
              fg3('도면번호',true,i3('it-drawno',d.drawNo,'')),
              fg3('품목유형',false,s3('it-type',['원자재','반제품','완제품'],'반제품'))) +
         row3(fgFull('품명(국문)',true,i3('it-name',d.name,''))) +
@@ -1960,6 +2059,19 @@ window.render_M01_003 = function(container) {
       <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length - active}</span><span class="insight-card-label">비활성 품목</span></div></div>
     `;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.verifyItemCode = function(btn) {
+    const statusEl = btn.nextElementSibling;
+    statusEl.className = 'verify-status wait';
+    statusEl.innerHTML = '<i data-lucide="loader"></i> 확인 중...';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => {
+      statusEl.className = 'verify-status ok';
+      statusEl.innerHTML = '<i data-lucide="check-circle"></i> 사용 가능';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      Common.showToast('품목코드 중복이 없습니다', 'success');
+    }, 1000);
   };
 
   // 초기 렌더
