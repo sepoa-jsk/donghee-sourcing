@@ -21,18 +21,21 @@ window.render_M01_001 = function(container) {
   container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
     <div id="m01001-list">
       <!-- 필터바 -->
-      <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
+      <div class="filter-bar">
         <div class="filter-search">
-          <input type="text" id="m01001-search" placeholder="프로젝트명 검색" oninput="m01001_onSearch(this.value)">
-          <span class="filter-search-icon"><i data-lucide="search"></i></span>
+          <input type="text" id="m01001-search" placeholder="Search" oninput="m01001_onSearch(this.value)">
+          <i data-lucide="search"></i>
         </div>
         <button class="filter-btn" onclick="m01001_toggleFilter()"><i data-lucide="filter"></i> 필터</button>
-        <input type="date" id="m01001-date-from" class="form-input" style="width:130px;" onchange="m01001_renderGrid()">
-        <span style="font-size:12px;color:var(--text-muted);">~</span>
-        <input type="date" id="m01001-date-to" class="form-input" style="width:130px;" onchange="m01001_renderGrid()">
-        <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
+        <div class="filter-date-range">
+          <input type="date" id="m01001-date-from" value="2025-01-01" onchange="m01001_renderGrid()">
+          <span class="date-separator">~</span>
+          <input type="date" id="m01001-date-to" value="2027-12-31" onchange="m01001_renderGrid()">
+          <i data-lucide="calendar"></i>
+        </div>
+        <div class="filter-right">
           <button class="btn btn-outline-blue" onclick="m01001_showForm('new')"><i data-lucide="plus"></i> 신규등록</button>
-          <button class="btn" onclick="m01001_showForm('edit')"><i data-lucide="edit-2"></i> 수정</button>
+          <button class="btn" onclick="m01001_showForm('edit')"><i data-lucide="pencil"></i> 수정</button>
           <button class="btn btn-outline-red" onclick="m01001_delete()"><i data-lucide="trash-2"></i> 삭제</button>
         </div>
       </div>
@@ -298,16 +301,15 @@ window.render_M01_002 = function(container) {
   container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
     <!-- 리스트 뷰 -->
     <div id="m01002-list">
-      <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
-        <div class="filter-search" style="width:450px;">
-          <input type="text" id="m01002-search" placeholder="Search" oninput="m01002_onSearch(this.value)" style="width:100%;">
-          <span class="filter-search-icon"><i data-lucide="search"></i></span>
+      <div class="filter-bar">
+        <div class="filter-search">
+          <input type="text" id="m01002-search" placeholder="Search" oninput="m01002_onSearch(this.value)">
+          <i data-lucide="search"></i>
         </div>
         <button class="filter-btn" onclick="m01002_toggleFilter()"><i data-lucide="filter"></i> 필터</button>
-        <button class="filter-btn" onclick="m01002_toggleBizType()"><i data-lucide="filter"></i> 업체구분</button>
-        <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn" onclick="Common.showToast('협력사 초대메일 기능은 준비 중입니다','info')"><i data-lucide="mail"></i> 협력사 초대메일</button>
-          <button class="btn btn-primary" onclick="m01002_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
+        <button class="filter-btn" onclick="m01002_toggleBizType()"><i data-lucide="bar-chart-2"></i> 업체구분</button>
+        <div class="filter-right">
+          <button class="btn btn-outline-blue" onclick="m01002_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
       <div id="m01002-grid" style="flex:1;overflow:auto;"></div>
@@ -857,15 +859,15 @@ window.render_M01_003 = function(container) {
 
     <!-- 리스트 뷰 -->
     <div id="m01003-list">
-      <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
-        <div class="filter-search" style="width:450px;">
-          <input type="text" id="m01003-search" placeholder="품목명/도면번호 검색" oninput="m01003_onSearch(this.value)" style="width:100%;">
-          <span class="filter-search-icon"><i data-lucide="search"></i></span>
+      <div class="filter-bar">
+        <div class="filter-search">
+          <input type="text" id="m01003-search" placeholder="Search" oninput="m01003_onSearch(this.value)">
+          <i data-lucide="search"></i>
         </div>
         <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter"></i> 필터</button>
-        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')"><i data-lucide="filter"></i> 품목구분</button>
-        <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-primary" onclick="m01003_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
+        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')"><i data-lucide="bar-chart-2"></i> 품목구분</button>
+        <div class="filter-right">
+          <button class="btn btn-outline-blue" onclick="m01003_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
       <div id="m01003-grid"></div>

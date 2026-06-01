@@ -367,6 +367,8 @@ body {
   padding: 0 0 12px;
   flex-wrap: wrap;
 }
+
+/* 검색창 */
 .filter-search {
   display: flex;
   align-items: center;
@@ -375,41 +377,95 @@ body {
   padding: 0 10px;
   height: var(--input-height);
   background: var(--input-bg);
+  width: 400px;
 }
 .filter-search input {
   border: none;
   outline: none;
-  font-size: var(--font-s);
+  font-size: var(--font-m);
   color: var(--input-text);
   width: 100%;
   background: transparent;
   font-family: inherit;
 }
-.filter-search-icon {
-  color: var(--primary);
-  font-size: 16px;
+.filter-search input::placeholder { color: var(--text-muted); }
+.filter-search [data-lucide] {
+  color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
 }
-.filter-right {
-  margin-left: auto;
-  display: flex;
-  gap: 6px;
+.filter-search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(7,71,166,0.08);
 }
+
+/* 필터·상태 버튼 */
 .filter-btn {
   height: var(--btn-height);
   padding: 0 12px;
   font-size: var(--font-s);
-  border: 1px solid var(--border);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--input-bg);
   color: var(--text-primary);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-weight: 500;
+}
+.filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+.filter-btn [data-lucide] { color: var(--primary); }
+
+/* 날짜 범위 */
+.filter-date-range {
   display: flex;
   align-items: center;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  height: var(--input-height);
+  background: var(--input-bg);
+  padding: 0 10px;
   gap: 4px;
 }
-.filter-btn:hover { background: var(--bg-page); }
+.filter-date-range input[type="date"] {
+  border: none;
+  outline: none;
+  font-size: var(--font-s);
+  color: var(--input-text);
+  background: transparent;
+  font-family: inherit;
+  width: 110px;
+  padding: 0;
+}
+.filter-date-range input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+.filter-date-range .date-separator {
+  color: var(--text-muted);
+  font-size: var(--font-s);
+  padding: 0 2px;
+}
+.filter-date-range [data-lucide] { color: var(--danger); cursor: pointer; flex-shrink: 0; }
+
+/* 셀렉트 필터 */
+.filter-select {
+  height: var(--btn-height);
+  padding: 0 28px 0 10px;
+  font-size: var(--font-s);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+/* 우측 액션 그룹 */
+.filter-right { margin-left: auto; display: flex; gap: 6px; }
+.filter-search-icon { display: none; } /* 레거시 호환 — 사용 금지 */
 
 /* ═══ Lucide 아이콘 정렬 ═══ */
 [data-lucide],
