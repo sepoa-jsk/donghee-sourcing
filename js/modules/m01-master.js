@@ -474,7 +474,11 @@ window.render_M01_002 = function(container) {
           </div>
           <div class="form-group form-group-m">
             <label class="form-label">업체구분</label>
-            ${sel('sf-type', ['등록업체','잠재업체'], s.type||'등록업체')}
+            ${sel('sf-tier', ['Tier2','Tier3'], s.tier||'Tier2')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">평가등급</label>
+            ${sel('sf-grade', ['A','B','C','D'], s.grade||'B')}
           </div>
           <div class="form-group form-group-m">
             <label class="form-label">언어</label>
@@ -484,16 +488,6 @@ window.render_M01_002 = function(container) {
             <label class="form-label">국가 <span class="required">*</span></label>
             ${sel('sf-country', ['KR - South Korea','US - United States','JP - Japan','CN - China'], s.country||'KR - South Korea')}
           </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">도시</label>
-            ${sel('sf-city', ['서울','인천','경기','부산','대구','광주','대전'], '')}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">추천인</label>
-            ${inp('sf-referrer', s.referrer, '추천인명')}
-          </div>
         </div>
       </div>
 
@@ -501,10 +495,6 @@ window.render_M01_002 = function(container) {
       <div class="section-box">
         <div class="section-box-title">사업자 정보</div>
         <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">법인/개인</label>
-            ${sel('sf-corptype', ['법인','개인'], '법인')}
-          </div>
           <div class="form-group form-group-m">
             <label class="form-label">사업자등록번호 <span class="required">*</span></label>
             ${inp('sf-bizno', s.bizNo, '000-00-00000')}
@@ -544,18 +534,14 @@ window.render_M01_002 = function(container) {
             ${inp('sf-tel', s.tel, '000-0000-0000')}
           </div>
           <div class="form-group form-group-m">
-            <label class="form-label">업태</label>
+            <label class="form-label">업종</label>
             ${inp('sf-biztype', s.bizType, '예: 제조')}
           </div>
         </div>
         <div class="form-row">
           <div class="form-group form-group-l">
-            <label class="form-label">업종</label>
-            ${inp('sf-bizcat', s.bizCategory, '예: 자동차부품')}
-          </div>
-          <div class="form-group form-group-l">
             <label class="form-label">세부업종</label>
-            ${inp('sf-bizdetail', s.bizDetail, '세부 업종 입력')}
+            ${inp('sf-bizdetail', s.bizCategory, '예: 자동차부품')}
           </div>
         </div>
         <div class="form-row" style="align-items:flex-end;">
@@ -563,7 +549,7 @@ window.render_M01_002 = function(container) {
             <label class="form-label">우편번호</label>
             ${inp('sf-zip', s.zip, '12345')}
           </div>
-          <button class="btn" style="margin-bottom:0;flex-shrink:0;">검색</button>
+          <button class="btn" style="flex-shrink:0;">검색</button>
           <div class="form-group form-group-full">
             <label class="form-label">주소 <span class="required">*</span></label>
             ${inp('sf-addr', s.addr, '기본주소 입력')}
@@ -585,11 +571,11 @@ window.render_M01_002 = function(container) {
             ${sel('sf-listed', ['비상장','유가증권','코스닥'], '')}
           </div>
           <div class="form-group form-group-m">
-            <label class="form-label">부지현황-대지(㎡)</label>
+            <label class="form-label">부지현황-대지(평)</label>
             ${inp('sf-land', '', '숫자 입력')}
           </div>
           <div class="form-group form-group-m">
-            <label class="form-label">부지현황-건물(㎡)</label>
+            <label class="form-label">부지현황-건물(평)</label>
             ${inp('sf-building', '', '숫자 입력')}
           </div>
           <div class="form-group form-group-m">
@@ -599,21 +585,35 @@ window.render_M01_002 = function(container) {
         </div>
       </div>
 
-      <!-- 섹션3: 구매정보 -->
+      <!-- 섹션3: 공급 역량 -->
       <div class="section-box">
-        <div class="section-box-title">구매정보</div>
+        <div class="section-box-title">공급 역량</div>
         <div class="form-row">
-          <div class="form-group form-group-m">
-            <label class="form-label">기업규모</label>
-            ${sel('sf-purchsize', ['대기업','중견기업','중소기업','소기업'], '')}
-          </div>
-          <div class="form-group form-group-m">
-            <label class="form-label">과세여부</label>
-            ${sel('sf-tax', ['과세','면세','영세율'], '')}
+          <div class="form-group form-group-l">
+            <label class="form-label">주요공급소재</label>
+            ${inp('sf-matsupply', s.bizCategory, '예: SPFC440, Al6061')}
           </div>
           <div class="form-group form-group-l">
-            <label class="form-label">주요품목</label>
-            ${inp('sf-mainitems', s.bizCategory, '주요 공급 품목 입력')}
+            <label class="form-label">주요공급공정</label>
+            ${inp('sf-process', '', '예: 프레스, 단조, CNC')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">월생산능력</label>
+            ${inp('sf-capacity', '', '예: 50,000 EA')}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
+            <label class="form-label">납기리드타임(일)</label>
+            ${inp('sf-leadtime', '', '예: 14')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">LME연동소재여부</label>
+            ${sel('sf-lme', ['Y','N'], '')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">계열사여부</label>
+            ${sel('sf-affiliate', ['N','Y - 계열사명 입력'], '')}
           </div>
         </div>
       </div>
@@ -710,6 +710,27 @@ window.render_M01_002 = function(container) {
         <div class="grid-container"><table class="grid-table">
           <thead><tr><th>소재구분</th><th>소재명</th><th>주요공정</th><th>LME연동여부</th></tr></thead>
           <tbody>${matRows}</tbody>
+        </table></div>
+      </div>
+      <div class="section-box">
+        <div class="section-box-title">신용평가정보</div>
+        <div class="form-row">
+          <div class="form-group form-group-m"><label class="form-label">신용등급</label><input class="form-input" placeholder="예: A+"></div>
+          <div class="form-group form-group-m"><label class="form-label">평가기관</label><input class="form-input" placeholder="예: NICE, 한국기업평가"></div>
+          <div class="form-group form-group-m"><label class="form-label">평가일</label><input type="date" class="form-input"></div>
+          <div class="form-group form-group-m"><label class="form-label">유효기간</label><input type="date" class="form-input"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m"><label class="form-label">종합점수</label><input class="form-input" placeholder="예: 87"></div>
+          <div class="form-group form-group-m"><label class="form-label">재무건전성</label><input class="form-input" placeholder="예: 양호"></div>
+        </div>
+        <div style="font-size:var(--font-xs);color:var(--text-secondary);font-weight:500;margin:12px 0 8px;">평가 이력</div>
+        <div class="grid-container"><table class="grid-table">
+          <thead><tr><th>평가연도</th><th>등급</th><th>점수</th><th>평가기관</th><th>평가일</th></tr></thead>
+          <tbody>
+            <tr><td class="center">2024</td><td class="center" style="color:var(--success);font-weight:500;">A</td><td class="center">87</td><td class="center">NICE</td><td class="center">2024-03-15</td></tr>
+            <tr><td class="center">2023</td><td class="center" style="color:var(--primary);font-weight:500;">B</td><td class="center">76</td><td class="center">NICE</td><td class="center">2023-03-10</td></tr>
+          </tbody>
         </table></div>
       </div>`;
   };
