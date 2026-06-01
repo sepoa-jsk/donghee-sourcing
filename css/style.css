@@ -781,17 +781,21 @@ body {
 .mini-kpi-value { font-size: var(--font-xl); font-weight: 700; line-height: 1; }
 .mini-kpi-label { font-size: var(--font-xs); color: var(--text-secondary); margin-top: 4px; }
 
-/* ═══ 등록 프로그레스 바 ═══ */
-.reg-progress { display:flex; align-items:center; gap:0; margin-bottom:16px; padding:12px 20px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:var(--radius); }
-.reg-step { display:flex; align-items:center; gap:8px; flex:1; }
-.reg-step-num { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border:2px solid #d1d5db; color:#d1d5db; background:#fff; flex-shrink:0; }
-.reg-step.active .reg-step-num { border-color:var(--primary); color:#fff; background:var(--primary); }
-.reg-step.done .reg-step-num { border-color:var(--success); color:#fff; background:var(--success); }
-.reg-step-label { font-size:var(--font-xs); color:var(--text-muted); }
-.reg-step.active .reg-step-label { color:var(--primary); font-weight:500; }
+/* ═══ 등록 프로그레스 바 — 모던 스타일 ═══ */
+.reg-progress { display:flex; align-items:center; padding:16px 24px; margin-bottom:16px; background:#fff; border:1px solid var(--tile-border); border-radius:8px; }
+.reg-step { display:flex; align-items:center; gap:10px; }
+.reg-step-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0; transition:all 0.3s ease; border:2px solid #d1d5db; color:#d1d5db; background:#fff; }
+.reg-step.active .reg-step-num { border-color:var(--primary); color:#fff; background:var(--primary); box-shadow:0 0 0 4px rgba(7,71,166,0.12); }
+.reg-step.done .reg-step-num { border-color:var(--success); color:#fff; background:var(--success); box-shadow:none; }
+.reg-step-info { display:flex; flex-direction:column; }
+.reg-step-label { font-size:13px; font-weight:500; color:#d1d5db; transition:color 0.3s; }
+.reg-step.active .reg-step-label { color:var(--primary); }
 .reg-step.done .reg-step-label { color:var(--success); }
-.reg-step-line { flex:1; height:2px; background:#d1d5db; margin:0 8px; }
+.reg-step-desc { font-size:11px; color:var(--text-muted); margin-top:1px; }
+.reg-step.active .reg-step-desc { color:var(--primary); opacity:0.7; }
+.reg-step-line { flex:1; height:2px; margin:0 12px; background:#e5e7eb; border-radius:1px; transition:background 0.3s; }
 .reg-step-line.done { background:var(--success); }
+.reg-step-line.active { background:linear-gradient(90deg,var(--success) 0%,var(--primary) 50%,#e5e7eb 100%); }
 
 /* ═══ 검증 버튼·상태 ═══ */
 .verify-group { display:flex; align-items:center; gap:6px; }

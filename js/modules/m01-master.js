@@ -2,6 +2,31 @@
    m01-master.js — M01-001 프로젝트 관리 + M01-002 협력사 관리
    ============================================================ */
 
+/* ── 공유 유틸: 4단계 프로그레스 바 업데이트 ── */
+function updateProgress(activeStep) {
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById('prog-step-' + i);
+    const line = document.getElementById('prog-line-' + i);
+    if (!step) continue;
+    step.classList.remove('active', 'done');
+    const num = step.querySelector('.reg-step-num');
+    if (i - 1 < activeStep) {
+      step.classList.add('done');
+      num.textContent = '✓';
+    } else if (i - 1 === activeStep) {
+      step.classList.add('active');
+      num.textContent = String(i);
+    } else {
+      num.textContent = String(i);
+    }
+    if (line) {
+      line.classList.remove('done', 'active');
+      if (i - 1 < activeStep)      line.classList.add('done');
+      else if (i - 1 === activeStep) line.classList.add('active');
+    }
+  }
+}
+
 /* ────────────────────────────────────────
    M01-001  신차 프로젝트 등록·조회
    ──────────────────────────────────────── */
@@ -343,14 +368,14 @@ window.render_M01_002 = function(container) {
         <div id="m01002-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
       <!-- 등록 프로그레스 바 -->
-      <div class="reg-progress" id="m01002-progress">
-        <div class="reg-step active" id="m01002-ps1"><span class="reg-step-num">1</span><span class="reg-step-label">기본정보</span></div>
-        <div class="reg-step-line" id="m01002-pl1"></div>
-        <div class="reg-step" id="m01002-ps2"><span class="reg-step-num">2</span><span class="reg-step-label">사업자 검증</span></div>
-        <div class="reg-step-line" id="m01002-pl2"></div>
-        <div class="reg-step" id="m01002-ps3"><span class="reg-step-num">3</span><span class="reg-step-label">공급 역량</span></div>
-        <div class="reg-step-line" id="m01002-pl3"></div>
-        <div class="reg-step" id="m01002-ps4"><span class="reg-step-num">4</span><span class="reg-step-label">서류·승인</span></div>
+      <div class="reg-progress">
+        <div class="reg-step active" id="prog-step-1"><span class="reg-step-num">1</span><div class="reg-step-info"><span class="reg-step-label">기본정보</span><span class="reg-step-desc">회사·사업자 정보</span></div></div>
+        <div class="reg-step-line" id="prog-line-1"></div>
+        <div class="reg-step" id="prog-step-2"><span class="reg-step-num">2</span><div class="reg-step-info"><span class="reg-step-label">사업자 검증</span><span class="reg-step-desc">등록번호·신용 확인</span></div></div>
+        <div class="reg-step-line" id="prog-line-2"></div>
+        <div class="reg-step" id="prog-step-3"><span class="reg-step-num">3</span><div class="reg-step-info"><span class="reg-step-label">공급 역량</span><span class="reg-step-desc">소재·설비·생산능력</span></div></div>
+        <div class="reg-step-line" id="prog-line-3"></div>
+        <div class="reg-step" id="prog-step-4"><span class="reg-step-num">4</span><div class="reg-step-info"><span class="reg-step-label">서류·승인</span><span class="reg-step-desc">인증서·첨부·결재</span></div></div>
       </div>
       <!-- 좌우 2단 -->
       <div class="detail-layout" style="flex:1;overflow:hidden;">
@@ -493,32 +518,9 @@ window.render_M01_002 = function(container) {
   };
 
   window.m01002_updateProgress = function(tab) {
-    const steps = [
-      { id:'m01002-ps1', line:'m01002-pl1', tabs:['일반정보'] },
-      { id:'m01002-ps2', line:'m01002-pl2', tabs:['사업자정보'] },
-      { id:'m01002-ps3', line:'m01002-pl3', tabs:['공급역량'] },
-      { id:'m01002-ps4', line:null,         tabs:['품질·인증정보','신용평가정보'] },
-    ];
-    let reachedActive = false;
-    steps.forEach((s, i) => {
-      const el = document.getElementById(s.id);
-      const lineEl = s.line ? document.getElementById(s.line) : null;
-      if (!el) return;
-      const isActive = s.tabs.includes(tab);
-      if (isActive) {
-        el.className = 'reg-step active';
-        el.querySelector('.reg-step-num').textContent = String(i + 1);
-        reachedActive = true;
-      } else if (!reachedActive) {
-        el.className = 'reg-step done';
-        el.querySelector('.reg-step-num').innerHTML = '✓';
-        if (lineEl) lineEl.className = 'reg-step-line done';
-      } else {
-        el.className = 'reg-step';
-        el.querySelector('.reg-step-num').textContent = String(i + 1);
-        if (lineEl) lineEl.className = 'reg-step-line';
-      }
-    });
+    const tabToStep = { '일반정보':0, '사업자정보':1, '공급역량':2, '품질·인증정보':3, '신용평가정보':3 };
+    const activeStep = tabToStep[tab] !== undefined ? tabToStep[tab] : -1;
+    updateProgress(activeStep);
   };
 
   window.m01002_switchTab = function(tab) {
@@ -1702,14 +1704,14 @@ window.render_M01_003 = function(container) {
         <div id="m01003-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
       <!-- 등록 프로그레스 바 -->
-      <div class="reg-progress" id="m01003-progress">
-        <div class="reg-step active" id="m01003-ps1"><span class="reg-step-num">1</span><span class="reg-step-label">기본정보</span></div>
-        <div class="reg-step-line" id="m01003-pl1"></div>
-        <div class="reg-step" id="m01003-ps2"><span class="reg-step-num">2</span><span class="reg-step-label">물성·공정</span></div>
-        <div class="reg-step-line" id="m01003-pl2"></div>
-        <div class="reg-step" id="m01003-ps3"><span class="reg-step-num">3</span><span class="reg-step-label">단가·LME</span></div>
-        <div class="reg-step-line" id="m01003-pl3"></div>
-        <div class="reg-step" id="m01003-ps4"><span class="reg-step-num">4</span><span class="reg-step-label">도면·확정</span></div>
+      <div class="reg-progress">
+        <div class="reg-step active" id="prog-step-1"><span class="reg-step-num">1</span><div class="reg-step-info"><span class="reg-step-label">기본정보</span><span class="reg-step-desc">품목·분류 정보</span></div></div>
+        <div class="reg-step-line" id="prog-line-1"></div>
+        <div class="reg-step" id="prog-step-2"><span class="reg-step-num">2</span><div class="reg-step-info"><span class="reg-step-label">물성·공정</span><span class="reg-step-desc">소재·가공 정보</span></div></div>
+        <div class="reg-step-line" id="prog-line-2"></div>
+        <div class="reg-step" id="prog-step-3"><span class="reg-step-num">3</span><div class="reg-step-info"><span class="reg-step-label">단가·LME</span><span class="reg-step-desc">원가·시세 연동</span></div></div>
+        <div class="reg-step-line" id="prog-line-3"></div>
+        <div class="reg-step" id="prog-step-4"><span class="reg-step-num">4</span><div class="reg-step-info"><span class="reg-step-label">도면·확정</span><span class="reg-step-desc">도면 첨부·등록 완료</span></div></div>
       </div>
       <div class="detail-layout" style="flex:1;overflow:hidden;">
         <div class="detail-left" style="width:140px;">
@@ -1823,32 +1825,9 @@ window.render_M01_003 = function(container) {
   };
 
   window.m01003_updateProgress = function(tab) {
-    const steps = [
-      { id:'m01003-ps1', line:'m01003-pl1', tabs:['기본정보'] },
-      { id:'m01003-ps2', line:'m01003-pl2', tabs:['물성정보','공정정보'] },
-      { id:'m01003-ps3', line:'m01003-pl3', tabs:['단가·LME'] },
-      { id:'m01003-ps4', line:null,         tabs:['도면·사양서'] },
-    ];
-    let reachedActive = false;
-    steps.forEach((s, i) => {
-      const el = document.getElementById(s.id);
-      const lineEl = s.line ? document.getElementById(s.line) : null;
-      if (!el) return;
-      const isActive = s.tabs.includes(tab);
-      if (isActive) {
-        el.className = 'reg-step active';
-        el.querySelector('.reg-step-num').textContent = String(i + 1);
-        reachedActive = true;
-      } else if (!reachedActive) {
-        el.className = 'reg-step done';
-        el.querySelector('.reg-step-num').innerHTML = '✓';
-        if (lineEl) lineEl.className = 'reg-step-line done';
-      } else {
-        el.className = 'reg-step';
-        el.querySelector('.reg-step-num').textContent = String(i + 1);
-        if (lineEl) lineEl.className = 'reg-step-line';
-      }
-    });
+    const tabToStep = { '기본정보':0, '물성정보':1, '공정정보':1, '단가·LME':2, '도면·사양서':3 };
+    const activeStep = tabToStep[tab] !== undefined ? tabToStep[tab] : -1;
+    updateProgress(activeStep);
   };
 
   window.m01003_switchTab = function(tab) {
