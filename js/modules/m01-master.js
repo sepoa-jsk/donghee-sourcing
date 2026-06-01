@@ -833,3 +833,350 @@ window.render_M01_002 = function(container) {
   // 모든 함수 정의 완료 후 초기 렌더
   window.m01002_renderGrid();
 };
+
+
+/* ────────────────────────────────────────
+   M01-003  품목(Item) 마스터 관리
+   ──────────────────────────────────────── */
+window.render_M01_003 = function(container) {
+  container.style.padding = '0';
+
+  let items = MockData.getAll('items');
+  if (items.length === 0) { MockData.reset(); items = MockData.getAll('items'); }
+  console.log('M01-003 render, items:', items.length);
+
+  let selectedItemId = null;
+  let searchText = '';
+  let activeTab = '기본정보';
+  let detailMode = 'new';
+
+  // ── HTML 골격 ──
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
+
+    <!-- 리스트 뷰 -->
+    <div id="m01003-list">
+      <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
+        <div class="filter-search" style="width:450px;">
+          <input type="text" id="m01003-search" placeholder="품목명/도면번호 검색" oninput="m01003_onSearch(this.value)" style="width:100%;">
+          <span class="filter-search-icon">🔍</span>
+        </div>
+        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')">☰ 필터</button>
+        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')">≡ 품목구분</button>
+        <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn btn-primary" onclick="m01003_showDetail('new')">+ 신규</button>
+        </div>
+      </div>
+      <div id="m01003-grid"></div>
+    </div>
+
+    <!-- 상세 뷰 -->
+    <div id="m01003-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+        <span id="m01003-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
+        <div id="m01003-detail-btns" style="display:flex;gap:6px;"></div>
+      </div>
+      <div class="detail-layout" style="flex:1;overflow:hidden;">
+        <div class="detail-left" style="width:140px;">
+          <div id="m01003-vtabs"></div>
+        </div>
+        <div class="detail-right" id="m01003-tab-content"></div>
+      </div>
+    </div>
+  </div>`;
+
+  const TABS3 = ['기본정보','물성정보','공정정보','단가·LME','적용 프로젝트','도면·사양서'];
+
+  // ── 헬퍼 (M01-002 공유 헬퍼 재사용, 로컬 alias) ──
+  const i3 = (id, v, ph, ro) => `<input class="form-input" id="${id}" value="${v||''}" placeholder="${ph||''}" ${ro?'readonly':''}>`;
+  const s3 = (id, opts, cur) => `<select class="form-input form-select" id="${id}">${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+  const fg3 = (lbl, req, html) => `<div class="form-group"><label class="form-label">${lbl}${req?' <span class="required">*</span>':''}</label>${html}</div>`;
+  const row3 = (...f) => `<div class="form-row">${f.join('')}</div>`;
+  const fgFull = (lbl, req, html) => `<div class="form-group" style="flex:0 0 100%"><label class="form-label">${lbl}${req?' <span class="required">*</span>':''}</label>${html}</div>`;
+  const box3 = (t, c) => `<div class="section-box"><div class="section-box-title">${t}</div>${c}</div>`;
+
+  // ── 리스트 그리드 ──
+  window.m01003_onSearch = function(val) { searchText = val; m01003_renderGrid(); };
+
+  window.m01003_renderGrid = function() {
+    let data = MockData.getAll('items');
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(d =>
+        (d.name||'').toLowerCase().includes(q) ||
+        (d.drawNo||'').toLowerCase().includes(q)
+      );
+    }
+    const lmeColor = v => v === 'Y' ? 'var(--success)' : 'var(--text-muted)';
+    const fmt = n => Number(n||0).toLocaleString('ko-KR');
+
+    const rows = data.map(d => {
+      const sel = d.id === selectedItemId ? 'selected' : '';
+      return `<tr class="${sel}" onclick="m01003_selectRow('${d.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${d.id===selectedItemId?'checked':''} onclick="event.stopPropagation();m01003_selectRow('${d.id}')"></td>
+        <td class="center"><span class="code-link" onclick="event.stopPropagation();m01003_showDetail('edit','${d.id}')">${d.id}</span></td>
+        <td class="center">${d.drawNo||'-'}</td>
+        <td class="left">${d.name}</td>
+        <td class="center">${d.cat1||'-'}</td>
+        <td class="center">${d.cat2||'-'}</td>
+        <td class="center">${d.cat3||'-'}</td>
+        <td class="center">${d.material||'-'}</td>
+        <td class="right">${fmt(d.weight)}</td>
+        <td class="center">${d.unit||'-'}</td>
+        <td class="center" style="color:${lmeColor(d.lme)};font-weight:500;">${d.lme||'-'}</td>
+        <td class="right">${fmt(d.basePrice)}</td>
+        <td class="center" style="color:${lmeColor(d.active)};font-weight:500;">${d.active||'-'}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('m01003-grid').innerHTML = `
+      <div class="grid-container" style="height:calc(100vh - 40px - 36px - 56px - 32px - 5px);">
+        <table class="grid-table grid-table-wide" style="min-width:1200px;">
+          <colgroup>
+            <col style="width:40px"><col style="width:90px"><col style="width:100px"><col style="width:180px">
+            <col style="width:80px"><col style="width:80px"><col style="width:90px">
+            <col style="width:80px"><col style="width:70px"><col style="width:50px">
+            <col style="width:70px"><col style="width:90px"><col style="width:70px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox"></th>
+            <th>품목코드</th><th>도면번호</th><th>품명</th>
+            <th>대분류</th><th>중분류</th><th>소분류</th>
+            <th>소재</th><th>중량(g)</th><th>단위</th>
+            <th>LME연동</th><th>기준단가</th><th>사용여부</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+
+  window.m01003_selectRow = function(id) {
+    selectedItemId = selectedItemId === id ? null : id;
+    m01003_renderGrid();
+  };
+
+  // ── 상세 화면 ──
+  window.m01003_showDetail = function(mode, overrideId) {
+    detailMode = mode;
+    if (overrideId) selectedItemId = overrideId;
+    const item = mode === 'edit'
+      ? MockData.getById('items', selectedItemId)
+      : MockData.getAll('items')[0];
+    document.getElementById('m01003-list').classList.add('hidden');
+    document.getElementById('m01003-detail').classList.remove('hidden');
+    document.getElementById('m01003-detail-title').textContent = item ? item.name : '';
+
+    const btns = document.getElementById('m01003-detail-btns');
+    if (mode === 'edit') {
+      btns.innerHTML = `<button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')">수정</button>
+                        <button class="btn" onclick="m01003_backToList()">닫기</button>`;
+    } else {
+      btns.innerHTML = `<button class="btn btn-primary" onclick="m01003_save()">저장</button>
+                        <button class="btn" onclick="m01003_backToList()">닫기</button>`;
+    }
+
+    activeTab = '기본정보';
+    m01003_renderVtabs();
+    m01003_renderTabContent(activeTab, item);
+  };
+
+  window.m01003_renderVtabs = function() {
+    document.getElementById('m01003-vtabs').innerHTML = TABS3.map(t =>
+      `<div class="detail-tab ${t===activeTab?'active':''}" onclick="m01003_switchTab('${t}')">${t}</div>`
+    ).join('');
+  };
+
+  window.m01003_switchTab = function(tab) {
+    activeTab = tab;
+    const item = detailMode === 'edit' ? MockData.getById('items', selectedItemId) : null;
+    m01003_renderVtabs();
+    m01003_renderTabContent(tab, item);
+  };
+
+  window.m01003_renderTabContent = function(tab, item) {
+    const el = document.getElementById('m01003-tab-content');
+    const map = {
+      '기본정보':     () => m01003_tabBasic(item),
+      '물성정보':     () => m01003_tabPhysics(item),
+      '공정정보':     () => m01003_tabProcess(item),
+      '단가·LME':    () => m01003_tabPrice(item),
+      '적용 프로젝트': () => m01003_tabProjects(item),
+      '도면·사양서':  () => m01003_tabDrawing(item),
+    };
+    el.innerHTML = (map[tab] || (() => ''))();
+  };
+
+  // ── 탭 1: 기본정보 ──
+  window.m01003_tabBasic = function(item) {
+    const d = item || {};
+    return (
+      box3('품목 기본정보',
+        row3(fg3('품목코드',false,i3('it-code',d.id||'자동발급','',true)),
+             fg3('도면번호',true,i3('it-drawno',d.drawNo,'')),
+             fg3('품목유형',false,s3('it-type',['원자재','반제품','완제품'],'반제품'))) +
+        row3(fgFull('품명(국문)',true,i3('it-name',d.name,''))) +
+        row3(fgFull('품명(영문)',false,i3('it-nameen','',''))) +
+        row3(fg3('대분류',true,s3('it-cat1',['원자재','가공품','구매품','외주품'],d.cat1||'가공품')),
+             fg3('중분류',true,i3('it-cat2',d.cat2,'')),
+             fg3('소분류',false,i3('it-cat3',d.cat3,''))) +
+        row3(fg3('단위',false,s3('it-unit',['EA','kg','m','ton'],d.unit||'EA')),
+             fg3('사용여부',false,s3('it-active',['Y','N'],d.active||'Y')),
+             fg3('라이프사이클',false,s3('it-lc',['사용중','EOL예고','단종'],'사용중')))
+      ) +
+      box3('대체·호환 정보',
+        row3(
+          `<div class="form-group"><label class="form-label">대체품목</label><div style="display:flex;gap:4px;">${i3('it-alt','','품목명 검색')}<button class="btn" style="flex-shrink:0;">검색</button></div></div>`,
+          `<div class="form-group"><label class="form-label">호환품목</label><div style="display:flex;gap:4px;">${i3('it-compat','','품목명 검색')}<button class="btn" style="flex-shrink:0;">검색</button></div></div>`
+        ) +
+        row3(fgFull('비고',false,`<textarea class="form-textarea" style="width:100%;min-height:60px;" placeholder="비고"></textarea>`))
+      )
+    );
+  };
+
+  // ── 탭 2: 물성정보 ──
+  window.m01003_tabPhysics = function(item) {
+    const d = item || {};
+    return box3('소재 물성',
+      row3(fg3('소재',true,i3('it-mat',d.material,'')),
+           fg3('소재규격',false,i3('it-matspec','','')),
+           fg3('KS규격',false,i3('it-ks','',''))) +
+      row3(fg3('중량(g)',true,i3('it-weight',d.weight,'')),
+           fg3('비중',false,i3('it-density','','예: 7.85')),
+           fg3('밀도(g/cm³)',false,i3('it-density2','',''))) +
+      row3(fg3('인장강도(MPa)',false,i3('it-ts','','')),
+           fg3('항복강도(MPa)',false,i3('it-ys','','')),
+           fg3('연신율(%)',false,i3('it-el','',''))) +
+      row3(fg3('경도(HB)',false,i3('it-hb','','')),
+           fg3('색상',false,i3('it-color','','')),
+           fg3('표면처리',false,i3('it-surface','','')))
+    );
+  };
+
+  // ── 탭 3: 공정정보 ──
+  window.m01003_tabProcess = function(item) {
+    const procs = MockData.getAll('processes');
+    const opts = procs.map(p => p.name);
+    const procRows = procs.slice(0,2).map(p => `<tr>
+      <td class="center">${p.id}</td><td class="left">${p.name}</td>
+      <td class="right">${Number(p.cost).toLocaleString('ko-KR')}</td>
+      <td class="center">${p.indirectRate}%</td>
+      <td class="right">${Math.round(p.cost*(1+p.indirectRate/100)).toLocaleString('ko-KR')}</td>
+    </tr>`).join('');
+    return (
+      box3('적용 공정',
+        row3(fg3('주공정',true,s3('it-proc1',opts,opts[0])),
+             fg3('부공정',false,s3('it-proc2',['없음',...opts],'없음'))) +
+        row3(fg3('열처리여부',false,s3('it-ht',['N','Y'],'N')),
+             fg3('열처리종류',false,s3('it-httype',['해당없음','담금질','풀림','침탄','질화'],'해당없음'))) +
+        row3(fg3('표면처리공정',false,s3('it-surf',['해당없음','도장','도금','양극산화','PVD'],'해당없음')),
+             fg3('도장사양',false,i3('it-paintspec','','색상/두께')))
+      ) +
+      box3('공정별 가공비',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>공정코드</th><th>공정명</th><th>표준가공비(원)</th><th>간접비율(%)</th><th>적용가공비(원)</th></tr></thead>
+          <tbody>${procRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
+  // ── 탭 4: 단가·LME ──
+  window.m01003_tabPrice = function(item) {
+    const d = item || {};
+    const lmePrices = MockData.getAll('lmePrice');
+    const latest = lmePrices[0] || {};
+    const histRows = [
+      ['2025-12-01', '$621/ton', '1,342', '12%', '₩7,050', 'LME갱신', '시스템'],
+      ['2025-11-01', '$608/ton', '1,338', '12%', '₩6,920', 'LME갱신', '시스템'],
+      ['2025-10-01', '$595/ton', '1,325', '12%', '₩6,780', '초기등록', '김구매'],
+    ].map(r => `<tr>${r.map((v,i)=>`<td class="${i>=2&&i<=4?'right':'center'}">${v}</td>`).join('')}</tr>`).join('');
+    return (
+      box3('단가 정보',
+        row3(fg3('기준단가(원)',false,i3('it-baseprice',d.basePrice,'')),
+             fg3('통화',false,s3('it-currency',['KRW','USD'],'KRW')),
+             fg3('환율적용기준',false,s3('it-fxbasis',['당일','전월평균'],'전월평균'))) +
+        row3(fg3('LME연동여부',false,s3('it-lme',['Y','N'],d.lme||'Y')),
+             fg3('LME코드',false,s3('it-lmecode',['LME-STEEL-HRC','LME-AL','LME-CU','LME-NICKEL','CRUDE-OIL','해당없음'],'LME-STEEL-HRC'))) +
+        row3(fg3('할증률(%)',false,i3('it-surcharge','12','')),
+             fg3('최종적용단가',false,i3('it-finalprice',`₩${Number(d.basePrice||0).toLocaleString('ko-KR')}`, '',true)))
+      ) +
+      box3('단가 변동 이력',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>기준일</th><th>LME시세</th><th>환율</th><th>할증률</th><th>적용단가</th><th>변동사유</th><th>등록자</th></tr></thead>
+          <tbody>${histRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
+  // ── 탭 5: 적용 프로젝트 ──
+  window.m01003_tabProjects = function(item) {
+    const projRows = [
+      ['PRJ-2025-001','NX5 SUV','서스펜션 어셈블리','P-S101','₩7,200','₩7,050','₩7,050','확정'],
+      ['PRJ-2025-004','수소 SUV','서스펜션 어셈블리','P-H101','₩7,500','-','-','미확정'],
+    ].map(r => {
+      const stColor = r[7]==='확정' ? 'color:var(--success);font-weight:500;' : 'color:var(--text-muted);font-weight:500;';
+      return `<tr>
+        <td class="center">${r[0]}</td><td class="left">${r[1]}</td><td class="left">${r[2]}</td>
+        <td class="center">${r[3]}</td><td class="right">${r[4]}</td>
+        <td class="right">${r[5]}</td><td class="right">${r[6]}</td>
+        <td class="center" style="${stColor}">${r[7]}</td>
+      </tr>`;
+    }).join('');
+    return box3('적용 중인 프로젝트·BOM',
+      `<div class="grid-container"><table class="grid-table grid-table-wide">
+        <thead><tr><th>프로젝트ID</th><th>프로젝트명</th><th>어셈블리</th><th>Part No.</th><th>목표단가</th><th>산출단가</th><th>확정단가</th><th>상태</th></tr></thead>
+        <tbody>${projRows}</tbody>
+      </table></div>`
+    );
+  };
+
+  // ── 탭 6: 도면·사양서 ──
+  window.m01003_tabDrawing = function(item) {
+    const d = item || {};
+    const drawRows = [
+      ['R03','DWG-S101-R03','2025-11-15','ECN-2025-0891 반영','김설계'],
+      ['R02','DWG-S101-R02','2025-09-01','형상 변경','김설계'],
+      ['R01','DWG-S101-R01','2025-06-10','초기 등록','김설계'],
+    ].map(r => `<tr><td class="center">${r[0]}</td><td class="center">${r[1]}</td><td class="center">${r[2]}</td><td class="left">${r[3]}</td><td class="center">${r[4]}</td></tr>`).join('');
+    return (
+      box3('도면 첨부', _fileRow('도면 파일','사양서')) +
+      box3('도면 이력',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>Rev</th><th>도면번호</th><th>변경일</th><th>변경사유</th><th>등록자</th></tr></thead>
+          <tbody>${drawRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
+  window.m01003_save = function() {
+    const name = (document.getElementById('it-name')||{}).value;
+    if (!name || !name.trim()) { Common.showToast('품명을 입력해주세요', 'error'); return; }
+    const item = {
+      id: 'ITM-' + String(Date.now()).slice(-3),
+      drawNo: (document.getElementById('it-drawno')||{}).value || '',
+      name: name.trim(),
+      cat1: (document.getElementById('it-cat1')||{}).value || '가공품',
+      cat2: (document.getElementById('it-cat2')||{}).value || '',
+      cat3: (document.getElementById('it-cat3')||{}).value || '',
+      material: (document.getElementById('it-mat')||{}).value || '',
+      weight: Number((document.getElementById('it-weight')||{}).value) || 0,
+      unit: (document.getElementById('it-unit')||{}).value || 'EA',
+      lme: (document.getElementById('it-lme')||{}).value || 'N',
+      basePrice: Number((document.getElementById('it-baseprice')||{}).value) || 0,
+      active: 'Y'
+    };
+    MockData.save('items', item);
+    Common.showToast('저장되었습니다', 'success');
+    m01003_backToList();
+  };
+
+  window.m01003_backToList = function() {
+    document.getElementById('m01003-list').classList.remove('hidden');
+    document.getElementById('m01003-detail').classList.add('hidden');
+    m01003_renderGrid();
+  };
+
+  // 초기 렌더
+  window.m01003_renderGrid();
+};
