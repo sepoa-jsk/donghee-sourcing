@@ -2,29 +2,43 @@
    m01-master.js — M01-001 프로젝트 관리 + M01-002 협력사 관리
    ============================================================ */
 
-/* ── 공유 유틸: 4단계 프로그레스 바 업데이트 ── */
-function updateProgress(activeStep) {
-  for (let i = 1; i <= 4; i++) {
-    const step = document.getElementById('prog-step-' + i);
-    const line = document.getElementById('prog-line-' + i);
-    if (!step) continue;
-    step.classList.remove('active', 'done');
-    const num = step.querySelector('.reg-step-num');
-    if (i - 1 < activeStep) {
-      step.classList.add('done');
-      num.textContent = '✓';
-    } else if (i - 1 === activeStep) {
-      step.classList.add('active');
-      num.textContent = String(i);
-    } else {
-      num.textContent = String(i);
-    }
-    if (line) {
-      line.classList.remove('done', 'active');
-      if (i - 1 < activeStep)      line.classList.add('done');
-      else if (i - 1 === activeStep) line.classList.add('active');
-    }
-  }
+/* ── 공유 유틸: 데이터 기반 프로그레스 바 ── */
+function checkSupplierProgress(s) {
+  s = s || {};
+  const steps = [
+    { label:'기본정보',   desc:'회사·사업자 정보',    check: !!(s.name && s.bizNo) },
+    { label:'사업자 검증', desc:'등록번호·신용 확인',   check: !!(s.bizNo && s.creditGrade) },
+    { label:'공급 역량',  desc:'소재·설비·생산능력',   check: !!(s.tier && s.managed === 'Y') },
+    { label:'서류·승인',  desc:'인증서·첨부·결재',     check: !!(s.contract === 'Y' && s.grade) },
+  ];
+  const doneCount = steps.filter(s => s.check).length;
+  return { steps, doneCount, rate: Math.round((doneCount / 4) * 100) };
+}
+
+function checkItemProgress(d) {
+  d = d || {};
+  const steps = [
+    { label:'기본정보',  desc:'품목·분류 정보',    check: !!(d.name && d.cat1) },
+    { label:'물성·공정', desc:'소재·가공 정보',    check: !!(d.material && d.weight) },
+    { label:'단가·LME', desc:'원가·시세 연동',     check: !!(d.basePrice && d.basePrice > 0) },
+    { label:'도면·확정', desc:'도면 첨부·등록 완료', check: !!(d.drawNo && d.active === 'Y') },
+  ];
+  const doneCount = steps.filter(s => s.check).length;
+  return { steps, doneCount, rate: Math.round((doneCount / 4) * 100) };
+}
+
+function renderProgress(steps, doneCount, rate) {
+  const rateClass = rate === 100 ? 'complete' : rate < 50 ? 'warn' : '';
+  let html = '<div class="reg-progress">';
+  steps.forEach((step, i) => {
+    const status = step.check ? 'done' : 'incomplete';
+    const numText = step.check ? '✓' : '!';
+    html += `<div class="reg-step ${status}"><span class="reg-step-num">${numText}</span><div class="reg-step-info"><span class="reg-step-label">${step.label}</span><span class="reg-step-desc">${step.desc}</span></div></div>`;
+    if (i < 3) html += `<div class="reg-step-line ${step.check ? 'done' : ''}"></div>`;
+  });
+  html += `<div class="reg-progress-summary"><div class="reg-progress-rate ${rateClass}">${rate}%</div><div class="reg-progress-text">${doneCount}/4 완료</div></div>`;
+  html += '</div>';
+  return html;
 }
 
 /* ────────────────────────────────────────
@@ -367,16 +381,8 @@ window.render_M01_002 = function(container) {
         <span id="m01002-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
         <div id="m01002-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
-      <!-- 등록 프로그레스 바 -->
-      <div class="reg-progress">
-        <div class="reg-step active" id="prog-step-1"><span class="reg-step-num">1</span><div class="reg-step-info"><span class="reg-step-label">기본정보</span><span class="reg-step-desc">회사·사업자 정보</span></div></div>
-        <div class="reg-step-line" id="prog-line-1"></div>
-        <div class="reg-step" id="prog-step-2"><span class="reg-step-num">2</span><div class="reg-step-info"><span class="reg-step-label">사업자 검증</span><span class="reg-step-desc">등록번호·신용 확인</span></div></div>
-        <div class="reg-step-line" id="prog-line-2"></div>
-        <div class="reg-step" id="prog-step-3"><span class="reg-step-num">3</span><div class="reg-step-info"><span class="reg-step-label">공급 역량</span><span class="reg-step-desc">소재·설비·생산능력</span></div></div>
-        <div class="reg-step-line" id="prog-line-3"></div>
-        <div class="reg-step" id="prog-step-4"><span class="reg-step-num">4</span><div class="reg-step-info"><span class="reg-step-label">서류·승인</span><span class="reg-step-desc">인증서·첨부·결재</span></div></div>
-      </div>
+      <!-- 등록 프로그레스 바 (데이터 기반, showDetail에서 렌더) -->
+      <div id="m01002-progress-wrap"></div>
       <!-- 좌우 2단 -->
       <div class="detail-layout" style="flex:1;overflow:hidden;">
         <!-- 좌측 세로탭 (160px, 파일첨부 없음) -->
@@ -505,6 +511,10 @@ window.render_M01_002 = function(container) {
     }
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 
+    // 프로그레스 바 렌더 (데이터 기반)
+    const progData = checkSupplierProgress(detailMode === 'new' ? {} : (supp || {}));
+    document.getElementById('m01002-progress-wrap').innerHTML = renderProgress(progData.steps, progData.doneCount, progData.rate);
+
     // 세로탭 렌더
     activeTab = '일반정보';
     m01002_renderVtabs(supp);
@@ -517,18 +527,11 @@ window.render_M01_002 = function(container) {
     ).join('');
   };
 
-  window.m01002_updateProgress = function(tab) {
-    const tabToStep = { '일반정보':0, '사업자정보':1, '공급역량':2, '품질·인증정보':3, '신용평가정보':3 };
-    const activeStep = tabToStep[tab] !== undefined ? tabToStep[tab] : -1;
-    updateProgress(activeStep);
-  };
-
   window.m01002_switchTab = function(tab) {
     activeTab = tab;
     const supp = detailMode === 'edit' ? MockData.getById('suppliers', selectedSuppId) : null;
     m01002_renderVtabs(supp);
     m01002_renderTabContent(tab, supp);
-    m01002_updateProgress(tab);
   };
 
   window.m01002_renderTabContent = function(tab, supp) {
@@ -1703,16 +1706,8 @@ window.render_M01_003 = function(container) {
         <span id="m01003-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
         <div id="m01003-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
-      <!-- 등록 프로그레스 바 -->
-      <div class="reg-progress">
-        <div class="reg-step active" id="prog-step-1"><span class="reg-step-num">1</span><div class="reg-step-info"><span class="reg-step-label">기본정보</span><span class="reg-step-desc">품목·분류 정보</span></div></div>
-        <div class="reg-step-line" id="prog-line-1"></div>
-        <div class="reg-step" id="prog-step-2"><span class="reg-step-num">2</span><div class="reg-step-info"><span class="reg-step-label">물성·공정</span><span class="reg-step-desc">소재·가공 정보</span></div></div>
-        <div class="reg-step-line" id="prog-line-2"></div>
-        <div class="reg-step" id="prog-step-3"><span class="reg-step-num">3</span><div class="reg-step-info"><span class="reg-step-label">단가·LME</span><span class="reg-step-desc">원가·시세 연동</span></div></div>
-        <div class="reg-step-line" id="prog-line-3"></div>
-        <div class="reg-step" id="prog-step-4"><span class="reg-step-num">4</span><div class="reg-step-info"><span class="reg-step-label">도면·확정</span><span class="reg-step-desc">도면 첨부·등록 완료</span></div></div>
-      </div>
+      <!-- 등록 프로그레스 바 (데이터 기반, showDetail에서 렌더) -->
+      <div id="m01003-progress-wrap"></div>
       <div class="detail-layout" style="flex:1;overflow:hidden;">
         <div class="detail-left" style="width:140px;">
           <div id="m01003-vtabs"></div>
@@ -1813,6 +1808,10 @@ window.render_M01_003 = function(container) {
     }
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 
+    // 프로그레스 바 렌더 (데이터 기반)
+    const progData = checkItemProgress(detailMode === 'new' ? {} : (item || {}));
+    document.getElementById('m01003-progress-wrap').innerHTML = renderProgress(progData.steps, progData.doneCount, progData.rate);
+
     activeTab = '기본정보';
     m01003_renderVtabs();
     m01003_renderTabContent(activeTab, item);
@@ -1824,18 +1823,11 @@ window.render_M01_003 = function(container) {
     ).join('');
   };
 
-  window.m01003_updateProgress = function(tab) {
-    const tabToStep = { '기본정보':0, '물성정보':1, '공정정보':1, '단가·LME':2, '도면·사양서':3 };
-    const activeStep = tabToStep[tab] !== undefined ? tabToStep[tab] : -1;
-    updateProgress(activeStep);
-  };
-
   window.m01003_switchTab = function(tab) {
     activeTab = tab;
     const item = detailMode === 'edit' ? MockData.getById('items', selectedItemId) : null;
     m01003_renderVtabs();
     m01003_renderTabContent(tab, item);
-    m01003_updateProgress(tab);
   };
 
   window.m01003_renderTabContent = function(tab, item) {

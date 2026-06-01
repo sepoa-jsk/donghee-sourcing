@@ -796,6 +796,14 @@ body {
 .reg-step-line { flex:1; height:2px; margin:0 12px; background:#e5e7eb; border-radius:1px; transition:background 0.3s; }
 .reg-step-line.done { background:var(--success); }
 .reg-step-line.active { background:linear-gradient(90deg,var(--success) 0%,var(--primary) 50%,#e5e7eb 100%); }
+.reg-step.incomplete .reg-step-num { border-color:#f59e0b; color:#fff; background:#f59e0b; }
+.reg-step.incomplete .reg-step-label { color:#f59e0b; }
+.reg-step.incomplete .reg-step-desc { color:#f59e0b; opacity:0.7; }
+.reg-progress-summary { margin-left:auto; text-align:right; flex-shrink:0; padding-left:20px; }
+.reg-progress-rate { font-size:var(--font-xl); font-weight:700; color:var(--primary); }
+.reg-progress-rate.complete { color:var(--success); }
+.reg-progress-rate.warn { color:#f59e0b; }
+.reg-progress-text { font-size:var(--font-xs); color:var(--text-muted); }
 
 /* ═══ 검증 버튼·상태 ═══ */
 .verify-group { display:flex; align-items:center; gap:6px; }
