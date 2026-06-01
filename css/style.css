@@ -412,12 +412,13 @@ body {
 .filter-btn:hover { background: var(--bg-page); }
 
 /* ═══ Lucide 아이콘 정렬 ═══ */
-i[data-lucide] {
+i[data-lucide],
+i[data-lucide] svg {
+  width: 16px !important;
+  height: 16px !important;
   display: inline-block;
   vertical-align: middle;
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
 }
 .filter-search i[data-lucide] { color: var(--primary); }
 
