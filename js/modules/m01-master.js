@@ -847,6 +847,352 @@ window.render_M01_002 = function(container) {
 
 
 /* ────────────────────────────────────────
+   M01-004  소재·원자재 코드 관리
+   ──────────────────────────────────────── */
+window.render_M01_004 = function(container) {
+  container.style.padding = '0';
+
+  let mats = MockData.getAll('materials');
+  if (mats.length === 0) { MockData.reset(); mats = MockData.getAll('materials'); }
+
+  let selectedMatId = null;
+  let searchText = '';
+  let activeTab = '기본정보';
+  let detailMode = 'new';
+
+  const LME_KEY = { 'LME-STEEL-HRC':'steel','LME-AL':'al','LME-CU':'cu','LME-NICKEL':'ni','CRUDE-OIL':'oil' };
+
+  // ── 헬퍼 ──
+  const i4  = (id,v,ph,ro) => `<input class="form-input" id="${id}" value="${v||''}" placeholder="${ph||''}" ${ro?'readonly':''}>`;
+  const s4  = (id,opts,cur) => `<select class="form-input form-select" id="${id}">${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+  const fg4 = (lbl,req,html) => `<div class="form-group"><label class="form-label">${lbl}${req?' <span class="required">*</span>':''}</label>${html}</div>`;
+  const row4 = (...f) => `<div class="form-row">${f.join('')}</div>`;
+  const fgFull4 = (lbl,html) => `<div class="form-group" style="flex:0 0 100%"><label class="form-label">${lbl}</label>${html}</div>`;
+  const box4 = (t,c) => `<div class="section-box"><div class="section-box-title">${t}</div>${c}</div>`;
+  const fb4  = (lbl) => `<div style="flex:1;"><div style="font-size:var(--font-s);font-weight:500;margin-bottom:8px;">${lbl}</div><div style="border:1px solid var(--border);border-radius:var(--radius);padding:8px;"><button class="btn" style="font-size:11px;margin-bottom:8px;"><i data-lucide="download"></i> AllDownLoad</button><div style="border:1px solid #E5E7EB;border-radius:var(--radius);background:#FAFBFC;min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);">파일을 드래그하거나<br>클릭하여 업로드</div></div></div>`;
+  const fr4  = (l1,l2) => `<div style="display:flex;gap:24px;">${fb4(l1)}${fb4(l2)}</div>`;
+
+  // ── HTML 골격 ──
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
+    <!-- 리스트 뷰 -->
+    <div id="m01004-list">
+      <div class="filter-bar">
+        <div class="filter-search">
+          <input type="text" id="m01004-search" placeholder="Search" oninput="m01004_onSearch(this.value)">
+          <i data-lucide="search"></i>
+        </div>
+        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+        <button class="filter-btn" onclick="Common.showToast('상태 필터는 준비 중입니다','info')"><i data-lucide="bar-chart-2" class="icon-blue"></i> 상태</button>
+        <div class="filter-date-range">
+          <input type="text" value="2025/01/01" readonly>
+          <span class="date-separator">~</span>
+          <input type="text" value="2027/12/31" readonly>
+          <i data-lucide="calendar" class="icon-red"></i>
+        </div>
+        <div class="filter-right">
+          <button class="btn btn-outline-blue" onclick="m01004_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
+        </div>
+      </div>
+      <div id="m01004-grid"></div>
+    </div>
+    <!-- 상세 뷰 -->
+    <div id="m01004-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+        <span id="m01004-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
+        <div id="m01004-detail-btns" style="display:flex;gap:6px;"></div>
+      </div>
+      <div class="detail-layout" style="flex:1;overflow:hidden;">
+        <div class="detail-left" style="width:140px;">
+          <div id="m01004-vtabs"></div>
+        </div>
+        <div class="detail-right" id="m01004-tab-content"></div>
+      </div>
+    </div>
+  </div>`;
+
+  const TABS4 = ['기본정보','물성정보','LME 연동','시세 이력','적용 품목'];
+
+  // ── 리스트 그리드 ──
+  window.m01004_onSearch = function(val) { searchText = val; m01004_renderGrid(); };
+
+  window.m01004_renderGrid = function() {
+    let data = MockData.getAll('materials');
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(d => (d.name||'').toLowerCase().includes(q) || (d.id||'').toLowerCase().includes(q) || (d.spec||'').toLowerCase().includes(q));
+    }
+    const yc = v => v==='Y'?'var(--success)':'var(--text-muted)';
+    const fmt = n => Number(n||0).toLocaleString('ko-KR');
+
+    const rows = data.map(d => {
+      const sel = d.id === selectedMatId ? 'selected' : '';
+      return `<tr class="${sel}" onclick="m01004_selectRow('${d.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${d.id===selectedMatId?'checked':''} onclick="event.stopPropagation();m01004_selectRow('${d.id}')"></td>
+        <td class="center"><span class="code-link" onclick="event.stopPropagation();m01004_showDetail('edit','${d.id}')">${d.id}</span></td>
+        <td class="left">${d.name}</td>
+        <td class="center">${d.group||'-'}</td>
+        <td class="left">${d.spec||'-'}</td>
+        <td class="center">${d.unit||'-'}</td>
+        <td class="center" style="color:${yc(d.lme)};font-weight:500;">${d.lme||'-'}</td>
+        <td class="left">${d.lmeCode||'-'}</td>
+        <td class="right">${fmt(d.basePrice)}</td>
+        <td class="center">${d.currency||'-'}</td>
+        <td class="center" style="color:${yc(d.active)};font-weight:500;">${d.active||'-'}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('m01004-grid').innerHTML = `
+      <div class="grid-container" style="height:calc(100vh - 40px - 36px - 56px - 32px - 5px);">
+        <table class="grid-table" style="min-width:1200px;">
+          <colgroup>
+            <col style="width:40px"><col style="width:90px"><col style="width:120px"><col style="width:80px">
+            <col style="width:100px"><col style="width:60px"><col style="width:70px">
+            <col style="width:120px"><col style="width:100px"><col style="width:60px"><col style="width:70px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox"></th>
+            <th>소재코드</th><th>소재명</th><th>소재구분</th><th>규격</th>
+            <th>단위</th><th>LME연동</th><th>LME코드</th>
+            <th>기준단가</th><th>통화</th><th>사용여부</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m01004_selectRow = function(id) {
+    selectedMatId = selectedMatId === id ? null : id;
+    m01004_renderGrid();
+  };
+
+  // ── 상세 화면 ──
+  window.m01004_showDetail = function(mode, overrideId) {
+    detailMode = mode;
+    if (overrideId) selectedMatId = overrideId;
+    const mat = mode === 'edit'
+      ? MockData.getById('materials', selectedMatId)
+      : MockData.getAll('materials')[0];
+    document.getElementById('m01004-list').classList.add('hidden');
+    document.getElementById('m01004-detail').classList.remove('hidden');
+    document.getElementById('m01004-detail-title').textContent = mat ? mat.name : '';
+
+    const btns = document.getElementById('m01004-detail-btns');
+    if (mode === 'edit') {
+      btns.innerHTML = `<button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')"><i data-lucide="pencil"></i> 수정</button>
+                        <button class="btn" onclick="m01004_backToList()"><i data-lucide="x"></i> 닫기</button>`;
+    } else {
+      btns.innerHTML = `<button class="btn btn-primary" onclick="m01004_save()"><i data-lucide="save"></i> 저장</button>
+                        <button class="btn" onclick="m01004_backToList()"><i data-lucide="x"></i> 닫기</button>`;
+    }
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+
+    activeTab = '기본정보';
+    m01004_renderVtabs();
+    m01004_renderTabContent(activeTab, mat);
+  };
+
+  window.m01004_renderVtabs = function() {
+    document.getElementById('m01004-vtabs').innerHTML = TABS4.map(t =>
+      `<div class="detail-tab ${t===activeTab?'active':''}" onclick="m01004_switchTab('${t}')">${t}</div>`
+    ).join('');
+  };
+
+  window.m01004_switchTab = function(tab) {
+    activeTab = tab;
+    const mat = detailMode === 'edit' ? MockData.getById('materials', selectedMatId) : null;
+    m01004_renderVtabs();
+    m01004_renderTabContent(tab, mat);
+  };
+
+  window.m01004_renderTabContent = function(tab, mat) {
+    const el = document.getElementById('m01004-tab-content');
+    const map = {
+      '기본정보':  () => m01004_tabBasic(mat),
+      '물성정보':  () => m01004_tabPhysics(mat),
+      'LME 연동': () => m01004_tabLme(mat),
+      '시세 이력': () => m01004_tabHistory(mat),
+      '적용 품목': () => m01004_tabItems(mat),
+    };
+    el.innerHTML = (map[tab] || (() => ''))();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  // ── 탭 1: 기본정보 ──
+  window.m01004_tabBasic = function(mat) {
+    const d = mat || {};
+    return (
+      box4('소재 기본정보',
+        row4(fg4('소재코드',false,i4('mt-code',d.id||'자동발급','',true)),
+             fg4('소재명',true,i4('mt-name',d.name,'')),
+             fg4('소재구분',true,s4('mt-group',['강판','수지','비철금속','고무','기타'],d.group||'강판'))) +
+        row4(fg4('규격',false,i4('mt-spec',d.spec,'')),
+             fg4('KS규격',false,i4('mt-ks','','')),
+             fg4('ASTM규격',false,i4('mt-astm','','')),
+             fg4('JIS규격',false,i4('mt-jis','',' '))) +
+        row4(fg4('단위',true,s4('mt-unit',['ton','kg','m²','EA'],d.unit||'ton')),
+             fg4('통화',false,s4('mt-currency',['KRW','USD','EUR'],d.currency||'USD')),
+             fg4('사용여부',false,s4('mt-active',['Y','N'],d.active||'Y'))) +
+        row4(fgFull4('비고',`<textarea class="form-textarea" style="width:100%;min-height:60px;" placeholder="비고"></textarea>`))
+      ) +
+      box4('파일첨부', fr4('규격서','기타 첨부'))
+    );
+  };
+
+  // ── 탭 2: 물성정보 ──
+  window.m01004_tabPhysics = function(mat) {
+    return (
+      box4('물리적 특성',
+        row4(fg4('비중',false,i4('','','')),
+             fg4('밀도(g/cm³)',false,i4('','','')),
+             fg4('열전도율(W/m·K)',false,i4('','',''))) +
+        row4(fg4('인장강도(MPa)',false,i4('','','')),
+             fg4('항복강도(MPa)',false,i4('','','')),
+             fg4('연신율(%)',false,i4('','',''))) +
+        row4(fg4('경도(HB)',false,i4('','','')),
+             fg4('열팽창계수',false,i4('','','')),
+             fg4('용융점(°C)',false,i4('','','')))
+      ) +
+      box4('화학 성분',
+        row4(fg4('C(%)',false,i4('','','')),
+             fg4('Si(%)',false,i4('','','')),
+             fg4('Mn(%)',false,i4('','','')),
+             fg4('P(%)',false,i4('','','')),
+             fg4('S(%)',false,i4('','',''))) +
+        row4(fg4('Cr(%)',false,i4('','','')),
+             fg4('Ni(%)',false,i4('','','')),
+             fg4('Mo(%)',false,i4('','','')),
+             fg4('기타성분',false,i4('','','')))
+      )
+    );
+  };
+
+  // ── 탭 3: LME 연동 ──
+  window.m01004_tabLme = function(mat) {
+    const d = mat || {};
+    return (
+      box4('LME 연동 설정',
+        row4(fg4('LME연동여부',true,s4('mt-lme',['Y','N'],d.lme||'Y')),
+             fg4('LME코드',true,s4('mt-lmecode',['LME-STEEL-HRC','LME-AL','LME-CU','LME-NICKEL','CRUDE-OIL'],d.lmeCode||'LME-STEEL-HRC'))) +
+        row4(fg4('포스코연동여부',false,s4('','['Y','N']','N')),
+             fg4('포스코코드',false,i4('','',''))) +
+        row4(fg4('할증률(%)',false,i4('mt-surcharge','12','')),
+             fg4('환율적용기준',false,s4('mt-fxbasis',['당일','전월평균','전분기평균'],'전월평균'))) +
+        row4(fg4('기준단가(원)',false,i4('mt-baseprice',Number(d.basePrice||0).toLocaleString('ko-KR'),'',true)),
+             fg4('최종수신시세',false,i4('','$'+String(d.basePrice||0).slice(0,3)+'/ton','',true)),
+             fg4('최종수신일시',false,i4('','2025-12-01 09:00','',true)))
+      ) +
+      box4('이상치 알림 설정',
+        row4(fg4('알림기준(±%)',false,i4('','10','')),
+             fg4('알림대상(이메일)',false,i4('','kim@donghee.co.kr','')),
+             fg4('알림활성여부',false,s4('','['Y','N']','Y')))
+      )
+    );
+  };
+
+  // ── 탭 4: 시세 이력 ──
+  window.m01004_tabHistory = function(mat) {
+    const d = mat || {};
+    const lmeData = MockData.getAll('lmePrice');
+    const lmeKey = LME_KEY[d.lmeCode] || 'steel';
+    const vals = lmeData.map(r => r[lmeKey] || 0);
+    const maxVal = Math.max(...vals);
+    const minVal = Math.min(...vals);
+
+    const barRows = lmeData.map((row, i) => {
+      const v = row[lmeKey] || 0;
+      const pct = maxVal > 0 ? Math.round(v / maxVal * 100) : 0;
+      const bg = v === maxVal ? 'var(--danger)' : v === minVal ? 'var(--success)' : 'var(--primary)';
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:70px;font-size:var(--font-xs);color:var(--text-secondary);text-align:right;">${row.date}</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:2px;height:24px;">
+          <div style="width:${pct}%;height:100%;background:${bg};border-radius:2px;transition:width 0.3s;"></div>
+        </div>
+        <div style="width:80px;font-size:var(--font-xs);font-weight:500;color:${bg};">$${v}/ton</div>
+      </div>`;
+    }).join('');
+
+    const histRows = lmeData.map((row, i) => {
+      const v = row[lmeKey] || 0;
+      const prev = i < lmeData.length-1 ? (lmeData[i+1][lmeKey] || 0) : v;
+      const diff = prev > 0 ? Math.round((v - prev) / prev * 100 * 10) / 10 : 0;
+      const krw = Math.round(v * row.usdKrw).toLocaleString('ko-KR');
+      const dc = diff > 0 ? 'color:var(--danger)' : diff < 0 ? 'color:var(--success)' : 'color:var(--text-muted)';
+      const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '-';
+      return `<tr>
+        <td class="center">${row.date}</td>
+        <td class="right">$${v}</td>
+        <td class="right">${row.usdKrw.toLocaleString('ko-KR')}</td>
+        <td class="right">₩${krw}</td>
+        <td class="center" style="${dc};font-weight:500;">${arrow}${Math.abs(diff)}%</td>
+      </tr>`;
+    }).join('');
+
+    return (
+      box4('시세 추이 차트', `<div style="padding:4px 0;">${barRows}</div>`) +
+      box4('시세 상세 이력',
+        `<div class="grid-container"><table class="grid-table">
+          <thead><tr><th>기준월</th><th>시세($/ton)</th><th>환율(KRW/USD)</th><th>원화환산가(원)</th><th>전월대비(%)</th></tr></thead>
+          <tbody>${histRows}</tbody>
+        </table></div>`
+      )
+    );
+  };
+
+  // ── 탭 5: 적용 품목 ──
+  window.m01004_tabItems = function(mat) {
+    const d = mat || {};
+    const items = MockData.getAll('items').filter(it => (it.material||'') === (d.name||''));
+    const fmt = n => Number(n||0).toLocaleString('ko-KR');
+    const yc = v => v==='Y'?'color:var(--success)':'color:var(--text-muted)';
+    const rows = items.length
+      ? items.map(it => `<tr>
+          <td class="center">${it.id}</td><td class="center">${it.drawNo||'-'}</td>
+          <td class="left">${it.name}</td><td class="right">${fmt(it.weight)}</td>
+          <td class="right">₩${fmt(it.basePrice)}</td>
+          <td class="center" style="${yc(it.active)};font-weight:500;">${it.active||'-'}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="6" class="center" style="color:var(--text-muted);padding:20px;">이 소재를 사용하는 품목이 없습니다</td></tr>`;
+    return box4(`이 소재를 사용하는 품목 (${items.length}건)`,
+      `<div class="grid-container"><table class="grid-table">
+        <thead><tr><th>품목코드</th><th>도면번호</th><th>품명</th><th>중량(g)</th><th>기준단가</th><th>사용여부</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`
+    );
+  };
+
+  window.m01004_save = function() {
+    const name = (document.getElementById('mt-name')||{}).value;
+    if (!name || !name.trim()) { Common.showToast('소재명을 입력해주세요', 'error'); return; }
+    const item = {
+      id: 'MAT-' + String(Date.now()).slice(-3),
+      name: name.trim(),
+      group: (document.getElementById('mt-group')||{}).value || '강판',
+      spec: (document.getElementById('mt-spec')||{}).value || '',
+      unit: (document.getElementById('mt-unit')||{}).value || 'ton',
+      lme: (document.getElementById('mt-lme')||{}).value || 'N',
+      lmeCode: (document.getElementById('mt-lmecode')||{}).value || '',
+      basePrice: Number(((document.getElementById('mt-baseprice')||{}).value||'0').replace(/,/g,'')) || 0,
+      currency: (document.getElementById('mt-currency')||{}).value || 'KRW',
+      active: 'Y'
+    };
+    MockData.save('materials', item);
+    Common.showToast('저장되었습니다', 'success');
+    m01004_backToList();
+  };
+
+  window.m01004_backToList = function() {
+    document.getElementById('m01004-list').classList.remove('hidden');
+    document.getElementById('m01004-detail').classList.add('hidden');
+    m01004_renderGrid();
+  };
+
+  // 초기 렌더
+  window.m01004_renderGrid();
+};
+
+
+/* ────────────────────────────────────────
    M01-003  품목(Item) 마스터 관리
    ──────────────────────────────────────── */
 window.render_M01_003 = function(container) {
