@@ -432,15 +432,17 @@ body {
   padding: 0 10px;
   gap: 4px;
 }
-.filter-date-range input[type="date"] {
+.filter-date-range input[type="date"],
+.filter-date-range input[type="text"] {
   border: none;
   outline: none;
   font-size: var(--font-s);
   color: var(--input-text);
   background: transparent;
   font-family: inherit;
-  width: 110px;
+  width: 90px;
   padding: 0;
+  text-align: center;
 }
 .filter-date-range input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
 .filter-date-range .date-separator {
