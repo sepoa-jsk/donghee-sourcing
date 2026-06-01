@@ -1193,6 +1193,289 @@ window.render_M01_004 = function(container) {
 
 
 /* ────────────────────────────────────────
+   M01-005  공정·가공비 표준 코드
+   ──────────────────────────────────────── */
+window.render_M01_005 = function(container) {
+  container.style.padding = '0';
+
+  let procs = MockData.getAll('processes');
+  if (procs.length === 0) { MockData.reset(); procs = MockData.getAll('processes'); }
+
+  let selectedProcId = null;
+  let searchText = '';
+  let activeTab = '기본정보';
+  let detailMode = 'new';
+
+  // ── 헬퍼 ──
+  const i5   = (id,v,ph,ro) => `<input class="form-input" id="${id}" value="${v||''}" placeholder="${ph||''}" ${ro?'readonly':''}>`;
+  const s5   = (id,opts,cur) => `<select class="form-input form-select" id="${id}">${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+  const fg5  = (lbl,req,html) => `<div class="form-group"><label class="form-label">${lbl}${req?' <span class="required">*</span>':''}</label>${html}</div>`;
+  const row5 = (...f) => `<div class="form-row">${f.join('')}</div>`;
+  const fgFull5 = (lbl,html) => `<div class="form-group" style="flex:0 0 100%"><label class="form-label">${lbl}</label>${html}</div>`;
+  const box5 = (t,c) => `<div class="section-box"><div class="section-box-title">${t}</div>${c}</div>`;
+  const fmt5 = n => Number(n||0).toLocaleString('ko-KR');
+
+  // ── HTML 골격 ──
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
+    <div id="m01005-list">
+      <div class="filter-bar">
+        <div class="filter-search">
+          <input type="text" id="m01005-search" placeholder="Search" oninput="m01005_onSearch(this.value)">
+          <i data-lucide="search"></i>
+        </div>
+        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+        <button class="filter-btn" onclick="Common.showToast('상태 필터는 준비 중입니다','info')"><i data-lucide="bar-chart-2" class="icon-blue"></i> 상태</button>
+        <div class="filter-date-range">
+          <input type="text" value="2025/01/01" readonly>
+          <span class="date-separator">~</span>
+          <input type="text" value="2027/12/31" readonly>
+          <i data-lucide="calendar" class="icon-red"></i>
+        </div>
+        <div class="filter-right">
+          <button class="btn btn-outline-blue" onclick="m01005_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
+        </div>
+      </div>
+      <div id="m01005-grid"></div>
+    </div>
+    <div id="m01005-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+        <span id="m01005-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
+        <div id="m01005-detail-btns" style="display:flex;gap:6px;"></div>
+      </div>
+      <div class="detail-layout" style="flex:1;overflow:hidden;">
+        <div class="detail-left" style="width:140px;">
+          <div id="m01005-vtabs"></div>
+        </div>
+        <div class="detail-right" id="m01005-tab-content"></div>
+      </div>
+    </div>
+  </div>`;
+
+  const TABS5 = ['기본정보','설비·인력','단가 이력','적용 품목'];
+
+  // ── 리스트 ──
+  window.m01005_onSearch = function(val) { searchText = val; m01005_renderGrid(); };
+
+  window.m01005_renderGrid = function() {
+    let data = MockData.getAll('processes');
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(d =>
+        (d.name||'').toLowerCase().includes(q) ||
+        (d.id||'').toLowerCase().includes(q) ||
+        (d.group||'').toLowerCase().includes(q)
+      );
+    }
+    const yc = v => v==='Y' ? 'color:var(--success)' : 'color:var(--text-muted)';
+
+    const rows = data.map(d => {
+      const sel = d.id === selectedProcId ? 'selected' : '';
+      return `<tr class="${sel}" onclick="m01005_selectRow('${d.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${d.id===selectedProcId?'checked':''} onclick="event.stopPropagation();m01005_selectRow('${d.id}')"></td>
+        <td class="center"><span class="code-link" onclick="event.stopPropagation();m01005_showDetail('edit','${d.id}')">${d.id}</span></td>
+        <td class="left">${d.name}</td>
+        <td class="center">${d.group||'-'}</td>
+        <td class="center">${d.sub||'-'}</td>
+        <td class="right">${fmt5(d.cost)}</td>
+        <td class="center">${d.unit||'-'}</td>
+        <td class="right">${fmt5(d.hourRate)}</td>
+        <td class="center">${d.indirectRate||'-'}%</td>
+        <td class="center" style="${yc(d.active||'Y')};font-weight:500;">${d.active||'Y'}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('m01005-grid').innerHTML = `
+      <div class="grid-container" style="height:calc(100vh - 40px - 36px - 56px - 32px - 5px);">
+        <table class="grid-table">
+          <colgroup>
+            <col style="width:40px"><col style="width:90px"><col style="width:140px">
+            <col style="width:80px"><col style="width:80px"><col style="width:100px">
+            <col style="width:60px"><col style="width:100px"><col style="width:80px"><col style="width:70px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox"></th>
+            <th>공정코드</th><th>공정명</th><th>대분류</th><th>중분류</th>
+            <th>표준가공비(원)</th><th>단위</th><th>시급(원/시간)</th>
+            <th>간접비율(%)</th><th>사용여부</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m01005_selectRow = function(id) {
+    selectedProcId = selectedProcId === id ? null : id;
+    m01005_renderGrid();
+  };
+
+  // ── 상세 ──
+  window.m01005_showDetail = function(mode, overrideId) {
+    detailMode = mode;
+    if (overrideId) selectedProcId = overrideId;
+    const proc = mode === 'edit'
+      ? MockData.getById('processes', selectedProcId)
+      : MockData.getAll('processes')[0];
+    document.getElementById('m01005-list').classList.add('hidden');
+    document.getElementById('m01005-detail').classList.remove('hidden');
+    document.getElementById('m01005-detail-title').textContent = proc ? proc.name : '';
+
+    const btns = document.getElementById('m01005-detail-btns');
+    if (mode === 'edit') {
+      btns.innerHTML = `<button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')"><i data-lucide="pencil"></i> 수정</button>
+                        <button class="btn" onclick="m01005_backToList()"><i data-lucide="x"></i> 닫기</button>`;
+    } else {
+      btns.innerHTML = `<button class="btn btn-primary" onclick="m01005_save()"><i data-lucide="save"></i> 저장</button>
+                        <button class="btn" onclick="m01005_backToList()"><i data-lucide="x"></i> 닫기</button>`;
+    }
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+
+    activeTab = '기본정보';
+    m01005_renderVtabs();
+    m01005_renderTabContent(activeTab, proc);
+  };
+
+  window.m01005_renderVtabs = function() {
+    document.getElementById('m01005-vtabs').innerHTML = TABS5.map(t =>
+      `<div class="detail-tab ${t===activeTab?'active':''}" onclick="m01005_switchTab('${t}')">${t}</div>`
+    ).join('');
+  };
+
+  window.m01005_switchTab = function(tab) {
+    activeTab = tab;
+    const proc = detailMode === 'edit' ? MockData.getById('processes', selectedProcId) : null;
+    m01005_renderVtabs();
+    m01005_renderTabContent(tab, proc);
+  };
+
+  window.m01005_renderTabContent = function(tab, proc) {
+    const el = document.getElementById('m01005-tab-content');
+    const map = {
+      '기본정보':  () => m01005_tabBasic(proc),
+      '설비·인력': () => m01005_tabEquip(proc),
+      '단가 이력': () => m01005_tabHistory(),
+      '적용 품목': () => m01005_tabItems(),
+    };
+    el.innerHTML = (map[tab] || (() => ''))();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  // ── 탭 1: 기본정보 ──
+  window.m01005_tabBasic = function(proc) {
+    const d = proc || {};
+    const groups = ['성형','사출성형','가공','표면처리','접합','조립','열처리'];
+    const units  = ['shot','EA','시간','m²','점'];
+    return (
+      box5('공정 기본정보',
+        row5(fg5('공정코드',false,i5('pc-code',d.id||'자동발급','',true)),
+             fg5('공정명',true,i5('pc-name',d.name,'')),
+             fg5('대분류',true,s5('pc-group',groups,d.group||'성형'))) +
+        row5(fg5('중분류',false,i5('pc-sub',d.sub,'')),
+             fg5('표준가공비(원)',true,i5('pc-cost',fmt5(d.cost),'')),
+             fg5('단위',true,s5('pc-unit',units,d.unit||'shot'))) +
+        row5(fg5('간접비율(%)',false,i5('pc-indirect',d.indirectRate||'','')),
+             fg5('사용여부',false,s5('pc-active',['Y','N'],d.active||'Y')),
+             fg5('적용시작일',false,i5('pc-startdate','2025/01/01',''))) +
+        row5(fgFull5('비고',`<textarea class="form-textarea" style="width:100%;min-height:60px;" placeholder="비고"></textarea>`))
+      )
+    );
+  };
+
+  // ── 탭 2: 설비·인력 ──
+  window.m01005_tabEquip = function(proc) {
+    const d = proc || {};
+    return (
+      box5('설비 정보',
+        row5(fg5('표준설비명',false,i5('','','')),
+             fg5('설비제조사',false,i5('','','')),
+             fg5('설비용량(톤)',false,i5('','',''))) +
+        row5(fg5('시간당생산량(EA)',false,i5('','','')),
+             fg5('가동률(%)',false,i5('','','')),
+             fg5('사이클타임(초)',false,i5('','',' ')))
+      ) +
+      box5('인력 정보',
+        row5(fg5('시급(원/시간)',false,i5('pc-hourrate',fmt5(d.hourRate),'')),
+             fg5('작업자수(명)',false,i5('','1','')),
+             fg5('교대제',false,s5('',['1교대','2교대','3교대'],'2교대'))) +
+        row5(fg5('일가동시간(시간)',false,i5('','16','')),
+             fg5('월가동일수(일)',false,i5('','25','')))
+      )
+    );
+  };
+
+  // ── 탭 3: 단가 이력 ──
+  window.m01005_tabHistory = function() {
+    const rows = [
+      ['2025/01/01','1,200','45,000','15%','연간 단가 갱신','김구매'],
+      ['2024/07/01','1,150','43,000','15%','하반기 조정','김구매'],
+      ['2024/01/01','1,100','42,000','14%','연간 단가 갱신','박원가'],
+      ['2023/01/01','1,050','40,000','14%','초기 등록','박원가'],
+    ].map(r => `<tr>
+      <td class="center">${r[0]}</td>
+      <td class="right">${r[1]}</td>
+      <td class="right">${r[2]}</td>
+      <td class="center">${r[3]}</td>
+      <td class="left">${r[4]}</td>
+      <td class="center">${r[5]}</td>
+    </tr>`).join('');
+    return box5('가공비 변동 이력',
+      `<div class="grid-container"><table class="grid-table">
+        <thead><tr><th>적용시작일</th><th>표준가공비(원)</th><th>시급(원/시간)</th><th>간접비율(%)</th><th>변경사유</th><th>등록자</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`
+    );
+  };
+
+  // ── 탭 4: 적용 품목 ──
+  window.m01005_tabItems = function() {
+    const rows = [
+      ['ITM-001','DWG-S101','로어 암 브라켓','SPFC440','2,840','7,050'],
+      ['ITM-002','DWG-S102','스태빌라이저 링크','SPFC440','1,560','5,340'],
+      ['ITM-005','DWG-P301','브레이크 페달 암','SCM440','980','3,080'],
+    ].map(r => `<tr>
+      <td class="center">${r[0]}</td><td class="center">${r[1]}</td>
+      <td class="left">${r[2]}</td><td class="center">${r[3]}</td>
+      <td class="right">${r[4]}</td><td class="right">₩${r[5]}</td>
+    </tr>`).join('');
+    return box5('이 공정을 사용하는 품목',
+      `<div class="grid-container"><table class="grid-table">
+        <thead><tr><th>품목코드</th><th>도면번호</th><th>품명</th><th>소재</th><th>중량(g)</th><th>기준단가</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`
+    );
+  };
+
+  window.m01005_save = function() {
+    const name = (document.getElementById('pc-name')||{}).value;
+    if (!name || !name.trim()) { Common.showToast('공정명을 입력해주세요', 'error'); return; }
+    const item = {
+      id: 'PRC-' + String(Date.now()).slice(-3),
+      name: name.trim(),
+      group: (document.getElementById('pc-group')||{}).value || '성형',
+      sub: (document.getElementById('pc-sub')||{}).value || '',
+      cost: Number(((document.getElementById('pc-cost')||{}).value||'0').replace(/,/g,'')) || 0,
+      unit: (document.getElementById('pc-unit')||{}).value || 'EA',
+      hourRate: Number(((document.getElementById('pc-hourrate')||{}).value||'0').replace(/,/g,'')) || 0,
+      indirectRate: Number((document.getElementById('pc-indirect')||{}).value) || 0,
+      active: 'Y'
+    };
+    MockData.save('processes', item);
+    Common.showToast('저장되었습니다', 'success');
+    m01005_backToList();
+  };
+
+  window.m01005_backToList = function() {
+    document.getElementById('m01005-list').classList.remove('hidden');
+    document.getElementById('m01005-detail').classList.add('hidden');
+    m01005_renderGrid();
+  };
+
+  // 초기 렌더
+  window.m01005_renderGrid();
+};
+
+
+/* ────────────────────────────────────────
    M01-003  품목(Item) 마스터 관리
    ──────────────────────────────────────── */
 window.render_M01_003 = function(container) {
