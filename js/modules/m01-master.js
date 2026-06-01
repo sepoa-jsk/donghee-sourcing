@@ -1074,7 +1074,7 @@ window.render_M01_004 = function(container) {
       box4('LME 연동 설정',
         row4(fg4('LME연동여부',true,s4('mt-lme',['Y','N'],d.lme||'Y')),
              fg4('LME코드',true,s4('mt-lmecode',['LME-STEEL-HRC','LME-AL','LME-CU','LME-NICKEL','CRUDE-OIL'],d.lmeCode||'LME-STEEL-HRC'))) +
-        row4(fg4('포스코연동여부',false,s4('','['Y','N']','N')),
+        row4(fg4('포스코연동여부',false,s4('mt-posco',['Y','N'],'N')),
              fg4('포스코코드',false,i4('','',''))) +
         row4(fg4('할증률(%)',false,i4('mt-surcharge','12','')),
              fg4('환율적용기준',false,s4('mt-fxbasis',['당일','전월평균','전분기평균'],'전월평균'))) +
@@ -1085,7 +1085,7 @@ window.render_M01_004 = function(container) {
       box4('이상치 알림 설정',
         row4(fg4('알림기준(±%)',false,i4('','10','')),
              fg4('알림대상(이메일)',false,i4('','kim@donghee.co.kr','')),
-             fg4('알림활성여부',false,s4('','['Y','N']','Y')))
+             fg4('알림활성여부',false,s4('mt-alertyn',['Y','N'],'Y')))
       )
     );
   };
