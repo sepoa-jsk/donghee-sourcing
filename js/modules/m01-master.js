@@ -51,37 +51,37 @@ window.render_M01_001 = function(container) {
         </div>
       </div>
       <div class="form-section">
-        <div class="form-grid">
+        <div class="form-grid-2col">
           <div class="form-field">
             <label class="form-label">프로젝트명 <span class="required">*</span></label>
-            <input type="text" class="form-input" id="f-name" placeholder="프로젝트명 입력">
+            <input type="text" class="form-input form-input-m" id="f-name" placeholder="프로젝트명 입력">
           </div>
           <div class="form-field">
             <label class="form-label">OEM <span class="required">*</span></label>
-            <select class="form-input form-select" id="f-oem">
+            <select class="form-input form-select form-input-m" id="f-oem">
               <option value="HMC">HMC</option>
               <option value="기아">기아</option>
             </select>
           </div>
           <div class="form-field">
             <label class="form-label">차종명</label>
-            <input type="text" class="form-input" id="f-model" placeholder="예: NX5">
+            <input type="text" class="form-input form-input-m" id="f-model" placeholder="예: NX5">
           </div>
           <div class="form-field">
             <label class="form-label">플랫폼</label>
-            <input type="text" class="form-input" id="f-platform" placeholder="예: N플랫폼">
+            <input type="text" class="form-input form-input-m" id="f-platform" placeholder="예: N플랫폼">
           </div>
           <div class="form-field">
             <label class="form-label">SOP 목표일 <span class="required">*</span></label>
-            <input type="date" class="form-input" id="f-sop">
+            <input type="date" class="form-input form-input-m" id="f-sop">
           </div>
           <div class="form-field">
             <label class="form-label">담당자 <span class="required">*</span></label>
-            <input type="text" class="form-input" id="f-manager" placeholder="담당자명">
+            <input type="text" class="form-input form-input-m" id="f-manager" placeholder="담당자명">
           </div>
           <div class="form-field full">
             <label class="form-label">비고</label>
-            <textarea class="form-textarea" id="f-remark" placeholder="비고 입력"></textarea>
+            <textarea class="form-textarea form-input-l" id="f-remark" placeholder="비고 입력"></textarea>
           </div>
         </div>
       </div>
@@ -463,33 +463,33 @@ window.render_M01_002 = function(container) {
     return `
       <div class="form-section">
         <div class="form-section-title">기본정보</div>
-        <div class="form-grid">
+        <div class="form-grid-2col">
           <div class="form-field">
             <label class="form-label">업체코드</label>
-            <input class="form-input" value="${s.id||'자동발급'}" readonly>
+            <input class="form-input form-input-m" value="${s.id||'자동발급'}" readonly>
           </div>
           <div class="form-field">
             <label class="form-label">업체명 <span class="required">*</span></label>
-            <input class="form-input" id="sf-name" value="${s.name||''}" placeholder="업체명">
+            <input class="form-input form-input-m" id="sf-name" value="${s.name||''}" placeholder="업체명">
           </div>
           <div class="form-field">
             <label class="form-label">사업자등록번호 <span class="required">*</span></label>
-            <input class="form-input" id="sf-bizno" value="${s.bizNo||''}" placeholder="000-00-00000">
+            <input class="form-input form-input-m" id="sf-bizno" value="${s.bizNo||''}" placeholder="000-00-00000">
           </div>
           <div class="form-field">
             <label class="form-label">법인등록번호</label>
-            <input class="form-input" id="sf-corpno" value="${s.corpNo||''}" placeholder="-">
+            <input class="form-input form-input-m" id="sf-corpno" value="${s.corpNo||''}" placeholder="-">
           </div>
           <div class="form-field">
             <label class="form-label">업체구분 <span class="required">*</span></label>
-            <select class="form-input form-select" id="sf-tier">
+            <select class="form-input form-select form-input-m" id="sf-tier">
               <option value="Tier2" ${s.tier==='Tier2'?'selected':''}>Tier2</option>
               <option value="Tier3" ${s.tier==='Tier3'?'selected':''}>Tier3</option>
             </select>
           </div>
           <div class="form-field">
             <label class="form-label">평가등급</label>
-            <select class="form-input form-select" id="sf-grade">
+            <select class="form-input form-select form-input-m" id="sf-grade">
               <option value="A" ${s.grade==='A'?'selected':''}>A</option>
               <option value="B" ${s.grade==='B'?'selected':''}>B</option>
               <option value="C" ${s.grade==='C'?'selected':''}>C</option>
@@ -500,56 +500,57 @@ window.render_M01_002 = function(container) {
       </div>
       <div class="form-section">
         <div class="form-section-title">사업자 정보</div>
-        <div class="form-grid">
+        <div class="form-grid-2col">
           <div class="form-field">
             <label class="form-label">대표자명 <span class="required">*</span></label>
-            <input class="form-input" id="sf-ceo" value="${s.ceo||''}" placeholder="대표자명">
+            <input class="form-input form-input-m" id="sf-ceo" value="${s.ceo||''}" placeholder="대표자명">
           </div>
           <div class="form-field">
             <label class="form-label">설립일자</label>
-            <input type="date" class="form-input" id="sf-founded" value="${s.founded||''}">
+            <input type="date" class="form-input form-input-m" id="sf-founded" value="${s.founded||''}">
           </div>
           <div class="form-field">
             <label class="form-label">대표이메일</label>
-            <input class="form-input" id="sf-email" value="${s.email||''}" placeholder="email@company.com">
+            <input class="form-input form-input-m" id="sf-email" value="${s.email||''}" placeholder="email@company.com">
           </div>
           <div class="form-field">
             <label class="form-label">대표전화번호</label>
-            <input class="form-input" id="sf-tel" value="${s.tel||''}" placeholder="000-0000-0000">
+            <input class="form-input form-input-m" id="sf-tel" value="${s.tel||''}" placeholder="000-0000-0000">
           </div>
           <div class="form-field">
             <label class="form-label">업종</label>
-            <input class="form-input" id="sf-industry" value="${s.industry||''}" placeholder="예: 제조업">
+            <input class="form-input form-input-m" id="sf-industry" value="${s.industry||''}" placeholder="예: 제조업">
           </div>
           <div class="form-field">
             <label class="form-label">세부업종</label>
-            <input class="form-input" id="sf-subindustry" value="${s.subIndustry||''}" placeholder="예: 자동차 부품">
+            <input class="form-input form-input-m" id="sf-subindustry" value="${s.subIndustry||''}" placeholder="예: 자동차 부품">
           </div>
           <div class="form-field">
             <label class="form-label">우편번호</label>
-            <input class="form-input" id="sf-zip" value="${s.zip||''}" placeholder="12345">
+            <input class="form-input form-input-s" id="sf-zip" value="${s.zip||''}" placeholder="12345">
           </div>
           <div class="form-field"></div>
           <div class="form-field full">
             <label class="form-label">주소</label>
-            <input class="form-input" id="sf-addr" value="${s.addr||''}" placeholder="기본주소">
+            <input class="form-input form-input-l" id="sf-addr" value="${s.addr||''}" placeholder="기본주소">
           </div>
           <div class="form-field full">
             <label class="form-label">상세주소</label>
-            <input class="form-input" id="sf-addr2" value="${s.addr2||''}" placeholder="상세주소">
+            <input class="form-input form-input-l" id="sf-addr2" value="${s.addr2||''}" placeholder="상세주소">
           </div>
         </div>
       </div>
       <div class="form-section">
         <div class="form-section-title">파일첨부</div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label class="form-label">첨부파일</label>
-            <div style="border:1px dashed var(--border);background:var(--bg-page);min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);border-radius:var(--radius);text-align:center;padding:8px;">
-              파일을 드래그하거나 클릭하여 업로드
-            </div>
+        <div class="file-attach-row">
+          <div class="file-attach-box">
+            <label>첨부파일</label>
+            <div class="file-drop-area">파일을 드래그하거나<br>클릭하여 업로드</div>
           </div>
-          <div class="form-field"></div>
+          <div class="file-attach-box">
+            <label>기타 첨부</label>
+            <div class="file-drop-area">파일을 드래그하거나<br>클릭하여 업로드</div>
+          </div>
         </div>
       </div>`;
   };

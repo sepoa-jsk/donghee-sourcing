@@ -403,6 +403,44 @@ body {
 .st-none  { color: var(--text-muted); font-weight: 500; }
 .st-danger { color: var(--danger); font-weight: 500; }
 
+/* ── 폼 input 사이즈 표준 (222 / 456 / 928) ── */
+.form-input-s { width: 222px; }
+.form-input-m { width: 456px; }
+.form-input-l { width: 928px; }
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 456px 456px;
+  gap: 12px 16px;
+}
+.form-grid-2col .full { grid-column: span 2; }
+
+/* ── 파일첨부 영역 ── */
+.file-attach-row { display: flex; gap: 16px; }
+.file-attach-box { flex: 1; }
+.file-attach-box label {
+  display: block;
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.file-drop-area {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-page);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  text-align: center;
+  cursor: pointer;
+  line-height: 1.6;
+}
+.file-drop-area:hover { border-color: var(--primary); background: #F0F5FF; }
+
 /* ── 폼 ── */
 .form-section { margin-bottom: 20px; }
 .form-section-title {
