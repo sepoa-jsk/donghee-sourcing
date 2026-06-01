@@ -8,6 +8,10 @@
 window.render_M01_001 = function(container) {
   container.style.padding = '0';
 
+  // localStorage 안전장치 + 디버그
+  if (!localStorage.getItem('dh_projects')) MockData.reset();
+  console.log('projects loaded:', MockData.getAll('projects').length);
+
   // 상태 관리
   let selectedId = null;
   let searchText = '';
@@ -82,10 +86,6 @@ window.render_M01_001 = function(container) {
       </div>
     </div>
   </div>`;
-
-  // 초기 렌더
-  m01001_renderCards();
-  m01001_renderGrid();
 
   // ── 함수 정의 ──
   window.m01001_onSearch = function(val) {
@@ -270,6 +270,10 @@ window.render_M01_001 = function(container) {
     m01001_renderCards();
     m01001_renderGrid();
   };
+
+  // 모든 함수 정의 완료 후 초기 렌더
+  window.m01001_renderCards();
+  window.m01001_renderGrid();
 };
 
 
