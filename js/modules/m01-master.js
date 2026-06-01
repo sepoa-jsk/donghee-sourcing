@@ -1,0 +1,708 @@
+/* ============================================================
+   m01-master.js — M01-001 프로젝트 관리 + M01-002 협력사 관리
+   ============================================================ */
+
+/* ────────────────────────────────────────
+   M01-001  신차 프로젝트 등록·조회
+   ──────────────────────────────────────── */
+window.render_M01_001 = function(container) {
+  container.style.padding = '0';
+
+  // 상태 관리
+  let selectedId = null;
+  let searchText = '';
+  let viewMode = 'list'; // 'list' | 'new' | 'edit'
+
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
+    <div id="m01001-list">
+      <!-- 필터바 -->
+      <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
+        <div class="filter-search">
+          <input type="text" id="m01001-search" placeholder="프로젝트명 검색" oninput="m01001_onSearch(this.value)">
+          <span class="filter-search-icon">🔍</span>
+        </div>
+        <button class="filter-btn" onclick="m01001_toggleFilter()">☰ 필터</button>
+        <input type="date" id="m01001-date-from" class="form-input" style="width:130px;" onchange="m01001_renderGrid()">
+        <span style="font-size:12px;color:var(--text-muted);">~</span>
+        <input type="date" id="m01001-date-to" class="form-input" style="width:130px;" onchange="m01001_renderGrid()">
+        <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn btn-outline-blue" onclick="m01001_showForm('new')">+ 신규등록</button>
+          <button class="btn" onclick="m01001_showForm('edit')">수정</button>
+          <button class="btn btn-outline-red" onclick="m01001_delete()">삭제</button>
+        </div>
+      </div>
+      <!-- 요약카드 -->
+      <div id="m01001-cards" class="summary-cards" style="margin-bottom:12px;"></div>
+      <!-- 그리드 -->
+      <div id="m01001-grid" style="flex:1;overflow-y:auto;"></div>
+    </div>
+    <!-- 등록/수정 폼 -->
+    <div id="m01001-form" class="hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <span id="m01001-form-title" style="font-size:var(--font-l);font-weight:700;"></span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-primary" onclick="m01001_save()">저장</button>
+          <button class="btn" onclick="m01001_backToList()">취소</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label">프로젝트명 <span class="required">*</span></label>
+            <input type="text" class="form-input" id="f-name" placeholder="프로젝트명 입력">
+          </div>
+          <div class="form-field">
+            <label class="form-label">OEM <span class="required">*</span></label>
+            <select class="form-input form-select" id="f-oem">
+              <option value="HMC">HMC</option>
+              <option value="기아">기아</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">차종명</label>
+            <input type="text" class="form-input" id="f-model" placeholder="예: NX5">
+          </div>
+          <div class="form-field">
+            <label class="form-label">플랫폼</label>
+            <input type="text" class="form-input" id="f-platform" placeholder="예: N플랫폼">
+          </div>
+          <div class="form-field">
+            <label class="form-label">SOP 목표일 <span class="required">*</span></label>
+            <input type="date" class="form-input" id="f-sop">
+          </div>
+          <div class="form-field">
+            <label class="form-label">담당자 <span class="required">*</span></label>
+            <input type="text" class="form-input" id="f-manager" placeholder="담당자명">
+          </div>
+          <div class="form-field full">
+            <label class="form-label">비고</label>
+            <textarea class="form-textarea" id="f-remark" placeholder="비고 입력"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 초기 렌더
+  m01001_renderCards();
+  m01001_renderGrid();
+
+  // ── 함수 정의 ──
+  window.m01001_onSearch = function(val) {
+    searchText = val;
+    m01001_renderGrid();
+  };
+
+  window.m01001_toggleFilter = function() {
+    // 추후 필터 패널 확장 예정
+    Common.showToast('필터 기능은 준비 중입니다', 'info');
+  };
+
+  window.m01001_renderCards = function() {
+    const projects = MockData.getAll('projects');
+    const inProgress = projects.filter(p => ['P1','P2','P3','P4'].includes(p.phase)).length;
+    document.getElementById('m01001-cards').innerHTML = `
+      <div class="summary-card">
+        <div class="summary-card-title">전체 프로젝트</div>
+        <div class="summary-card-value">${projects.length} <span>건</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-title">진행 중 (P1~P4)</div>
+        <div class="summary-card-value">${inProgress} <span>건</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-title">이번달 SOP 예정</div>
+        <div class="summary-card-value">2 <span>건</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-title">목표가 미승인</div>
+        <div class="summary-card-value danger">3 <span>건</span></div>
+      </div>
+    `;
+  };
+
+  window.m01001_renderGrid = function() {
+    let data = MockData.getAll('projects');
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(p =>
+        (p.name||'').toLowerCase().includes(q) ||
+        (p.id||'').toLowerCase().includes(q) ||
+        (p.oem||'').toLowerCase().includes(q) ||
+        (p.manager||'').toLowerCase().includes(q)
+      );
+    }
+    const phaseColor = { P1:'#185FA5', P2:'#0F6E56', P3:'#854F0B', P4:'#A32D2D', 'SOP완료':'#97A0AF' };
+    const bomColor   = { '작성중':'#185FA5', 'Freeze':'#0F6E56', '미작성':'#97A0AF' };
+
+    let rows = data.map(p => {
+      const sel = p.id === selectedId ? 'selected' : '';
+      const pc = phaseColor[p.phase] || 'inherit';
+      const bc = bomColor[p.bomStatus] || 'inherit';
+      return `<tr class="${sel}" onclick="m01001_selectRow('${p.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${p.id === selectedId ? 'checked' : ''} onclick="event.stopPropagation();m01001_selectRow('${p.id}')"></td>
+        <td class="center">${p.id}</td>
+        <td class="left">${p.name}</td>
+        <td class="center">${p.oem}</td>
+        <td class="center">${p.model||'-'}</td>
+        <td class="center">${p.platform||'-'}</td>
+        <td class="center" style="color:${pc};font-weight:500;">${p.phase}</td>
+        <td class="center">${p.sopDate||'-'}</td>
+        <td class="center">${p.manager||'-'}</td>
+        <td class="center" style="color:${bc};font-weight:500;">${p.bomStatus||'-'}</td>
+        <td class="center">${p.regDate||'-'}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('m01001-grid').innerHTML = `
+      <div class="grid-container" style="overflow-y:auto;height:calc(100vh - 40px - 36px - 56px - 116px - 32px - 5px);">
+        <table class="grid-table">
+          <colgroup>
+            <col style="width:40px"><col style="width:110px"><col style="width:180px">
+            <col style="width:80px"><col style="width:90px"><col style="width:100px">
+            <col style="width:80px"><col style="width:100px"><col style="width:80px">
+            <col style="width:80px"><col style="width:100px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox" onclick="m01001_toggleAll(this)"></th>
+            <th>프로젝트ID</th><th>프로젝트명</th><th>OEM</th><th>차종</th>
+            <th>플랫폼</th><th>진행Phase</th><th>SOP목표일</th>
+            <th>담당자</th><th>BOM상태</th><th>등록일</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+
+  window.m01001_toggleAll = function(cb) {
+    selectedId = null;
+    m01001_renderGrid();
+  };
+
+  window.m01001_selectRow = function(id) {
+    selectedId = selectedId === id ? null : id;
+    m01001_renderGrid();
+  };
+
+  window.m01001_showForm = function(mode) {
+    viewMode = mode;
+    document.getElementById('m01001-list').classList.add('hidden');
+    document.getElementById('m01001-form').classList.remove('hidden');
+
+    if (mode === 'new') {
+      document.getElementById('m01001-form-title').textContent = '(신규 등록)';
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-oem').value = 'HMC';
+      document.getElementById('f-model').value = '';
+      document.getElementById('f-platform').value = '';
+      document.getElementById('f-sop').value = '';
+      document.getElementById('f-manager').value = '';
+      document.getElementById('f-remark').value = '';
+    } else {
+      if (!selectedId) { Common.showToast('수정할 항목을 선택해주세요', 'error'); return; }
+      const p = MockData.getById('projects', selectedId);
+      if (!p) return;
+      document.getElementById('m01001-form-title').textContent = p.name;
+      document.getElementById('f-name').value = p.name || '';
+      document.getElementById('f-oem').value = p.oem || 'HMC';
+      document.getElementById('f-model').value = p.model || '';
+      document.getElementById('f-platform').value = p.platform || '';
+      document.getElementById('f-sop').value = (p.sopDate||'').replace(/\//g,'-');
+      document.getElementById('f-manager').value = p.manager || '';
+      document.getElementById('f-remark').value = p.remark || '';
+    }
+  };
+
+  window.m01001_save = function() {
+    const name = document.getElementById('f-name').value.trim();
+    const sop  = document.getElementById('f-sop').value;
+    const mgr  = document.getElementById('f-manager').value.trim();
+    if (!name || !sop || !mgr) {
+      Common.showToast('필수 항목을 입력해주세요', 'error'); return;
+    }
+    const today = new Date().toISOString().slice(0,10).replace(/-/g,'/');
+    if (viewMode === 'new') {
+      const item = {
+        id: 'PRJ-' + Date.now(),
+        name,
+        oem: document.getElementById('f-oem').value,
+        model: document.getElementById('f-model').value.trim(),
+        platform: document.getElementById('f-platform').value.trim(),
+        phase: 'P1',
+        sopDate: sop.replace(/-/g,'/'),
+        manager: mgr,
+        bomStatus: '미작성',
+        regDate: today,
+        remark: document.getElementById('f-remark').value.trim()
+      };
+      MockData.save('projects', item);
+    } else {
+      const p = MockData.getById('projects', selectedId);
+      Object.assign(p, {
+        name,
+        oem: document.getElementById('f-oem').value,
+        model: document.getElementById('f-model').value.trim(),
+        platform: document.getElementById('f-platform').value.trim(),
+        sopDate: sop.replace(/-/g,'/'),
+        manager: mgr,
+        remark: document.getElementById('f-remark').value.trim()
+      });
+      MockData.save('projects', p);
+    }
+    Common.showToast('저장되었습니다', 'success');
+    m01001_backToList();
+  };
+
+  window.m01001_delete = function() {
+    if (!selectedId) { Common.showToast('삭제할 항목을 선택해주세요', 'error'); return; }
+    if (confirm('선택된 프로젝트를 삭제하시겠습니까?')) {
+      MockData.remove('projects', selectedId);
+      selectedId = null;
+      Common.showToast('삭제되었습니다', 'success');
+      m01001_renderCards();
+      m01001_renderGrid();
+    }
+  };
+
+  window.m01001_backToList = function() {
+    document.getElementById('m01001-list').classList.remove('hidden');
+    document.getElementById('m01001-form').classList.add('hidden');
+    m01001_renderCards();
+    m01001_renderGrid();
+  };
+};
+
+
+/* ────────────────────────────────────────
+   M01-002  협력사 관리
+   ──────────────────────────────────────── */
+window.render_M01_002 = function(container) {
+  container.style.padding = '0';
+
+  let selectedSuppId = null;
+  let tierFilter = null; // null | 'Tier2' | 'Tier3'
+  let searchText = '';
+  let activeTab = '일반정보';
+  let detailMode = 'new'; // 'new' | 'edit'
+
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;">
+    <!-- 리스트 뷰 -->
+    <div id="m01002-list">
+      <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
+        <div class="filter-search">
+          <input type="text" id="m01002-search" placeholder="업체명 검색" oninput="m01002_onSearch(this.value)">
+          <span class="filter-search-icon">🔍</span>
+        </div>
+        <button class="filter-btn" onclick="m01002_toggleFilter()">☰ 필터</button>
+        <button id="m01002-t2-btn" class="filter-btn" style="border-color:var(--primary);" onclick="m01002_setTier('Tier2')">Tier2</button>
+        <button id="m01002-t3-btn" class="filter-btn" onclick="m01002_setTier('Tier3')">Tier3</button>
+        <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn btn-outline-blue" onclick="m01002_showDetail('new')">+ 신규등록</button>
+          <button class="btn" onclick="m01002_showDetail('edit')">수정</button>
+          <button class="btn btn-outline-red" onclick="m01002_delete()">삭제</button>
+        </div>
+      </div>
+      <div id="m01002-grid"></div>
+    </div>
+    <!-- 상세 뷰 -->
+    <div id="m01002-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
+      <!-- 상단 타이틀바 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:0;border-bottom:1px solid var(--border);">
+        <span id="m01002-detail-title" style="font-size:var(--font-l);font-weight:700;"></span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-primary" onclick="m01002_save()">저장</button>
+          <button class="btn" id="m01002-detail-close-btn" onclick="m01002_backToList()">닫기</button>
+        </div>
+      </div>
+      <!-- 좌우 2단 -->
+      <div class="detail-layout" style="flex:1;overflow:hidden;">
+        <!-- 좌측 세로탭 -->
+        <div class="detail-left">
+          <div class="detail-left-tabs" id="m01002-vtabs"></div>
+          <div class="detail-left-file">
+            <div style="font-size:var(--font-s);font-weight:500;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+              사업자등록증
+              <button class="btn btn-gray-lite" style="font-size:11px;height:24px;padding:0 8px;">+ AllDownload</button>
+            </div>
+            <div style="border:1px solid #e5e7eb;background:#f8fafc;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);text-align:center;padding:8px;border-radius:var(--radius);">
+              파일을 드래그하거나<br>클릭하여 업로드
+            </div>
+          </div>
+        </div>
+        <!-- 우측 콘텐츠 -->
+        <div class="detail-right" id="m01002-tab-content"></div>
+      </div>
+    </div>
+  </div>`;
+
+  m01002_renderGrid();
+
+  const TABS = ['일반정보', '담당자정보', '거래조건', '인증정보', '소재·품목'];
+
+  // ── 함수 ──
+  window.m01002_onSearch = function(val) {
+    searchText = val;
+    m01002_renderGrid();
+  };
+
+  window.m01002_toggleFilter = function() {
+    Common.showToast('필터 기능은 준비 중입니다', 'info');
+  };
+
+  window.m01002_setTier = function(tier) {
+    if (tierFilter === tier) {
+      tierFilter = null;
+      document.getElementById('m01002-t2-btn').style.background = '';
+      document.getElementById('m01002-t3-btn').style.background = '';
+    } else {
+      tierFilter = tier;
+      document.getElementById('m01002-t2-btn').style.background = tier === 'Tier2' ? '#EBF0FF' : '';
+      document.getElementById('m01002-t3-btn').style.background = tier === 'Tier3' ? '#EBF0FF' : '';
+    }
+    m01002_renderGrid();
+  };
+
+  window.m01002_renderGrid = function() {
+    let data = MockData.getAll('suppliers');
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(s => (s.name||'').toLowerCase().includes(q) || (s.id||'').toLowerCase().includes(q));
+    }
+    if (tierFilter) data = data.filter(s => s.tier === tierFilter);
+
+    const tierColor  = { Tier2: '#0747A6', Tier3: '#0F6E56' };
+    const gradeColor = { A: '#0F6E56', B: '#0747A6', C: '#854F0B', D: '#D22C36' };
+
+    const rows = data.map(s => {
+      const sel = s.id === selectedSuppId ? 'selected' : '';
+      return `<tr class="${sel}" onclick="m01002_selectRow('${s.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${s.id === selectedSuppId ? 'checked' : ''} onclick="event.stopPropagation();m01002_selectRow('${s.id}')"></td>
+        <td class="center">${s.id}</td>
+        <td class="left">${s.name}</td>
+        <td class="center">${s.bizNo||'-'}</td>
+        <td class="center" style="color:${tierColor[s.tier]||'inherit'};font-weight:500;">${s.tier||'-'}</td>
+        <td class="center" style="color:${s.managed==='Y'?'#0F6E56':'#97A0AF'};font-weight:500;">${s.managed||'-'}</td>
+        <td class="center" style="color:${s.contract==='Y'?'#0F6E56':'#97A0AF'};font-weight:500;">${s.contract||'-'}</td>
+        <td class="center" style="color:${gradeColor[s.grade]||'inherit'};font-weight:500;">${s.grade||'-'}</td>
+        <td class="center">${s.manager||'-'}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('m01002-grid').innerHTML = `
+      <div class="grid-container" style="overflow-y:auto;height:calc(100vh - 40px - 36px - 56px - 32px - 5px);">
+        <table class="grid-table">
+          <colgroup>
+            <col style="width:40px"><col style="width:90px"><col style="width:160px">
+            <col style="width:120px"><col style="width:70px"><col style="width:80px">
+            <col style="width:80px"><col style="width:70px"><col style="width:80px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox" onclick="m01002_toggleAll(this)"></th>
+            <th>업체코드</th><th>협력사명</th><th>사업자번호</th>
+            <th>구분</th><th>관리여부</th><th>계약여부</th><th>평가등급</th><th>담당자</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+
+  window.m01002_toggleAll = function() { selectedSuppId = null; m01002_renderGrid(); };
+  window.m01002_selectRow = function(id) {
+    selectedSuppId = selectedSuppId === id ? null : id;
+    m01002_renderGrid();
+  };
+
+  window.m01002_showDetail = function(mode) {
+    detailMode = mode;
+    if (mode === 'edit' && !selectedSuppId) {
+      Common.showToast('수정할 항목을 선택해주세요', 'error'); return;
+    }
+    const supp = mode === 'edit' ? MockData.getById('suppliers', selectedSuppId) : null;
+    document.getElementById('m01002-list').classList.add('hidden');
+    document.getElementById('m01002-detail').classList.remove('hidden');
+    document.getElementById('m01002-detail-title').textContent = supp ? supp.name : '(신규 등록)';
+
+    // 세로탭 렌더
+    activeTab = '일반정보';
+    m01002_renderVtabs(supp);
+    m01002_renderTabContent(activeTab, supp);
+  };
+
+  window.m01002_renderVtabs = function(supp) {
+    document.getElementById('m01002-vtabs').innerHTML = TABS.map(t =>
+      `<div class="detail-tab ${t === activeTab ? 'active' : ''}" onclick="m01002_switchTab('${t}')">${t}</div>`
+    ).join('');
+  };
+
+  window.m01002_switchTab = function(tab) {
+    activeTab = tab;
+    const supp = detailMode === 'edit' ? MockData.getById('suppliers', selectedSuppId) : null;
+    m01002_renderVtabs(supp);
+    m01002_renderTabContent(tab, supp);
+  };
+
+  window.m01002_renderTabContent = function(tab, supp) {
+    const el = document.getElementById('m01002-tab-content');
+    if (tab === '일반정보')     el.innerHTML = m01002_tabGeneral(supp);
+    else if (tab === '담당자정보') el.innerHTML = m01002_tabContacts(supp);
+    else if (tab === '거래조건')  el.innerHTML = m01002_tabTrade(supp);
+    else if (tab === '인증정보')  el.innerHTML = m01002_tabCert(supp);
+    else if (tab === '소재·품목') el.innerHTML = m01002_tabMaterial(supp);
+  };
+
+  window.m01002_tabGeneral = function(supp) {
+    const s = supp || {};
+    return `
+      <div class="form-section">
+        <div class="form-section-title">기본정보</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label">업체코드</label>
+            <input class="form-input" value="${s.id||'자동발급'}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">업체명 <span class="required">*</span></label>
+            <input class="form-input" id="sf-name" value="${s.name||''}" placeholder="업체명">
+          </div>
+          <div class="form-field">
+            <label class="form-label">사업자등록번호 <span class="required">*</span></label>
+            <input class="form-input" id="sf-bizno" value="${s.bizNo||''}" placeholder="000-00-00000">
+          </div>
+          <div class="form-field">
+            <label class="form-label">법인등록번호</label>
+            <input class="form-input" id="sf-corpno" value="${s.corpNo||''}" placeholder="-">
+          </div>
+          <div class="form-field">
+            <label class="form-label">업체구분 <span class="required">*</span></label>
+            <select class="form-input form-select" id="sf-tier">
+              <option value="Tier2" ${s.tier==='Tier2'?'selected':''}>Tier2</option>
+              <option value="Tier3" ${s.tier==='Tier3'?'selected':''}>Tier3</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">평가등급</label>
+            <select class="form-input form-select" id="sf-grade">
+              <option value="A" ${s.grade==='A'?'selected':''}>A</option>
+              <option value="B" ${s.grade==='B'?'selected':''}>B</option>
+              <option value="C" ${s.grade==='C'?'selected':''}>C</option>
+              <option value="D" ${s.grade==='D'?'selected':''}>D</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">사업자 정보</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label">대표자명 <span class="required">*</span></label>
+            <input class="form-input" id="sf-ceo" value="${s.ceo||''}" placeholder="대표자명">
+          </div>
+          <div class="form-field">
+            <label class="form-label">설립일자</label>
+            <input type="date" class="form-input" id="sf-founded" value="${s.founded||''}">
+          </div>
+          <div class="form-field">
+            <label class="form-label">대표이메일</label>
+            <input class="form-input" id="sf-email" value="${s.email||''}" placeholder="email@company.com">
+          </div>
+          <div class="form-field">
+            <label class="form-label">대표전화번호</label>
+            <input class="form-input" id="sf-tel" value="${s.tel||''}" placeholder="000-0000-0000">
+          </div>
+          <div class="form-field">
+            <label class="form-label">업종</label>
+            <input class="form-input" id="sf-industry" value="${s.industry||''}" placeholder="예: 제조업">
+          </div>
+          <div class="form-field">
+            <label class="form-label">세부업종</label>
+            <input class="form-input" id="sf-subindustry" value="${s.subIndustry||''}" placeholder="예: 자동차 부품">
+          </div>
+          <div class="form-field">
+            <label class="form-label">우편번호</label>
+            <input class="form-input" id="sf-zip" value="${s.zip||''}" placeholder="12345">
+          </div>
+          <div class="form-field"></div>
+          <div class="form-field full">
+            <label class="form-label">주소</label>
+            <input class="form-input" id="sf-addr" value="${s.addr||''}" placeholder="기본주소">
+          </div>
+          <div class="form-field full">
+            <label class="form-label">상세주소</label>
+            <input class="form-input" id="sf-addr2" value="${s.addr2||''}" placeholder="상세주소">
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">파일첨부</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label">첨부파일</label>
+            <div style="border:1px dashed var(--border);background:var(--bg-page);min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);border-radius:var(--radius);text-align:center;padding:8px;">
+              파일을 드래그하거나 클릭하여 업로드
+            </div>
+          </div>
+          <div class="form-field"></div>
+        </div>
+      </div>`;
+  };
+
+  window.m01002_tabContacts = function(supp) {
+    const isNew = !supp;
+    const rows = isNew ? `<tr><td colspan="7" class="center" style="color:var(--text-muted);padding:20px;">등록된 담당자가 없습니다</td></tr>` : `
+      <tr>
+        <td class="center">구매담당</td><td class="center">홍길동</td><td class="center">영업팀</td>
+        <td class="center">과장</td><td class="center">010-1234-5678</td>
+        <td class="center">hong@korea.co.kr</td><td class="center">-</td>
+      </tr>
+      <tr>
+        <td class="center">기술담당</td><td class="center">김철수</td><td class="center">기술팀</td>
+        <td class="center">대리</td><td class="center">010-9876-5432</td>
+        <td class="center">kim@korea.co.kr</td><td class="center">-</td>
+      </tr>`;
+    return `<div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="btn btn-outline-blue">+ 추가</button>
+        <button class="btn btn-outline-red">삭제</button>
+      </div>
+      <div class="grid-container">
+        <table class="grid-table">
+          <thead><tr>
+            <th>구분</th><th>담당자명</th><th>부서</th><th>직급</th><th>연락처</th><th>이메일</th><th>비고</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+
+  window.m01002_tabTrade = function(supp) {
+    const s = supp || {};
+    return `<div class="form-section">
+      <div class="form-section-title">거래조건</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label">결제조건</label>
+          <select class="form-input form-select"><option>현금</option><option>어음</option><option>외상</option></select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">결제주기</label>
+          <input class="form-input" placeholder="예: 월 1회">
+        </div>
+        <div class="form-field">
+          <label class="form-label">납기리드타임(일)</label>
+          <input type="number" class="form-input" placeholder="예: 14">
+        </div>
+        <div class="form-field">
+          <label class="form-label">최소발주수량</label>
+          <input type="number" class="form-input" placeholder="예: 100">
+        </div>
+        <div class="form-field">
+          <label class="form-label">계약시작일</label>
+          <input type="date" class="form-input">
+        </div>
+        <div class="form-field">
+          <label class="form-label">계약종료일</label>
+          <input type="date" class="form-input">
+        </div>
+        <div class="form-field">
+          <label class="form-label">거래상태</label>
+          <select class="form-input form-select"><option>거래중</option><option>거래중단</option><option>신규검토</option></select>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  window.m01002_tabCert = function(supp) {
+    const today = new Date();
+    const rows = [
+      { name:'ISO 9001',   org:'KR인증원', get:'2022-03-01', exp:'2025-03-01', status:'유효' },
+      { name:'IATF 16949', org:'TÜV',     get:'2023-06-01', exp:'2026-06-01', status:'유효' },
+      { name:'ISO 14001',  org:'KR인증원', get:'2021-09-01', exp:'2024-09-01', status:'만료' }
+    ].map(c => {
+      const expDate = new Date(c.exp);
+      const diff = (expDate - today) / (1000*60*60*24);
+      const expColor = diff < 0 ? 'color:var(--danger);font-weight:500;' : diff < 30 ? 'color:var(--danger);' : '';
+      const stColor  = c.status === '만료' ? 'color:var(--danger);font-weight:500;' : 'color:var(--success);font-weight:500;';
+      return `<tr>
+        <td class="center">${c.name}</td><td class="center">${c.org}</td>
+        <td class="center">${c.get}</td>
+        <td class="center" style="${expColor}">${c.exp}</td>
+        <td class="center" style="${stColor}">${c.status}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="btn btn-outline-blue">+ 추가</button>
+        <button class="btn btn-outline-red">삭제</button>
+      </div>
+      <div class="grid-container">
+        <table class="grid-table">
+          <thead><tr><th>인증서명</th><th>인증기관</th><th>취득일</th><th>만료일</th><th>상태</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+
+  window.m01002_tabMaterial = function(supp) {
+    const rows = [
+      { group:'강판',     name:'SPFC440', process:'프레스·단조',   lme:'Y' },
+      { group:'수지',     name:'HDPE',    process:'블로우성형',    lme:'N' },
+      { group:'알루미늄', name:'Al5052',  process:'다이캐스팅',   lme:'Y' }
+    ].map(m => `<tr>
+      <td class="center">${m.group}</td><td class="center">${m.name}</td>
+      <td class="center">${m.process}</td>
+      <td class="center" style="color:${m.lme==='Y'?'var(--success)':'var(--text-muted)'};font-weight:500;">${m.lme}</td>
+    </tr>`).join('');
+    return `<div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="btn btn-outline-blue">+ 추가</button>
+        <button class="btn btn-outline-red">삭제</button>
+      </div>
+      <div class="grid-container">
+        <table class="grid-table">
+          <thead><tr><th>소재구분</th><th>소재명</th><th>주요공정</th><th>LME연동여부</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+
+  window.m01002_save = function() {
+    const name = (document.getElementById('sf-name')||{}).value;
+    if (!name || !name.trim()) { Common.showToast('업체명을 입력해주세요', 'error'); return; }
+    if (detailMode === 'new') {
+      const item = {
+        id: 'SUP-' + String(Date.now()).slice(-3),
+        name: name.trim(),
+        bizNo: (document.getElementById('sf-bizno')||{}).value || '',
+        tier: (document.getElementById('sf-tier')||{}).value || 'Tier2',
+        grade: (document.getElementById('sf-grade')||{}).value || 'B',
+        managed: 'N', contract: 'N',
+        manager: ''
+      };
+      MockData.save('suppliers', item);
+    } else {
+      const s = MockData.getById('suppliers', selectedSuppId);
+      if (s) {
+        s.name  = name.trim();
+        s.bizNo = (document.getElementById('sf-bizno')||{}).value || s.bizNo;
+        s.tier  = (document.getElementById('sf-tier')||{}).value || s.tier;
+        s.grade = (document.getElementById('sf-grade')||{}).value || s.grade;
+        MockData.save('suppliers', s);
+      }
+    }
+    Common.showToast('저장되었습니다', 'success');
+    m01002_backToList();
+  };
+
+  window.m01002_delete = function() {
+    if (!selectedSuppId) { Common.showToast('삭제할 항목을 선택해주세요', 'error'); return; }
+    if (confirm('선택된 협력사를 삭제하시겠습니까?')) {
+      MockData.remove('suppliers', selectedSuppId);
+      selectedSuppId = null;
+      Common.showToast('삭제되었습니다', 'success');
+      m01002_renderGrid();
+    }
+  };
+
+  window.m01002_backToList = function() {
+    document.getElementById('m01002-list').classList.remove('hidden');
+    document.getElementById('m01002-detail').classList.add('hidden');
+    m01002_renderGrid();
+  };
+};
