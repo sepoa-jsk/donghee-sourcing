@@ -8,9 +8,10 @@
 window.render_M01_001 = function(container) {
   container.style.padding = '0';
 
-  // localStorage 안전장치 + 디버그
-  if (!localStorage.getItem('dh_projects')) MockData.reset();
-  console.log('projects loaded:', MockData.getAll('projects').length);
+  // 데이터 안전 로드
+  let projects = MockData.getAll('projects');
+  if (projects.length === 0) { MockData.reset(); projects = MockData.getAll('projects'); }
+  console.log('M01-001 render, projects:', projects.length);
 
   // 상태 관리
   let selectedId = null;
@@ -283,6 +284,11 @@ window.render_M01_001 = function(container) {
 window.render_M01_002 = function(container) {
   container.style.padding = '0';
 
+  // 데이터 안전 로드
+  let suppliers = MockData.getAll('suppliers');
+  if (suppliers.length === 0) { MockData.reset(); suppliers = MockData.getAll('suppliers'); }
+  console.log('M01-002 render, suppliers:', suppliers.length);
+
   let selectedSuppId = null;
   let tierFilter = null; // null | 'Tier2' | 'Tier3'
   let searchText = '';
@@ -338,8 +344,6 @@ window.render_M01_002 = function(container) {
       </div>
     </div>
   </div>`;
-
-  m01002_renderGrid();
 
   const TABS = ['일반정보', '담당자정보', '거래조건', '인증정보', '소재·품목'];
 
@@ -709,4 +713,7 @@ window.render_M01_002 = function(container) {
     document.getElementById('m01002-detail').classList.add('hidden');
     m01002_renderGrid();
   };
+
+  // 모든 함수 정의 완료 후 초기 렌더
+  window.m01002_renderGrid();
 };

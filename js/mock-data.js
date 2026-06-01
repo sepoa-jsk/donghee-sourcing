@@ -131,7 +131,9 @@ const MockData = {
   },
 
   init() {
-    if (!localStorage.getItem('dh_initialized')) {
+    // dh_initialized가 있어도 실제 데이터가 비어있으면 재시드
+    const projects = localStorage.getItem('dh_projects');
+    if (!projects || JSON.parse(projects).length === 0) {
       this.reset();
     }
   },
@@ -141,10 +143,17 @@ const MockData = {
       localStorage.setItem('dh_' + key, JSON.stringify(this.seed[key]));
     });
     localStorage.setItem('dh_initialized', 'true');
+    console.log('MockData reset complete. Projects:', this.seed.projects.length);
   },
 
   getAll(key) {
-    return JSON.parse(localStorage.getItem('dh_' + key) || '[]');
+    try {
+      const data = JSON.parse(localStorage.getItem('dh_' + key));
+      return Array.isArray(data) ? data : [];
+    } catch(e) {
+      console.error('MockData.getAll error:', key, e);
+      return [];
+    }
   },
 
   getById(key, id) {
