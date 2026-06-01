@@ -314,28 +314,16 @@ window.render_M01_002 = function(container) {
     </div>
     <!-- 상세 뷰 -->
     <div id="m01002-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
-      <!-- 상단 타이틀바 -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:0;border-bottom:1px solid var(--border);">
-        <span id="m01002-detail-title" style="font-size:var(--font-l);font-weight:700;"></span>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-primary" onclick="m01002_save()">저장</button>
-          <button class="btn" id="m01002-detail-close-btn" onclick="m01002_backToList()">닫기</button>
-        </div>
+      <!-- 업체명 + 버튼 행 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+        <span id="m01002-detail-title" style="font-size:var(--font-xl);font-weight:700;"></span>
+        <div id="m01002-detail-btns" style="display:flex;gap:6px;"></div>
       </div>
       <!-- 좌우 2단 -->
       <div class="detail-layout" style="flex:1;overflow:hidden;">
-        <!-- 좌측 세로탭 -->
-        <div class="detail-left">
+        <!-- 좌측 세로탭 (140px, 파일첨부 없음) -->
+        <div class="detail-left" style="width:140px;">
           <div class="detail-left-tabs" id="m01002-vtabs"></div>
-          <div class="detail-left-file">
-            <div style="font-size:var(--font-s);font-weight:500;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-              사업자등록증
-              <button class="btn btn-gray-lite" style="font-size:11px;height:24px;padding:0 8px;">+ AllDownload</button>
-            </div>
-            <div style="border:1px solid #e5e7eb;background:#f8fafc;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);text-align:center;padding:8px;border-radius:var(--radius);">
-              파일을 드래그하거나<br>클릭하여 업로드
-            </div>
-          </div>
         </div>
         <!-- 우측 콘텐츠 -->
         <div class="detail-right" id="m01002-tab-content"></div>
@@ -343,7 +331,7 @@ window.render_M01_002 = function(container) {
     </div>
   </div>`;
 
-  const TABS = ['일반정보', '담당자정보', '거래조건', '인증정보', '소재·품목'];
+  const TABS = ['일반정보', '추가정보'];
 
   // ── 함수 ──
   window.m01002_onSearch = function(val) {
@@ -431,6 +419,19 @@ window.render_M01_002 = function(container) {
     document.getElementById('m01002-detail').classList.remove('hidden');
     document.getElementById('m01002-detail-title').textContent = supp ? supp.name : '(신규 등록)';
 
+    // 모드별 버튼 렌더
+    const btns = document.getElementById('m01002-detail-btns');
+    if (mode === 'edit') {
+      btns.innerHTML = `
+        <button class="btn btn-outline-red" onclick="Common.showToast('거래정지 처리되었습니다','success')">거래정지</button>
+        <button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')">수정</button>
+        <button class="btn" onclick="m01002_backToList()">닫기</button>`;
+    } else {
+      btns.innerHTML = `
+        <button class="btn btn-primary" onclick="m01002_save()">저장</button>
+        <button class="btn" onclick="m01002_backToList()">닫기</button>`;
+    }
+
     // 세로탭 렌더
     activeTab = '일반정보';
     m01002_renderVtabs(supp);
@@ -452,223 +453,264 @@ window.render_M01_002 = function(container) {
 
   window.m01002_renderTabContent = function(tab, supp) {
     const el = document.getElementById('m01002-tab-content');
-    if (tab === '일반정보')     el.innerHTML = m01002_tabGeneral(supp);
-    else if (tab === '담당자정보') el.innerHTML = m01002_tabContacts(supp);
-    else if (tab === '거래조건')  el.innerHTML = m01002_tabTrade(supp);
-    else if (tab === '인증정보')  el.innerHTML = m01002_tabCert(supp);
-    else if (tab === '소재·품목') el.innerHTML = m01002_tabMaterial(supp);
+    if (tab === '일반정보') el.innerHTML = m01002_tabGeneral(supp);
+    else                    el.innerHTML = m01002_tabExtra(supp);
   };
 
   window.m01002_tabGeneral = function(supp) {
     const s = supp || {};
+    const inp = (id, val, ph, ro) =>
+      `<input class="form-input" id="${id}" value="${val||''}" placeholder="${ph||''}" ${ro?'readonly':''}>`;
+    const sel = (id, opts, cur) =>
+      `<select class="form-input form-select" id="${id}">${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
     return `
-      <div class="form-section">
-        <div class="form-section-title">기본정보</div>
-        <div class="form-grid-2col">
-          <div class="form-field">
+      <!-- 섹션1: 기본정보 -->
+      <div class="section-box">
+        <div class="section-box-title">기본정보</div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
             <label class="form-label">업체코드</label>
-            <input class="form-input form-input-m" value="${s.id||'자동발급'}" readonly>
+            ${inp('sf-code', s.code||'자동발급', '', true)}
           </div>
-          <div class="form-field">
-            <label class="form-label">업체명 <span class="required">*</span></label>
-            <input class="form-input form-input-m" id="sf-name" value="${s.name||''}" placeholder="업체명">
+          <div class="form-group form-group-m">
+            <label class="form-label">업체구분</label>
+            ${sel('sf-type', ['등록업체','잠재업체'], s.type||'등록업체')}
           </div>
-          <div class="form-field">
+          <div class="form-group form-group-m">
+            <label class="form-label">언어</label>
+            ${sel('sf-lang', ['한국어','English'], '한국어')}
+          </div>
+          <div class="form-group form-group-l">
+            <label class="form-label">국가 <span class="required">*</span></label>
+            ${sel('sf-country', ['KR - South Korea','US - United States','JP - Japan','CN - China'], s.country||'KR - South Korea')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">도시</label>
+            ${sel('sf-city', ['서울','인천','경기','부산','대구','광주','대전'], '')}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
+            <label class="form-label">추천인</label>
+            ${inp('sf-referrer', s.referrer, '추천인명')}
+          </div>
+        </div>
+      </div>
+
+      <!-- 섹션2: 사업자 정보 -->
+      <div class="section-box">
+        <div class="section-box-title">사업자 정보</div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
+            <label class="form-label">법인/개인</label>
+            ${sel('sf-corptype', ['법인','개인'], '법인')}
+          </div>
+          <div class="form-group form-group-m">
             <label class="form-label">사업자등록번호 <span class="required">*</span></label>
-            <input class="form-input form-input-m" id="sf-bizno" value="${s.bizNo||''}" placeholder="000-00-00000">
+            ${inp('sf-bizno', s.bizNo, '000-00-00000')}
           </div>
-          <div class="form-field">
+          <div class="form-group form-group-m">
             <label class="form-label">법인등록번호</label>
-            <input class="form-input form-input-m" id="sf-corpno" value="${s.corpNo||''}" placeholder="-">
-          </div>
-          <div class="form-field">
-            <label class="form-label">업체구분 <span class="required">*</span></label>
-            <select class="form-input form-select form-input-m" id="sf-tier">
-              <option value="Tier2" ${s.tier==='Tier2'?'selected':''}>Tier2</option>
-              <option value="Tier3" ${s.tier==='Tier3'?'selected':''}>Tier3</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label class="form-label">평가등급</label>
-            <select class="form-input form-select form-input-m" id="sf-grade">
-              <option value="A" ${s.grade==='A'?'selected':''}>A</option>
-              <option value="B" ${s.grade==='B'?'selected':''}>B</option>
-              <option value="C" ${s.grade==='C'?'selected':''}>C</option>
-              <option value="D" ${s.grade==='D'?'selected':''}>D</option>
-            </select>
+            ${inp('sf-corpno', s.corpNo, '-')}
           </div>
         </div>
-      </div>
-      <div class="form-section">
-        <div class="form-section-title">사업자 정보</div>
-        <div class="form-grid-2col">
-          <div class="form-field">
+        <div class="form-row">
+          <div class="form-group form-group-full">
+            <label class="form-label">회사명 <span class="required">*</span></label>
+            ${inp('sf-name', s.name, '회사명 입력')}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-full">
+            <label class="form-label">회사명(영문)</label>
+            ${inp('sf-nameEn', s.nameEn, 'Company Name')}
+          </div>
+          <div class="form-group form-group-m">
             <label class="form-label">대표자명 <span class="required">*</span></label>
-            <input class="form-input form-input-m" id="sf-ceo" value="${s.ceo||''}" placeholder="대표자명">
+            ${inp('sf-ceo', s.ceo, '대표자명')}
           </div>
-          <div class="form-field">
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
             <label class="form-label">설립일자</label>
-            <input type="date" class="form-input form-input-m" id="sf-founded" value="${s.founded||''}">
+            <input type="date" class="form-input" id="sf-founded" value="${s.founded||''}">
           </div>
-          <div class="form-field">
+          <div class="form-group form-group-m">
             <label class="form-label">대표이메일</label>
-            <input class="form-input form-input-m" id="sf-email" value="${s.email||''}" placeholder="email@company.com">
+            ${inp('sf-email', s.email, 'email@company.com')}
           </div>
-          <div class="form-field">
+          <div class="form-group form-group-m">
             <label class="form-label">대표전화번호</label>
-            <input class="form-input form-input-m" id="sf-tel" value="${s.tel||''}" placeholder="000-0000-0000">
+            ${inp('sf-tel', s.tel, '000-0000-0000')}
           </div>
-          <div class="form-field">
+          <div class="form-group form-group-m">
+            <label class="form-label">업태</label>
+            ${inp('sf-biztype', s.bizType, '예: 제조')}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-l">
             <label class="form-label">업종</label>
-            <input class="form-input form-input-m" id="sf-industry" value="${s.industry||''}" placeholder="예: 제조업">
+            ${inp('sf-bizcat', s.bizCategory, '예: 자동차부품')}
           </div>
-          <div class="form-field">
+          <div class="form-group form-group-l">
             <label class="form-label">세부업종</label>
-            <input class="form-input form-input-m" id="sf-subindustry" value="${s.subIndustry||''}" placeholder="예: 자동차 부품">
+            ${inp('sf-bizdetail', s.bizDetail, '세부 업종 입력')}
           </div>
-          <div class="form-field">
+        </div>
+        <div class="form-row" style="align-items:flex-end;">
+          <div class="form-group form-group-s">
             <label class="form-label">우편번호</label>
-            <input class="form-input form-input-s" id="sf-zip" value="${s.zip||''}" placeholder="12345">
+            ${inp('sf-zip', s.zip, '12345')}
           </div>
-          <div class="form-field"></div>
-          <div class="form-field full">
-            <label class="form-label">주소</label>
-            <input class="form-input form-input-l" id="sf-addr" value="${s.addr||''}" placeholder="기본주소">
+          <button class="btn" style="margin-bottom:0;flex-shrink:0;">검색</button>
+          <div class="form-group form-group-full">
+            <label class="form-label">주소 <span class="required">*</span></label>
+            ${inp('sf-addr', s.addr, '기본주소 입력')}
           </div>
-          <div class="form-field full">
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-full">
             <label class="form-label">상세주소</label>
-            <input class="form-input form-input-l" id="sf-addr2" value="${s.addr2||''}" placeholder="상세주소">
+            ${inp('sf-addr2', s.addr2, '상세주소 입력')}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
+            <label class="form-label">기업규모</label>
+            ${sel('sf-corpsize', ['대기업','중견기업','중소기업','소기업'], '')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">회사상장여부</label>
+            ${sel('sf-listed', ['비상장','유가증권','코스닥'], '')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">부지현황-대지(㎡)</label>
+            ${inp('sf-land', '', '숫자 입력')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">부지현황-건물(㎡)</label>
+            ${inp('sf-building', '', '숫자 입력')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">전체사업장(개소)</label>
+            ${inp('sf-plants', '', '숫자 입력')}
           </div>
         </div>
       </div>
-      <div class="form-section">
-        <div class="form-section-title">파일첨부</div>
-        <div class="file-attach-row">
+
+      <!-- 섹션3: 구매정보 -->
+      <div class="section-box">
+        <div class="section-box-title">구매정보</div>
+        <div class="form-row">
+          <div class="form-group form-group-m">
+            <label class="form-label">기업규모</label>
+            ${sel('sf-purchsize', ['대기업','중견기업','중소기업','소기업'], '')}
+          </div>
+          <div class="form-group form-group-m">
+            <label class="form-label">과세여부</label>
+            ${sel('sf-tax', ['과세','면세','영세율'], '')}
+          </div>
+          <div class="form-group form-group-l">
+            <label class="form-label">주요품목</label>
+            ${inp('sf-mainitems', s.bizCategory, '주요 공급 품목 입력')}
+          </div>
+        </div>
+      </div>
+
+      <!-- 섹션4: 파일첨부 -->
+      <div class="section-box">
+        <div class="section-box-title">파일첨부</div>
+        <div class="file-attach-row" style="gap:24px;">
           <div class="file-attach-box">
-            <label>첨부파일</label>
-            <div class="file-drop-area">파일을 드래그하거나<br>클릭하여 업로드</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <label style="margin:0;">사업자등록증</label>
+              <button class="btn btn-gray-lite" style="height:24px;padding:0 8px;font-size:11px;">+ AllDownload</button>
+            </div>
+            <div class="file-drop-area" style="min-height:140px;">파일을 드래그하거나<br>클릭하여 업로드</div>
           </div>
           <div class="file-attach-box">
-            <label>기타 첨부</label>
-            <div class="file-drop-area">파일을 드래그하거나<br>클릭하여 업로드</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <label style="margin:0;">첨부파일</label>
+              <button class="btn btn-gray-lite" style="height:24px;padding:0 8px;font-size:11px;">+ AllDownload</button>
+            </div>
+            <div class="file-drop-area" style="min-height:140px;">파일을 드래그하거나<br>클릭하여 업로드</div>
           </div>
         </div>
       </div>`;
   };
 
-  window.m01002_tabContacts = function(supp) {
+  window.m01002_tabExtra = function(supp) {
     const isNew = !supp;
-    const rows = isNew ? `<tr><td colspan="7" class="center" style="color:var(--text-muted);padding:20px;">등록된 담당자가 없습니다</td></tr>` : `
-      <tr>
-        <td class="center">구매담당</td><td class="center">홍길동</td><td class="center">영업팀</td>
-        <td class="center">과장</td><td class="center">010-1234-5678</td>
-        <td class="center">hong@korea.co.kr</td><td class="center">-</td>
-      </tr>
-      <tr>
-        <td class="center">기술담당</td><td class="center">김철수</td><td class="center">기술팀</td>
-        <td class="center">대리</td><td class="center">010-9876-5432</td>
-        <td class="center">kim@korea.co.kr</td><td class="center">-</td>
-      </tr>`;
-    return `<div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="btn btn-outline-blue">+ 추가</button>
-        <button class="btn btn-outline-red">삭제</button>
-      </div>
-      <div class="grid-container">
-        <table class="grid-table">
-          <thead><tr>
-            <th>구분</th><th>담당자명</th><th>부서</th><th>직급</th><th>연락처</th><th>이메일</th><th>비고</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-  };
-
-  window.m01002_tabTrade = function(supp) {
-    const s = supp || {};
-    return `<div class="form-section">
-      <div class="form-section-title">거래조건</div>
-      <div class="form-grid">
-        <div class="form-field">
-          <label class="form-label">결제조건</label>
-          <select class="form-input form-select"><option>현금</option><option>어음</option><option>외상</option></select>
-        </div>
-        <div class="form-field">
-          <label class="form-label">결제주기</label>
-          <input class="form-input" placeholder="예: 월 1회">
-        </div>
-        <div class="form-field">
-          <label class="form-label">납기리드타임(일)</label>
-          <input type="number" class="form-input" placeholder="예: 14">
-        </div>
-        <div class="form-field">
-          <label class="form-label">최소발주수량</label>
-          <input type="number" class="form-input" placeholder="예: 100">
-        </div>
-        <div class="form-field">
-          <label class="form-label">계약시작일</label>
-          <input type="date" class="form-input">
-        </div>
-        <div class="form-field">
-          <label class="form-label">계약종료일</label>
-          <input type="date" class="form-input">
-        </div>
-        <div class="form-field">
-          <label class="form-label">거래상태</label>
-          <select class="form-input form-select"><option>거래중</option><option>거래중단</option><option>신규검토</option></select>
-        </div>
-      </div>
-    </div>`;
-  };
-
-  window.m01002_tabCert = function(supp) {
     const today = new Date();
-    const rows = [
+
+    // 담당자 그리드
+    const contactRows = isNew
+      ? `<tr><td colspan="7" class="center" style="color:var(--text-muted);padding:20px;">등록된 담당자가 없습니다</td></tr>`
+      : `<tr><td class="center">구매담당</td><td class="center">홍길동</td><td class="center">영업팀</td><td class="center">과장</td><td class="center">010-1234-5678</td><td class="center">hong@korea.co.kr</td><td class="center">-</td></tr>
+         <tr><td class="center">기술담당</td><td class="center">김철수</td><td class="center">기술팀</td><td class="center">대리</td><td class="center">010-9876-5432</td><td class="center">kim@korea.co.kr</td><td class="center">-</td></tr>`;
+
+    // 인증정보 그리드
+    const certRows = [
       { name:'ISO 9001',   org:'KR인증원', get:'2022-03-01', exp:'2025-03-01', status:'유효' },
       { name:'IATF 16949', org:'TÜV',     get:'2023-06-01', exp:'2026-06-01', status:'유효' },
       { name:'ISO 14001',  org:'KR인증원', get:'2021-09-01', exp:'2024-09-01', status:'만료' }
     ].map(c => {
-      const expDate = new Date(c.exp);
-      const diff = (expDate - today) / (1000*60*60*24);
-      const expColor = diff < 0 ? 'color:var(--danger);font-weight:500;' : diff < 30 ? 'color:var(--danger);' : '';
-      const stColor  = c.status === '만료' ? 'color:var(--danger);font-weight:500;' : 'color:var(--success);font-weight:500;';
-      return `<tr>
-        <td class="center">${c.name}</td><td class="center">${c.org}</td>
-        <td class="center">${c.get}</td>
-        <td class="center" style="${expColor}">${c.exp}</td>
-        <td class="center" style="${stColor}">${c.status}</td>
-      </tr>`;
+      const diff = (new Date(c.exp) - today) / 86400000;
+      const ec = diff < 0 ? 'color:var(--danger);font-weight:500;' : diff < 30 ? 'color:var(--danger);' : '';
+      const sc = c.status === '만료' ? 'color:var(--danger);font-weight:500;' : 'color:var(--success);font-weight:500;';
+      return `<tr><td class="center">${c.name}</td><td class="center">${c.org}</td><td class="center">${c.get}</td><td class="center" style="${ec}">${c.exp}</td><td class="center" style="${sc}">${c.status}</td></tr>`;
     }).join('');
-    return `<div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="btn btn-outline-blue">+ 추가</button>
-        <button class="btn btn-outline-red">삭제</button>
-      </div>
-      <div class="grid-container">
-        <table class="grid-table">
-          <thead><tr><th>인증서명</th><th>인증기관</th><th>취득일</th><th>만료일</th><th>상태</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-  };
 
-  window.m01002_tabMaterial = function(supp) {
-    const rows = [
-      { group:'강판',     name:'SPFC440', process:'프레스·단조',   lme:'Y' },
-      { group:'수지',     name:'HDPE',    process:'블로우성형',    lme:'N' },
-      { group:'알루미늄', name:'Al5052',  process:'다이캐스팅',   lme:'Y' }
-    ].map(m => `<tr>
-      <td class="center">${m.group}</td><td class="center">${m.name}</td>
-      <td class="center">${m.process}</td>
-      <td class="center" style="color:${m.lme==='Y'?'var(--success)':'var(--text-muted)'};font-weight:500;">${m.lme}</td>
-    </tr>`).join('');
-    return `<div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="btn btn-outline-blue">+ 추가</button>
-        <button class="btn btn-outline-red">삭제</button>
+    // 소재·품목 그리드
+    const matRows = [
+      { g:'강판', n:'SPFC440', p:'프레스·단조', l:'Y' },
+      { g:'수지', n:'HDPE', p:'블로우성형', l:'N' },
+      { g:'알루미늄', n:'Al5052', p:'다이캐스팅', l:'Y' }
+    ].map(m => `<tr><td class="center">${m.g}</td><td class="center">${m.n}</td><td class="center">${m.p}</td><td class="center" style="color:${m.l==='Y'?'var(--success)':'var(--text-muted)'};font-weight:500;">${m.l}</td></tr>`).join('');
+
+    const addDelBtns = `<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-outline-blue">+ 추가</button><button class="btn btn-outline-red">삭제</button></div>`;
+
+    return `
+      <div class="section-box">
+        <div class="section-box-title">담당자정보</div>
+        ${addDelBtns}
+        <div class="grid-container"><table class="grid-table">
+          <thead><tr><th>구분</th><th>담당자명</th><th>부서</th><th>직급</th><th>연락처</th><th>이메일</th><th>비고</th></tr></thead>
+          <tbody>${contactRows}</tbody>
+        </table></div>
       </div>
-      <div class="grid-container">
-        <table class="grid-table">
+      <div class="section-box">
+        <div class="section-box-title">거래조건</div>
+        <div class="form-row">
+          <div class="form-group form-group-m"><label class="form-label">결제조건</label><select class="form-input form-select"><option>현금</option><option>어음</option><option>외상</option></select></div>
+          <div class="form-group form-group-m"><label class="form-label">결제주기</label><input class="form-input" placeholder="예: 월 1회"></div>
+          <div class="form-group form-group-m"><label class="form-label">납기리드타임(일)</label><input type="number" class="form-input" placeholder="14"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m"><label class="form-label">최소발주수량</label><input type="number" class="form-input" placeholder="100"></div>
+          <div class="form-group form-group-m"><label class="form-label">계약시작일</label><input type="date" class="form-input"></div>
+          <div class="form-group form-group-m"><label class="form-label">계약종료일</label><input type="date" class="form-input"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group-m"><label class="form-label">거래상태</label><select class="form-input form-select"><option>거래중</option><option>거래중단</option><option>신규검토</option></select></div>
+        </div>
+      </div>
+      <div class="section-box">
+        <div class="section-box-title">인증정보</div>
+        ${addDelBtns}
+        <div class="grid-container"><table class="grid-table">
+          <thead><tr><th>인증서명</th><th>인증기관</th><th>취득일</th><th>만료일</th><th>상태</th></tr></thead>
+          <tbody>${certRows}</tbody>
+        </table></div>
+      </div>
+      <div class="section-box">
+        <div class="section-box-title">소재·품목</div>
+        ${addDelBtns}
+        <div class="grid-container"><table class="grid-table">
           <thead><tr><th>소재구분</th><th>소재명</th><th>주요공정</th><th>LME연동여부</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
+          <tbody>${matRows}</tbody>
+        </table></div>
       </div>`;
   };
 

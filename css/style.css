@@ -448,6 +448,43 @@ body {
 }
 .file-drop-area:hover { border-color: var(--primary); background: #F0F5FF; }
 
+/* ── 섹션 박스 (협력사 상세 전용) ── */
+.section-box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  background: #fff;
+}
+.section-box-title {
+  font-size: var(--font-l);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── 유동 multi-column 폼 ── */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-group .form-label { font-size: var(--font-xs); color: var(--text-secondary); font-weight: 500; }
+.form-group-s   { width: 160px; }
+.form-group-m   { width: 222px; }
+.form-group-l   { width: 320px; }
+.form-group-xl  { width: 456px; }
+.form-group-full { flex: 1; min-width: 280px; }
+
 /* ── 폼 ── */
 .form-section { margin-bottom: 20px; }
 .form-section-title {
