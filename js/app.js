@@ -83,6 +83,16 @@ const App = {
 
   togglePortal() {
     this.isPortalMode = !this.isPortalMode;
+    const btn = document.getElementById('portal-switch');
+    if (btn) {
+      if (this.isPortalMode) {
+        btn.textContent = '🔙 내부 시스템 전환';
+        btn.style.background = 'var(--primary)';
+      } else {
+        btn.textContent = '🔄 협력사 포털 전환';
+        btn.style.background = '#085041';
+      }
+    }
     this.navigate(this.isPortalMode ? 'M06-002' : 'M05-002');
   },
 
@@ -102,3 +112,13 @@ const App = {
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
+document.addEventListener('keydown', (e) => {
+  const keyMap = {
+    'F1': 'M09-001', 'F2': 'M02-001', 'F3': 'M03-001',
+    'F4': 'M04-002', 'F6': 'M05-003', 'F7': 'M06-003',
+    'F8': 'M07-005'
+  };
+  if (keyMap[e.key]) { e.preventDefault(); App.navigate(keyMap[e.key]); }
+  if (e.key === 'Escape') { document.getElementById('sidebar').classList.remove('open'); }
+});
