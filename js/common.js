@@ -17,7 +17,7 @@ const Common = {
         <span class="gnb-icon" title="로그아웃"><i data-lucide="log-out"></i></span>
       </span>
     `;
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
     if (isPortal) document.body.classList.add('portal-mode');
     else document.body.classList.remove('portal-mode');
   },

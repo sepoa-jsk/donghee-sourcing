@@ -433,7 +433,7 @@ window.render_M01_002 = function(container) {
         <button class="btn btn-primary" onclick="m01002_save()"><i data-lucide="save"></i> 저장</button>
         <button class="btn" onclick="m01002_backToList()"><i data-lucide="x"></i> 닫기</button>`;
     }
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 
     // 세로탭 렌더
     activeTab = '일반정보';
@@ -467,7 +467,7 @@ window.render_M01_002 = function(container) {
       '신용평가정보': () => m01002_tabCredit(supp),
     };
     el.innerHTML = (map[tab] || (() => ''))();
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
 
   // ── 탭 헬퍼 ──
@@ -975,7 +975,7 @@ window.render_M01_003 = function(container) {
       btns.innerHTML = `<button class="btn btn-primary" onclick="m01003_save()"><i data-lucide="save"></i> 저장</button>
                         <button class="btn" onclick="m01003_backToList()"><i data-lucide="x"></i> 닫기</button>`;
     }
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 
     activeTab = '기본정보';
     m01003_renderVtabs();
@@ -1006,7 +1006,7 @@ window.render_M01_003 = function(container) {
       '도면·사양서':  () => m01003_tabDrawing(item),
     };
     el.innerHTML = (map[tab] || (() => ''))();
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
 
   // ── 탭 1: 기본정보 ──

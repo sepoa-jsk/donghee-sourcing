@@ -412,15 +412,20 @@ body {
 .filter-btn:hover { background: var(--bg-page); }
 
 /* ═══ Lucide 아이콘 정렬 ═══ */
-i[data-lucide],
-i[data-lucide] svg {
+[data-lucide],
+[data-lucide] svg,
+.lucide {
   width: 16px !important;
   height: 16px !important;
-  display: inline-block;
-  vertical-align: middle;
-  flex-shrink: 0;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
 }
-.filter-search i[data-lucide] { color: var(--primary); }
+.filter-search [data-lucide] { color: var(--primary); }
 
 /* ═══ 요약카드 ═══ */
 .summary-cards { display: flex; gap: 12px; margin-bottom: 12px; }
