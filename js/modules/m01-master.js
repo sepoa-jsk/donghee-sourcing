@@ -26,12 +26,13 @@ window.render_M01_001 = function(container) {
           <input type="text" id="m01001-search" placeholder="Search" oninput="m01001_onSearch(this.value)">
           <i data-lucide="search"></i>
         </div>
-        <button class="filter-btn" onclick="m01001_toggleFilter()"><i data-lucide="filter"></i> 필터</button>
+        <button class="filter-btn" onclick="m01001_toggleFilter()"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+        <button class="filter-btn" onclick="Common.showToast('상태 필터는 준비 중입니다','info')"><i data-lucide="bar-chart-2" class="icon-blue"></i> 상태</button>
         <div class="filter-date-range">
-          <input type="date" id="m01001-date-from" value="2025-01-01" onchange="m01001_renderGrid()">
+          <input type="text" id="m01001-date-from" value="2025/01/01" readonly style="width:90px">
           <span class="date-separator">~</span>
-          <input type="date" id="m01001-date-to" value="2027-12-31" onchange="m01001_renderGrid()">
-          <i data-lucide="calendar"></i>
+          <input type="text" id="m01001-date-to" value="2027/12/31" readonly style="width:90px">
+          <i data-lucide="calendar" class="icon-red"></i>
         </div>
         <div class="filter-right">
           <button class="btn btn-outline-blue" onclick="m01001_showForm('new')"><i data-lucide="plus"></i> 신규등록</button>
@@ -306,8 +307,8 @@ window.render_M01_002 = function(container) {
           <input type="text" id="m01002-search" placeholder="Search" oninput="m01002_onSearch(this.value)">
           <i data-lucide="search"></i>
         </div>
-        <button class="filter-btn" onclick="m01002_toggleFilter()"><i data-lucide="filter"></i> 필터</button>
-        <button class="filter-btn" onclick="m01002_toggleBizType()"><i data-lucide="bar-chart-2"></i> 업체구분</button>
+        <button class="filter-btn" onclick="m01002_toggleFilter()"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+        <button class="filter-btn" onclick="m01002_toggleBizType()"><i data-lucide="bar-chart-2" class="icon-blue"></i> 업체구분</button>
         <div class="filter-right">
           <button class="btn btn-outline-blue" onclick="m01002_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
@@ -864,8 +865,8 @@ window.render_M01_003 = function(container) {
           <input type="text" id="m01003-search" placeholder="Search" oninput="m01003_onSearch(this.value)">
           <i data-lucide="search"></i>
         </div>
-        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter"></i> 필터</button>
-        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')"><i data-lucide="bar-chart-2"></i> 품목구분</button>
+        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')"><i data-lucide="bar-chart-2" class="icon-blue"></i> 품목구분</button>
         <div class="filter-right">
           <button class="btn btn-outline-blue" onclick="m01003_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>

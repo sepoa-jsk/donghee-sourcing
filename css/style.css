@@ -417,6 +417,9 @@ body {
 }
 .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
 .filter-btn [data-lucide] { color: var(--primary); }
+.filter-btn .icon-red { color: #e11d48; }
+.filter-btn .icon-blue { color: var(--primary); }
+.filter-date-range .icon-red { color: #e11d48; }
 
 /* 날짜 범위 */
 .filter-date-range {
