@@ -5,19 +5,18 @@ const Common = {
     const gnb = document.getElementById('gnb');
     if (!gnb) return;
     gnb.innerHTML = `
-      <span class="gnb-hamburger" onclick="Common.toggleSidebar()"><i data-lucide="menu"></i></span>
-      <span class="gnb-logo">${isPortal ? '동희산업 협력사 포털' : '동희산업'}</span>
-      <span class="gnb-divider">|</span>
-      <span class="gnb-system">${isPortal ? 'Supplier Portal' : '개발구매 솔루션'}</span>
-      <span class="gnb-home" title="홈" onclick="App.navigate('M09-001')"><i data-lucide="home"></i></span>
+      <span class="gnb-logo">${isPortal ? '동희산업' : '동희산업'}</span>
+      <span class="gnb-system">${isPortal ? '협력사 포털' : '개발구매 솔루션'}</span>
+      <span class="gnb-icon gnb-home" onclick="App.navigate('M09-001')" title="홈"><i data-lucide="home"></i></span>
+      <span class="gnb-icon gnb-hamburger" onclick="Common.toggleSidebar()"><i data-lucide="menu"></i></span>
       <span class="gnb-right">
-        <span style="color:var(--text-muted)">English</span>
+        <span style="color:var(--text-muted);font-size:12px">English</span>
         <span class="gnb-icon" title="도움말"><i data-lucide="help-circle"></i></span>
-        <span>${isPortal ? '(주)한국정밀 / 홍길동' : '개발구매팀 / 김구매'}</span>
+        <span style="font-size:13px">${isPortal ? '홍길동 (SUP-001)' : '개발구매팀 / 김구매'}</span>
         <span class="gnb-icon" title="로그아웃"><i data-lucide="log-out"></i></span>
       </span>
     `;
-    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+    setTimeout(() => lucide.createIcons(), 0);
     if (isPortal) document.body.classList.add('portal-mode');
     else document.body.classList.remove('portal-mode');
   },

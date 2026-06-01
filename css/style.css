@@ -104,24 +104,22 @@ body {
   font-size: 16px;
   font-weight: 700;
   color: var(--primary);
-}
-.gnb-divider {
-  color: #cbd5e1;
-  margin: 0 10px;
-  font-size: 14px;
+  margin-right: 4px;
 }
 .gnb-system {
-  font-size: 13px;
-  color: var(--gnb-text);
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-right: 12px;
 }
 .gnb-icon {
   cursor: pointer;
-  font-size: 18px;
   color: var(--gnb-text);
-  display: flex;
+  display: inline-flex;
   align-items: center;
 }
 .gnb-icon:hover { color: var(--primary); }
+.gnb-home { margin-right: 4px; }
+.gnb-hamburger { margin-right: 0; }
 .gnb-right {
   margin-left: auto;
   display: flex;
@@ -132,25 +130,6 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.gnb-hamburger {
-  cursor: pointer;
-  font-size: 20px;
-  color: var(--gnb-text);
-  margin-right: 12px;
-  display: flex;
-  align-items: center;
-  line-height: 1;
-}
-.gnb-hamburger:hover { color: var(--primary); }
-.gnb-home {
-  cursor: pointer;
-  font-size: 18px;
-  color: var(--gnb-text);
-  margin-left: 8px;
-  display: flex;
-  align-items: center;
-}
-.gnb-home:hover { color: var(--primary); }
 
 /* ═══ 사이드바 (다크) ═══ */
 .sidebar {
