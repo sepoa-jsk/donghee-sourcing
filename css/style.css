@@ -411,6 +411,23 @@ body {
 }
 .filter-btn:hover { background: var(--bg-page); }
 
+/* ═══ Lucide 아이콘 정렬 ═══ */
+i[data-lucide] {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.gnb-hamburger i[data-lucide] { width: 20px; height: 20px; }
+.gnb-home i[data-lucide] { width: 18px; height: 18px; }
+.gnb-icon i[data-lucide] { width: 18px; height: 18px; }
+.btn i[data-lucide] { width: 14px; height: 14px; }
+.filter-btn i[data-lucide] { width: 14px; height: 14px; }
+.filter-search i[data-lucide] {
+  width: 16px; height: 16px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
 /* ═══ 요약카드 ═══ */
 .summary-cards { display: flex; gap: 12px; margin-bottom: 12px; }
 .summary-card {

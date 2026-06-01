@@ -24,16 +24,16 @@ window.render_M01_001 = function(container) {
       <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
         <div class="filter-search">
           <input type="text" id="m01001-search" placeholder="프로젝트명 검색" oninput="m01001_onSearch(this.value)">
-          <span class="filter-search-icon">🔍</span>
+          <span class="filter-search-icon"><i data-lucide="search"></i></span>
         </div>
-        <button class="filter-btn" onclick="m01001_toggleFilter()">☰ 필터</button>
+        <button class="filter-btn" onclick="m01001_toggleFilter()"><i data-lucide="filter"></i> 필터</button>
         <input type="date" id="m01001-date-from" class="form-input" style="width:130px;" onchange="m01001_renderGrid()">
         <span style="font-size:12px;color:var(--text-muted);">~</span>
         <input type="date" id="m01001-date-to" class="form-input" style="width:130px;" onchange="m01001_renderGrid()">
         <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-outline-blue" onclick="m01001_showForm('new')">+ 신규등록</button>
-          <button class="btn" onclick="m01001_showForm('edit')">수정</button>
-          <button class="btn btn-outline-red" onclick="m01001_delete()">삭제</button>
+          <button class="btn btn-outline-blue" onclick="m01001_showForm('new')"><i data-lucide="plus"></i> 신규등록</button>
+          <button class="btn" onclick="m01001_showForm('edit')"><i data-lucide="edit-2"></i> 수정</button>
+          <button class="btn btn-outline-red" onclick="m01001_delete()"><i data-lucide="trash-2"></i> 삭제</button>
         </div>
       </div>
       <!-- 요약카드 -->
@@ -46,8 +46,8 @@ window.render_M01_001 = function(container) {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);">
         <span id="m01001-form-title" style="font-size:var(--font-l);font-weight:700;"></span>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-primary" onclick="m01001_save()">저장</button>
-          <button class="btn" onclick="m01001_backToList()">취소</button>
+          <button class="btn btn-primary" onclick="m01001_save()"><i data-lucide="save"></i> 저장</button>
+          <button class="btn" onclick="m01001_backToList()"><i data-lucide="x"></i> 취소</button>
         </div>
       </div>
       <div class="form-section">
@@ -301,13 +301,13 @@ window.render_M01_002 = function(container) {
       <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
         <div class="filter-search" style="width:450px;">
           <input type="text" id="m01002-search" placeholder="Search" oninput="m01002_onSearch(this.value)" style="width:100%;">
-          <span class="filter-search-icon">🔍</span>
+          <span class="filter-search-icon"><i data-lucide="search"></i></span>
         </div>
-        <button class="filter-btn" onclick="m01002_toggleFilter()">☰ 필터</button>
-        <button class="filter-btn" onclick="m01002_toggleBizType()">≡ 업체구분</button>
+        <button class="filter-btn" onclick="m01002_toggleFilter()"><i data-lucide="filter"></i> 필터</button>
+        <button class="filter-btn" onclick="m01002_toggleBizType()"><i data-lucide="filter"></i> 업체구분</button>
         <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn" onclick="Common.showToast('협력사 초대메일 기능은 준비 중입니다','info')">✉ 협력사 초대메일</button>
-          <button class="btn btn-primary" onclick="m01002_showDetail('new')">+ 신규</button>
+          <button class="btn" onclick="Common.showToast('협력사 초대메일 기능은 준비 중입니다','info')"><i data-lucide="mail"></i> 협력사 초대메일</button>
+          <button class="btn btn-primary" onclick="m01002_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
       <div id="m01002-grid" style="flex:1;overflow:auto;"></div>
@@ -425,14 +425,15 @@ window.render_M01_002 = function(container) {
     const btns = document.getElementById('m01002-detail-btns');
     if (mode === 'edit') {
       btns.innerHTML = `
-        <button class="btn btn-outline-red" onclick="Common.showToast('거래정지 처리되었습니다','success')">거래정지</button>
-        <button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')">수정</button>
-        <button class="btn" onclick="m01002_backToList()">닫기</button>`;
+        <button class="btn btn-outline-red" onclick="Common.showToast('거래정지 처리되었습니다','success')"><i data-lucide="ban"></i> 거래정지</button>
+        <button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')"><i data-lucide="edit-2"></i> 수정</button>
+        <button class="btn" onclick="m01002_backToList()"><i data-lucide="x"></i> 닫기</button>`;
     } else {
       btns.innerHTML = `
-        <button class="btn btn-primary" onclick="m01002_save()">저장</button>
-        <button class="btn" onclick="m01002_backToList()">닫기</button>`;
+        <button class="btn btn-primary" onclick="m01002_save()"><i data-lucide="save"></i> 저장</button>
+        <button class="btn" onclick="m01002_backToList()"><i data-lucide="x"></i> 닫기</button>`;
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // 세로탭 렌더
     activeTab = '일반정보';
@@ -466,6 +467,7 @@ window.render_M01_002 = function(container) {
       '신용평가정보': () => m01002_tabCredit(supp),
     };
     el.innerHTML = (map[tab] || (() => ''))();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   };
 
   // ── 탭 헬퍼 ──
@@ -479,13 +481,13 @@ window.render_M01_002 = function(container) {
     return `<div class="form-group ${cls}"><label class="form-label">${lbl}${req?' <span class="required">*</span>':''}</label>${html}</div>`;
   }
   function _addDel() {
-    return `<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-outline-blue">+ 추가</button><button class="btn btn-outline-red">삭제</button></div>`;
+    return `<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-outline-blue"><i data-lucide="plus"></i> 추가</button><button class="btn btn-outline-red"><i data-lucide="trash-2"></i> 삭제</button></div>`;
   }
   function _fileBox(label) {
     return `<div style="flex:1;">
       <div style="font-size:var(--font-s);font-weight:500;margin-bottom:8px;">${label}</div>
       <div style="border:1px solid var(--border);border-radius:var(--radius);padding:8px;">
-        <button class="btn" style="font-size:11px;margin-bottom:8px;">+ AllDownLoad</button>
+        <button class="btn" style="font-size:11px;margin-bottom:8px;"><i data-lucide="download"></i> AllDownLoad</button>
         <div style="border:1px solid #E5E7EB;border-radius:var(--radius);background:#FAFBFC;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);text-align:center;">파일을 드래그하거나<br>클릭하여 업로드</div>
       </div>
     </div>`;
@@ -858,12 +860,12 @@ window.render_M01_003 = function(container) {
       <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
         <div class="filter-search" style="width:450px;">
           <input type="text" id="m01003-search" placeholder="품목명/도면번호 검색" oninput="m01003_onSearch(this.value)" style="width:100%;">
-          <span class="filter-search-icon">🔍</span>
+          <span class="filter-search-icon"><i data-lucide="search"></i></span>
         </div>
-        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')">☰ 필터</button>
-        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')">≡ 품목구분</button>
+        <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter"></i> 필터</button>
+        <button class="filter-btn" onclick="Common.showToast('품목구분 필터는 준비 중입니다','info')"><i data-lucide="filter"></i> 품목구분</button>
         <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-primary" onclick="m01003_showDetail('new')">+ 신규</button>
+          <button class="btn btn-primary" onclick="m01003_showDetail('new')"><i data-lucide="plus"></i> 신규</button>
         </div>
       </div>
       <div id="m01003-grid"></div>
@@ -967,12 +969,13 @@ window.render_M01_003 = function(container) {
 
     const btns = document.getElementById('m01003-detail-btns');
     if (mode === 'edit') {
-      btns.innerHTML = `<button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')">수정</button>
-                        <button class="btn" onclick="m01003_backToList()">닫기</button>`;
+      btns.innerHTML = `<button class="btn" onclick="Common.showToast('수정 모드로 전환합니다','info')"><i data-lucide="edit-2"></i> 수정</button>
+                        <button class="btn" onclick="m01003_backToList()"><i data-lucide="x"></i> 닫기</button>`;
     } else {
-      btns.innerHTML = `<button class="btn btn-primary" onclick="m01003_save()">저장</button>
-                        <button class="btn" onclick="m01003_backToList()">닫기</button>`;
+      btns.innerHTML = `<button class="btn btn-primary" onclick="m01003_save()"><i data-lucide="save"></i> 저장</button>
+                        <button class="btn" onclick="m01003_backToList()"><i data-lucide="x"></i> 닫기</button>`;
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     activeTab = '기본정보';
     m01003_renderVtabs();
@@ -1003,6 +1006,7 @@ window.render_M01_003 = function(container) {
       '도면·사양서':  () => m01003_tabDrawing(item),
     };
     el.innerHTML = (map[tab] || (() => ''))();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   };
 
   // ── 탭 1: 기본정보 ──

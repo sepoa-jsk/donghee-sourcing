@@ -79,6 +79,7 @@ const App = {
         </div>
       `;
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   togglePortal() {
