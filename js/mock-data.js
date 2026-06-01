@@ -11,14 +11,18 @@ const MockData = {
     ],
 
     suppliers: [
-      { id: "SUP-001", name: "(주)한국정밀", bizNo: "3128131399", tier: "Tier2", managed: "Y", contract: "Y", grade: "A", manager: "김구매" },
-      { id: "SUP-002", name: "대성금속(주)", bizNo: "1398101043", tier: "Tier2", managed: "Y", contract: "N", grade: "B", manager: "이소싱" },
-      { id: "SUP-003", name: "진흥스틸", bizNo: "1378144541", tier: "Tier3", managed: "N", contract: "N", grade: "A", manager: "박원가" },
-      { id: "SUP-004", name: "한일수지(주)", bizNo: "1338138969", tier: "Tier3", managed: "Y", contract: "Y", grade: "B", manager: "김구매" },
-      { id: "SUP-005", name: "(주)동양알미늄", bizNo: "1248657972", tier: "Tier2", managed: "Y", contract: "Y", grade: "A", manager: "이소싱" },
-      { id: "SUP-006", name: "세진테크", bizNo: "1338128097", tier: "Tier3", managed: "N", contract: "N", grade: "C", manager: "박원가" },
-      { id: "SUP-007", name: "(주)광명정밀", bizNo: "6158124555", tier: "Tier2", managed: "Y", contract: "N", grade: "B", manager: "김구매" },
-      { id: "SUP-008", name: "미래소재(주)", bizNo: "1348104176", tier: "Tier3", managed: "Y", contract: "Y", grade: "A", manager: "이소싱" }
+      { id: "SUP-001", code: "099165", name: "(주)한국정밀", bizNo: "312-81-31399", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "제조", bizCategory: "자동차부품", country: "KR - South Korea", creditGrade: "A", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier2", managed: "Y", contract: "Y", grade: "A", manager: "김구매" },
+      { id: "SUP-002", code: "099166", name: "대성금속(주)", bizNo: "139-81-01043", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "수정요청", editRequest: "수정요청", bizType: "제조", bizCategory: "금속가공", country: "KR - South Korea", creditGrade: "BB+", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier2", managed: "Y", contract: "N", grade: "B", manager: "이소싱" },
+      { id: "SUP-003", code: "099167", name: "진흥스틸", bizNo: "137-81-44541", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "도매,제조,소매", bizCategory: "공구,철물", country: "KR - South Korea", creditGrade: "BB+", cashFlowGrade: "A", riskGrade: "정상", tier: "Tier3", managed: "N", contract: "N", grade: "A", manager: "박원가" },
+      { id: "SUP-004", code: "099168", name: "한일수지(주)", bizNo: "133-81-38969", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "제조,도소매,서비스", bizCategory: "화학제품,수지", country: "KR - South Korea", creditGrade: "BB+", cashFlowGrade: "BB", riskGrade: "정상", tier: "Tier3", managed: "Y", contract: "Y", grade: "B", manager: "김구매" },
+      { id: "SUP-005", code: "099169", name: "(주)동양알미늄", bizNo: "124-86-57972", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "서비스,제조업,도소매", bizCategory: "비철금속,알루미늄", country: "KR - South Korea", creditGrade: "A", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier2", managed: "Y", contract: "Y", grade: "A", manager: "이소싱" },
+      { id: "SUP-006", code: "099170", name: "세진테크", bizNo: "133-81-28097", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "도소매", bizCategory: "전자부품,센서", country: "KR - South Korea", creditGrade: "BB+", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier3", managed: "N", contract: "N", grade: "C", manager: "박원가" },
+      { id: "SUP-007", code: "099171", name: "(주)광명정밀", bizNo: "615-81-24555", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "건설업,제조업,서비스", bizCategory: "정밀가공,금형", country: "KR - South Korea", creditGrade: "A", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier2", managed: "Y", contract: "N", grade: "B", manager: "김구매" },
+      { id: "SUP-008", code: "099172", name: "미래소재(주)", bizNo: "134-81-04176", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "제조업,도소매", bizCategory: "특수소재,CFRP", country: "KR - South Korea", creditGrade: "BB+", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier3", managed: "Y", contract: "Y", grade: "A", manager: "이소싱" },
+      { id: "SUP-009", code: "099173", name: "대성어패럴", bizNo: "117-12-31861", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "제조업,도소매", bizCategory: "산업용섬유", country: "KR - South Korea", creditGrade: "B", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier3", managed: "N", contract: "N", grade: "B", manager: "박원가" },
+      { id: "SUP-010", code: "099175", name: "(재)환경과학연구소", bizNo: "402-82-15501", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "서비스", bizCategory: "환경분석,시험", country: "KR - South Korea", creditGrade: "BB", cashFlowGrade: "BB", riskGrade: "정상", tier: "Tier3", managed: "N", contract: "N", grade: "B", manager: "이소싱" },
+      { id: "SUP-011", code: "099176", name: "철인광고", bizNo: "403-08-66809", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "제조", bizCategory: "간판및광고물", country: "KR - South Korea", creditGrade: "BB", cashFlowGrade: "BB+", riskGrade: "정상", tier: "Tier3", managed: "N", contract: "N", grade: "C", manager: "박원가" },
+      { id: "SUP-012", code: "099177", name: "현대자동차(주)", bizNo: "101-81-09147", type: "등록업체", tradeStatus: "정상", approvalStatus: "승인", approval2nd: "", editRequest: "", bizType: "자동차제조업,도소매등", bizCategory: "자동차,부품", country: "KR - South Korea", creditGrade: "B", cashFlowGrade: "BB", riskGrade: "정상", tier: "Tier2", managed: "Y", contract: "Y", grade: "A", manager: "김구매" }
     ],
 
     items: [
@@ -131,9 +135,14 @@ const MockData = {
   },
 
   init() {
-    // dh_initialized가 있어도 실제 데이터가 비어있으면 재시드
-    const projects = localStorage.getItem('dh_projects');
-    if (!projects || JSON.parse(projects).length === 0) {
+    // 데이터 유효성 검사: projects 없거나, suppliers가 시드 수와 다르면 재시드
+    try {
+      const projects   = JSON.parse(localStorage.getItem('dh_projects')  || '[]');
+      const suppliers  = JSON.parse(localStorage.getItem('dh_suppliers') || '[]');
+      if (projects.length === 0 || suppliers.length < this.seed.suppliers.length) {
+        this.reset();
+      }
+    } catch(e) {
       this.reset();
     }
   },

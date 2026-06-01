@@ -299,20 +299,18 @@ window.render_M01_002 = function(container) {
     <!-- 리스트 뷰 -->
     <div id="m01002-list">
       <div class="filter-bar" style="display:flex;align-items:center;gap:8px;padding-bottom:12px;">
-        <div class="filter-search">
-          <input type="text" id="m01002-search" placeholder="업체명 검색" oninput="m01002_onSearch(this.value)">
+        <div class="filter-search" style="width:450px;">
+          <input type="text" id="m01002-search" placeholder="Search" oninput="m01002_onSearch(this.value)" style="width:100%;">
           <span class="filter-search-icon">🔍</span>
         </div>
         <button class="filter-btn" onclick="m01002_toggleFilter()">☰ 필터</button>
-        <button id="m01002-t2-btn" class="filter-btn" style="border-color:var(--primary);" onclick="m01002_setTier('Tier2')">Tier2</button>
-        <button id="m01002-t3-btn" class="filter-btn" onclick="m01002_setTier('Tier3')">Tier3</button>
+        <button class="filter-btn" onclick="m01002_toggleBizType()">≡ 업체구분</button>
         <div class="filter-right" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-outline-blue" onclick="m01002_showDetail('new')">+ 신규등록</button>
-          <button class="btn" onclick="m01002_showDetail('edit')">수정</button>
-          <button class="btn btn-outline-red" onclick="m01002_delete()">삭제</button>
+          <button class="btn" onclick="Common.showToast('협력사 초대메일 기능은 준비 중입니다','info')">✉ 협력사 초대메일</button>
+          <button class="btn btn-primary" onclick="m01002_showDetail('new')">+ 신규</button>
         </div>
       </div>
-      <div id="m01002-grid"></div>
+      <div id="m01002-grid" style="flex:1;overflow:auto;"></div>
     </div>
     <!-- 상세 뷰 -->
     <div id="m01002-detail" class="hidden" style="flex:1;display:flex;flex-direction:column;height:100%;">
@@ -357,57 +355,59 @@ window.render_M01_002 = function(container) {
     Common.showToast('필터 기능은 준비 중입니다', 'info');
   };
 
-  window.m01002_setTier = function(tier) {
-    if (tierFilter === tier) {
-      tierFilter = null;
-      document.getElementById('m01002-t2-btn').style.background = '';
-      document.getElementById('m01002-t3-btn').style.background = '';
-    } else {
-      tierFilter = tier;
-      document.getElementById('m01002-t2-btn').style.background = tier === 'Tier2' ? '#EBF0FF' : '';
-      document.getElementById('m01002-t3-btn').style.background = tier === 'Tier3' ? '#EBF0FF' : '';
-    }
-    m01002_renderGrid();
+  window.m01002_toggleBizType = function() {
+    Common.showToast('업체구분 필터는 준비 중입니다', 'info');
   };
 
   window.m01002_renderGrid = function() {
     let data = MockData.getAll('suppliers');
+    if (data.length === 0) { MockData.reset(); data = MockData.getAll('suppliers'); }
     if (searchText) {
       const q = searchText.toLowerCase();
-      data = data.filter(s => (s.name||'').toLowerCase().includes(q) || (s.id||'').toLowerCase().includes(q));
+      data = data.filter(s =>
+        (s.name||'').toLowerCase().includes(q) ||
+        (s.code||'').toLowerCase().includes(q) ||
+        (s.bizNo||'').toLowerCase().includes(q)
+      );
     }
-    if (tierFilter) data = data.filter(s => s.tier === tierFilter);
-
-    const tierColor  = { Tier2: '#0747A6', Tier3: '#0F6E56' };
-    const gradeColor = { A: '#0F6E56', B: '#0747A6', C: '#854F0B', D: '#D22C36' };
 
     const rows = data.map(s => {
       const sel = s.id === selectedSuppId ? 'selected' : '';
       return `<tr class="${sel}" onclick="m01002_selectRow('${s.id}')" style="cursor:pointer;">
         <td class="center"><input type="checkbox" ${s.id === selectedSuppId ? 'checked' : ''} onclick="event.stopPropagation();m01002_selectRow('${s.id}')"></td>
-        <td class="center">${s.id}</td>
+        <td class="center"><span class="supplier-type">${s.type||'등록업체'}</span></td>
+        <td class="center">${s.tradeStatus||'정상'}</td>
+        <td class="center">${s.approvalStatus||'승인'}</td>
+        <td class="center">${s.approval2nd||''}</td>
+        <td class="center">${s.editRequest||''}</td>
+        <td class="center"><span class="code-link" onclick="event.stopPropagation();m01002_showDetail('edit','${s.id}')">${s.code||s.id}</span></td>
         <td class="left">${s.name}</td>
         <td class="center">${s.bizNo||'-'}</td>
-        <td class="center" style="color:${tierColor[s.tier]||'inherit'};font-weight:500;">${s.tier||'-'}</td>
-        <td class="center" style="color:${s.managed==='Y'?'#0F6E56':'#97A0AF'};font-weight:500;">${s.managed||'-'}</td>
-        <td class="center" style="color:${s.contract==='Y'?'#0F6E56':'#97A0AF'};font-weight:500;">${s.contract||'-'}</td>
-        <td class="center" style="color:${gradeColor[s.grade]||'inherit'};font-weight:500;">${s.grade||'-'}</td>
-        <td class="center">${s.manager||'-'}</td>
+        <td class="left">${s.bizType||'-'}</td>
+        <td class="left">${s.bizCategory||'-'}</td>
+        <td class="center">${s.country||'-'}</td>
+        <td class="center">${s.creditGrade||'-'}</td>
+        <td class="center">${s.cashFlowGrade||'-'}</td>
+        <td class="center">${s.riskGrade||'-'}</td>
       </tr>`;
     }).join('');
 
     document.getElementById('m01002-grid').innerHTML = `
-      <div class="grid-container" style="overflow-y:auto;height:calc(100vh - 40px - 36px - 56px - 32px - 5px);">
-        <table class="grid-table">
+      <div class="grid-container" style="height:calc(100vh - 40px - 36px - 56px - 32px - 5px);">
+        <table class="grid-table grid-table-wide">
           <colgroup>
-            <col style="width:40px"><col style="width:90px"><col style="width:160px">
-            <col style="width:120px"><col style="width:70px"><col style="width:80px">
-            <col style="width:80px"><col style="width:70px"><col style="width:80px">
+            <col style="width:40px"><col style="width:80px"><col style="width:70px">
+            <col style="width:70px"><col style="width:90px"><col style="width:70px">
+            <col style="width:80px"><col style="width:180px"><col style="width:120px">
+            <col style="width:140px"><col style="width:160px"><col style="width:120px">
+            <col style="width:70px"><col style="width:90px"><col style="width:70px">
           </colgroup>
           <thead><tr>
             <th><input type="checkbox" onclick="m01002_toggleAll(this)"></th>
-            <th>업체코드</th><th>협력사명</th><th>사업자번호</th>
-            <th>구분</th><th>관리여부</th><th>계약여부</th><th>평가등급</th><th>담당자</th>
+            <th>업체구분</th><th>거래상태</th><th>결재상태</th><th>2차결재상태</th>
+            <th>수정요청</th><th>업체코드</th><th>업체명</th><th>사업자등록번호</th>
+            <th>업태</th><th>업종</th><th>국가</th>
+            <th>신용등급</th><th>현금흐름등급</th><th>외치등급</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -420,8 +420,9 @@ window.render_M01_002 = function(container) {
     m01002_renderGrid();
   };
 
-  window.m01002_showDetail = function(mode) {
+  window.m01002_showDetail = function(mode, overrideId) {
     detailMode = mode;
+    if (overrideId) selectedSuppId = overrideId;
     if (mode === 'edit' && !selectedSuppId) {
       Common.showToast('수정할 항목을 선택해주세요', 'error'); return;
     }

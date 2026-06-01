@@ -341,9 +341,16 @@ body {
 .grid-container {
   border: 1px solid #DDDDDD;
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: auto;
   margin-bottom: 5px;
 }
+.grid-table-wide { min-width: 1400px; }
+
+/* 협력사 그리드 전용 컬럼 스타일 */
+.supplier-type { color: var(--danger); font-weight: 500; }
+.code-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 500; }
+.code-link:hover { color: var(--primary-hover); }
 .grid-scroll {
   overflow-y: auto;
   overflow-x: auto;
