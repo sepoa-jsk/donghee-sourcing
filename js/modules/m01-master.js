@@ -482,10 +482,16 @@ window.render_M01_002 = function(container) {
     return `<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-outline-blue">+ 추가</button><button class="btn btn-outline-red">삭제</button></div>`;
   }
   function _fileBox(label) {
-    return `<div class="file-attach-box"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><label style="margin:0;">${label}</label><button class="btn btn-gray-lite" style="height:24px;padding:0 8px;font-size:11px;">+ AllDownload</button></div><div class="file-drop-area" style="min-height:120px;">파일을 드래그하거나<br>클릭하여 업로드</div></div>`;
+    return `<div style="flex:1;">
+      <div style="font-size:var(--font-s);font-weight:500;margin-bottom:8px;">${label}</div>
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:8px;">
+        <button class="btn" style="font-size:11px;margin-bottom:8px;">+ AllDownLoad</button>
+        <div style="border:1px solid #E5E7EB;border-radius:var(--radius);background:#FAFBFC;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);text-align:center;">파일을 드래그하거나<br>클릭하여 업로드</div>
+      </div>
+    </div>`;
   }
   function _fileRow(l1, l2) {
-    return `<div class="file-attach-row" style="gap:24px;">${_fileBox(l1)}${_fileBox(l2)}</div>`;
+    return `<div style="display:flex;gap:24px;">${_fileBox(l1)}${_fileBox(l2)}</div>`;
   }
   function _box(title, content) {
     return `<div class="section-box"><div class="section-box-title">${title}</div>${content}</div>`;
@@ -521,10 +527,38 @@ window.render_M01_002 = function(container) {
         _row(_fg('form-group-l','홈페이지',false,_inp('sf-web','','https://www.company.co.kr')))
       ) +
       _box('소재지 정보',
-        `<div class="form-row" style="align-items:flex-end;">${_fg('form-group-s','우편번호',false,_inp('sf-zip',s.zip,'12345'))}<button class="btn" style="flex-shrink:0;">검색</button>${_fg('form-group-full','주소',true,_inp('sf-addr',s.addr,'기본주소'))}</div>` +
-        _row(_fg('form-group-full','상세주소',false,_inp('sf-addr2',s.addr2,'상세주소'))) +
-        `<div class="form-row" style="align-items:flex-end;">${_fg('form-group-s','공장 우편번호',false,_inp('sf-fzip','','12345'))}<button class="btn" style="flex-shrink:0;">검색</button>${_fg('form-group-full','공장주소',false,_inp('sf-faddr','','공장 기본주소'))}</div>` +
-        _row(_fg('form-group-full','공장 상세주소',false,_inp('sf-faddr2','','공장 상세주소'))) +
+        `<div class="form-row" style="align-items:flex-end;">
+          <div class="form-group" style="flex:0 0 auto;">
+            <label class="form-label" style="white-space:nowrap;">우편번호</label>
+            <div style="display:flex;gap:4px;"><input class="form-input" style="width:80px;" id="sf-zip" value="${s.zip||''}" placeholder="12345"><button class="btn" style="height:var(--input-height);padding:0 8px;font-size:11px;flex-shrink:0;">검색</button></div>
+          </div>
+          <div class="form-group" style="flex:1;min-width:0;">
+            <label class="form-label">주소 <span class="required">*</span></label>
+            <input class="form-input" style="width:100%;" id="sf-addr" value="${s.addr||''}" placeholder="기본주소">
+          </div>
+        </div>` +
+        `<div class="form-row">
+          <div class="form-group" style="flex:1;min-width:0;">
+            <label class="form-label">상세주소</label>
+            <input class="form-input" style="width:100%;" id="sf-addr2" value="${s.addr2||''}" placeholder="상세주소">
+          </div>
+        </div>` +
+        `<div class="form-row" style="align-items:flex-end;">
+          <div class="form-group" style="flex:0 0 auto;">
+            <label class="form-label" style="white-space:nowrap;">공장 우편번호</label>
+            <div style="display:flex;gap:4px;"><input class="form-input" style="width:80px;" id="sf-fzip" placeholder="12345"><button class="btn" style="height:var(--input-height);padding:0 8px;font-size:11px;flex-shrink:0;">검색</button></div>
+          </div>
+          <div class="form-group" style="flex:1;min-width:0;">
+            <label class="form-label">공장주소</label>
+            <input class="form-input" style="width:100%;" id="sf-faddr" placeholder="공장 기본주소">
+          </div>
+        </div>` +
+        `<div class="form-row">
+          <div class="form-group" style="flex:1;min-width:0;">
+            <label class="form-label">공장 상세주소</label>
+            <input class="form-input" style="width:100%;" id="sf-faddr2" placeholder="공장 상세주소">
+          </div>
+        </div>` +
         _row(_fg('form-group-m','국가',false,_sel('sf-country',['KR - South Korea','CN - China','VN - Vietnam','US - USA','기타'],s.country||'KR - South Korea')),
              _fg('form-group-m','지역',false,_sel('sf-region',['수도권','충청','영남','호남','강원','제주','해외'],'수도권')))
       ) +

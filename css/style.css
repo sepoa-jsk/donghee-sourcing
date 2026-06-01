@@ -478,7 +478,7 @@ body {
   flex-direction: column;
   gap: 4px;
 }
-.form-group .form-label { font-size: var(--font-xs); color: var(--text-secondary); font-weight: 500; }
+.form-group .form-label { font-size: var(--font-xs); color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
 .form-group .form-input,
 .form-group select { width: 100%; }
 /* 고정 width 클래스 — form-row 밖 단독 사용 시만 적용, form-row 안에서는 flex:1 우선 */
