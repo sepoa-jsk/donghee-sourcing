@@ -414,10 +414,12 @@ window.render_M01_002 = function(container) {
     if (mode === 'edit' && !selectedSuppId) {
       Common.showToast('수정할 항목을 선택해주세요', 'error'); return;
     }
-    const supp = mode === 'edit' ? MockData.getById('suppliers', selectedSuppId) : null;
+    const supp = mode === 'edit'
+      ? MockData.getById('suppliers', selectedSuppId)
+      : MockData.getAll('suppliers')[0] || null;
     document.getElementById('m01002-list').classList.add('hidden');
     document.getElementById('m01002-detail').classList.remove('hidden');
-    document.getElementById('m01002-detail-title').textContent = supp ? supp.name : '(신규 등록)';
+    document.getElementById('m01002-detail-title').textContent = supp ? supp.name : '';
 
     // 모드별 버튼 렌더
     const btns = document.getElementById('m01002-detail-btns');
