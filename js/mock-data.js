@@ -115,6 +115,42 @@ const MockData = {
       ]
     },
 
+    targetCostList: [
+      { id: "TC-001", projectId: "PRJ-2025-001", version: "v01", status: "승인",   hmcPrice: 85000, targetPrice: 79000, crRate: 7.1, createdAt: "2025-09-01", createdBy: "김구매", approvedAt: "2025-09-05",
+        modules: [
+          { name: "서스펜션",  target: 55000, actual: 51240, rate: 93.2 },
+          { name: "연료탱크",  target: 30000, actual: 27800, rate: 92.7 },
+          { name: "페달",      target: 17000, actual: 16200, rate: 95.3 },
+          { name: "수소부품",  target: 48000, actual: 52000, rate: 108.3 },
+          { name: "내장부품",  target: 13000, actual: 11500, rate: 88.5 }
+        ]
+      },
+      { id: "TC-002", projectId: "PRJ-2025-001", version: "v02", status: "승인",   hmcPrice: 83000, targetPrice: 77500, crRate: 6.6, createdAt: "2025-10-01", createdBy: "김구매", approvedAt: "2025-10-08",
+        modules: [
+          { name: "서스펜션",  target: 53000, actual: 51240, rate: 96.7 },
+          { name: "연료탱크",  target: 29200, actual: 27800, rate: 95.2 },
+          { name: "페달",      target: 16200, actual: 16200, rate: 100.0 },
+          { name: "수소부품",  target: 46000, actual: 52000, rate: 113.0 },
+          { name: "내장부품",  target: 12500, actual: 11500, rate: 92.0 }
+        ]
+      },
+      { id: "TC-003", projectId: "PRJ-2025-001", version: "v03", status: "승인",   hmcPrice: 82000, targetPrice: 76500, crRate: 6.7, createdAt: "2025-11-01", createdBy: "김구매", approvedAt: "2025-11-05",
+        modules: [
+          { name: "서스펜션",  target: 52000, actual: 51240, rate: 98.5 },
+          { name: "연료탱크",  target: 28500, actual: 27800, rate: 97.5 },
+          { name: "페달",      target: 15800, actual: 16200, rate: 102.5 },
+          { name: "수소부품",  target: 45000, actual: 52000, rate: 115.6 },
+          { name: "내장부품",  target: 12000, actual: 11500, rate: 95.8 }
+        ]
+      },
+      { id: "TC-004", projectId: "PRJ-2025-004", version: "v01", status: "작성중", hmcPrice: 125000, targetPrice: 116500, crRate: 6.8, createdAt: "2025-11-15", createdBy: "이소싱", approvedAt: null,
+        modules: [
+          { name: "수소탱크 어셈블리", target: 78000, actual: 73500, rate: 94.2 },
+          { name: "CFRP 구조체",      target: 38500, actual: 45000, rate: 116.9 }
+        ]
+      }
+    ],
+
     rfq: [
       { id: "RFQ-2025-001", projectId: "PRJ-2025-001", partNo: "P-S102", partName: "스태빌라이저 링크", targetPrice: 4800, deadline: "2025-12-20", status: "견적접수중", suppliers: ["SUP-001", "SUP-002", "SUP-003"] },
       { id: "RFQ-2025-002", projectId: "PRJ-2025-001", partNo: "P-F202", partName: "연료펌프 모듈", targetPrice: 10300, deadline: "2025-12-25", status: "견적접수중", suppliers: ["SUP-004", "SUP-005", "SUP-006"] },
@@ -282,15 +318,38 @@ const MockData = {
       { id: "LOG-006", at: "2025-12-03 14:00", type: "Export", projectId: "PRJ-2025-002", fileName: "PRJ-2025-002_BOM_v01.xlsx",     totalCount:  8, successCount:  8, failCount: 0, operator: "박원가", status: "완료" },
       { id: "LOG-007", at: "2025-12-04 10:00", type: "Import", projectId: "PRJ-2025-001", fileName: "NX5_ECN009_반영.xlsx",          totalCount:  4, successCount:  4, failCount: 0, operator: "김구매", status: "완료" },
       { id: "LOG-008", at: "2025-12-04 16:30", type: "Export", projectId: "PRJ-2025-001", fileName: "PRJ-2025-001_BOM_v04_최종.xlsx",totalCount: 20, successCount: 20, failCount: 0, operator: "김구매", status: "완료" }
+    ],
+
+    priceHistory: [
+      { id: "PH-2025-001", partNo: "P-S101", partName: "로어 암 브라켓",     projectId: "PRJ-2025-001", supplierId: "SUP-001", changeDate: "2025-09-01", changeType: "초기등록",   prevPrice: null,  newPrice: 6800,  changeRate: null,  reason: "프로젝트 초기 단가 등록",                            confirmedBy: "김구매", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-002", partNo: "P-S101", partName: "로어 암 브라켓",     projectId: "PRJ-2025-001", supplierId: "SUP-001", changeDate: "2025-10-20", changeType: "RFQ확정",   prevPrice: 6800,  newPrice: 7050,  changeRate: 3.7,   reason: "3사 RFQ 결과 (주)한국정밀 최저가 확정",               confirmedBy: "김구매", rfqId: "RFQ-2025-003", ecnId: null           },
+      { id: "PH-2025-003", partNo: "P-S101", partName: "로어 암 브라켓",     projectId: "PRJ-2025-001", supplierId: "SUP-001", changeDate: "2025-12-05", changeType: "협상조정",  prevPrice: 7050,  newPrice: 6950,  changeRate: -1.4,  reason: "연말 협상 결과 단가 인하 합의",                        confirmedBy: "김구매", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-004", partNo: "P-S102", partName: "스태빌라이저 링크", projectId: "PRJ-2025-001", supplierId: null,       changeDate: "2025-09-01", changeType: "초기등록",   prevPrice: null,  newPrice: 4800,  changeRate: null,  reason: "프로젝트 초기 단가 등록",                            confirmedBy: "이소싱", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-005", partNo: "P-S102", partName: "스태빌라이저 링크", projectId: "PRJ-2025-001", supplierId: null,       changeDate: "2025-10-20", changeType: "ECN반영",   prevPrice: 4800,  newPrice: 5340,  changeRate: 11.3,  reason: "소재 변경(SPFC440→SPFH590) ECN-2025-001 반영",        confirmedBy: "김구매", rfqId: null,           ecnId: "ECN-2025-001" },
+      { id: "PH-2025-006", partNo: "P-S102", partName: "스태빌라이저 링크", projectId: "PRJ-2025-001", supplierId: null,       changeDate: "2025-12-10", changeType: "목표가조정", prevPrice: 5340,  newPrice: 5100,  changeRate: -4.5,  reason: "목표가 재설정에 따른 단가 조정",                       confirmedBy: "김구매", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-007", partNo: "P-S103", partName: "코일 스프링 시트",  projectId: "PRJ-2025-001", supplierId: "SUP-003", changeDate: "2025-09-15", changeType: "초기등록",   prevPrice: null,  newPrice: 3200,  changeRate: null,  reason: "프로젝트 초기 단가 등록",                            confirmedBy: "박원가", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-008", partNo: "P-S103", partName: "코일 스프링 시트",  projectId: "PRJ-2025-001", supplierId: "SUP-003", changeDate: "2025-11-15", changeType: "RFQ확정",   prevPrice: 3200,  newPrice: 3080,  changeRate: -3.8,  reason: "진흥스틸 경쟁 입찰 결과 확정",                        confirmedBy: "박원가", rfqId: "RFQ-2025-003", ecnId: null           },
+      { id: "PH-2025-009", partNo: "P-F201", partName: "탱크 본체",         projectId: "PRJ-2025-001", supplierId: "SUP-004", changeDate: "2025-09-20", changeType: "초기등록",   prevPrice: null,  newPrice: 18500, changeRate: null,  reason: "프로젝트 초기 단가 등록",                            confirmedBy: "김구매", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-010", partNo: "P-F201", partName: "탱크 본체",         projectId: "PRJ-2025-001", supplierId: "SUP-004", changeDate: "2025-10-30", changeType: "ECN반영",   prevPrice: 18500, newPrice: 17700, changeRate: -4.3,  reason: "중량 감소 경량화 설계 ECN-2025-002 반영",             confirmedBy: "이소싱", rfqId: null,           ecnId: "ECN-2025-002" },
+      { id: "PH-2025-011", partNo: "P-F201", partName: "탱크 본체",         projectId: "PRJ-2025-001", supplierId: "SUP-004", changeDate: "2025-12-01", changeType: "협상조정",  prevPrice: 17700, newPrice: 17950, changeRate: 1.4,   reason: "원자재 가격 인상분 반영 재협상",                      confirmedBy: "이소싱", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-012", partNo: "P-F202", partName: "연료펌프 모듈",     projectId: "PRJ-2025-001", supplierId: null,       changeDate: "2025-10-01", changeType: "초기등록",   prevPrice: null,  newPrice: 9500,  changeRate: null,  reason: "프로젝트 초기 단가 등록",                            confirmedBy: "이소싱", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-013", partNo: "P-F202", partName: "연료펌프 모듈",     projectId: "PRJ-2025-001", supplierId: null,       changeDate: "2025-12-08", changeType: "목표가조정", prevPrice: 9500,  newPrice: 10300, changeRate: 8.4,   reason: "복합소재 원가 상승 반영 목표가 상향",                  confirmedBy: "박원가", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-014", partNo: "P-F203", partName: "연료 필러넥",       projectId: "PRJ-2025-001", supplierId: "SUP-001", changeDate: "2025-09-25", changeType: "초기등록",   prevPrice: null,  newPrice: 4300,  changeRate: null,  reason: "프로젝트 초기 단가 등록",                            confirmedBy: "박원가", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-015", partNo: "P-F203", partName: "연료 필러넥",       projectId: "PRJ-2025-001", supplierId: "SUP-001", changeDate: "2025-11-10", changeType: "RFQ확정",   prevPrice: 4300,  newPrice: 4100,  changeRate: -4.7,  reason: "(주)한국정밀 단독 RFQ 결과 확정",                     confirmedBy: "김구매", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-016", partNo: "P-H401", partName: "수소탱크 라이너",   projectId: "PRJ-2025-004", supplierId: null,       changeDate: "2025-11-05", changeType: "초기등록",   prevPrice: null,  newPrice: 30000, changeRate: null,  reason: "수소 SUV 프로젝트 초기 단가 등록",                    confirmedBy: "이소싱", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-017", partNo: "P-H401", partName: "수소탱크 라이너",   projectId: "PRJ-2025-004", supplierId: null,       changeDate: "2025-12-15", changeType: "협상조정",  prevPrice: 30000, newPrice: 28500, changeRate: -5.0,  reason: "Al 소재 시세 하락 반영 단가 협상",                    confirmedBy: "김구매", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-018", partNo: "P-H402", partName: "CFRP 보강층",       projectId: "PRJ-2025-004", supplierId: "SUP-008", changeDate: "2025-11-05", changeType: "초기등록",   prevPrice: null,  newPrice: 42000, changeRate: null,  reason: "수소 SUV CFRP 초기 단가 등록",                        confirmedBy: "이소싱", rfqId: null,           ecnId: null           },
+      { id: "PH-2025-019", partNo: "P-H402", partName: "CFRP 보강층",       projectId: "PRJ-2025-004", supplierId: "SUP-008", changeDate: "2025-12-15", changeType: "목표가조정", prevPrice: 42000, newPrice: 45000, changeRate: 7.1,   reason: "탄소섬유 원자재 가격 급등 반영",                       confirmedBy: "박원가", rfqId: null,           ecnId: null           }
     ]
   },
 
   init() {
     // 데이터 유효성 검사: projects 없거나, suppliers가 시드 수와 다르면 재시드
     try {
-      const projects   = JSON.parse(localStorage.getItem('dh_projects')  || '[]');
-      const suppliers  = JSON.parse(localStorage.getItem('dh_suppliers') || '[]');
-      if (projects.length === 0 || suppliers.length < this.seed.suppliers.length) {
+      const projects   = JSON.parse(localStorage.getItem('dh_projects')   || '[]');
+      const suppliers  = JSON.parse(localStorage.getItem('dh_suppliers')  || '[]');
+      const priceHist  = localStorage.getItem('dh_priceHistory');
+      if (projects.length === 0 || suppliers.length < this.seed.suppliers.length || !priceHist) {
         this.reset();
       }
     } catch(e) {

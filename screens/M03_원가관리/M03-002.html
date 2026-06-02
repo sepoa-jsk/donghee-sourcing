@@ -1,0 +1,599 @@
+<!--
+  화면ID  : M03-002
+  화면명  : LME·시세 관리
+  패턴    : 패턴 2 (필터 + 요약카드 + 그리드)
+  스타일  : donghee-sourcing 공통 (dark-blue GNB)
+  생성일  : 2026-06-02
+-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M03-002 LME·시세 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto','Noto Sans KR',sans-serif; border-radius: 0 !important; }
+:root {
+  --primary-blue: #185FA5;
+  --dark-blue: #0D2B55;
+  --secondary-blue: #0D3F7A;
+  --success-green: #0F6E56;
+  --teal: #0F6E56;
+  --amber: #854F0B;
+  --error-red: #A32D2D;
+  --text-primary: #222;
+  --text-secondary: #666;
+  --bg-gray: #F1F1F1;
+  --border-gray: #DDDDDD;
+  --border-light: #CCCCCC;
+  --font-m: 14px;
+  --font-s: 12px;
+  --font-xs: 10px;
+}
+html, body { height: 100%; overflow: hidden; background: #F1F1F1; }
+.page-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+/* GNB */
+.gnb-real { height: 56px; background: var(--dark-blue); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; flex-shrink: 0; }
+.gnb-left { display: flex; align-items: center; gap: 12px; }
+.gnb-logo-text { font-size: 15px; font-weight: 500; }
+.gnb-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.3); }
+.gnb-menu { font-size: 12px; color: rgba(255,255,255,0.75); }
+.gnb-right { display: flex; align-items: center; gap: 18px; font-size: 12px; color: rgba(255,255,255,0.85); }
+.gnb-icon { font-size: 16px; cursor: pointer; opacity: 0.8; }
+
+/* Page Title */
+.page-title-bar { height: 40px; background: var(--bg-gray); display: flex; align-items: center; padding: 0 20px; font-size: var(--font-m); font-weight: 700; border-bottom: 1px solid var(--border-gray); flex-shrink: 0; gap: 8px; }
+.title-path { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+
+/* Main */
+.main-single { flex: 1; display: flex; flex-direction: column; padding: 8px; gap: 6px; overflow: hidden; }
+
+/* Buttons */
+.btn { height: 32px; padding: 0 14px; border: 1px solid transparent; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 80px; font-family: inherit; }
+.btn-primary { background: var(--primary-blue); color: #fff; }
+.btn-secondary { background: var(--secondary-blue); color: #fff; }
+.btn-default { background: #f1f1f1; color: #222; border: 1px solid #999; }
+.btn-success { background: var(--teal); color: #fff; }
+.btn-outline { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); }
+.btn-outline-red { background: #fff; color: var(--error-red); border: 1px solid var(--error-red); }
+.btn-icon { min-width: 32px; width: 32px; padding: 0; background: #fff; border: 1px solid #999; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+
+/* Filter Bar — CLAUDE.md 확정 표준 */
+.filter-bar-row { display: flex; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px; background: #fff; border: 1px solid var(--border-gray); }
+.filter-search { position: relative; width: 400px; flex-shrink: 0; }
+.filter-search input { width: 100%; height: 32px; border: 1px solid var(--border-light); padding: 0 32px 0 10px; font-size: 12px; background: #fff; font-family: inherit; }
+.filter-search input:focus { outline: none; border-color: var(--primary-blue); }
+.filter-search-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #94A3B8; pointer-events: none; font-size: 14px; }
+.filter-btn { height: 32px; padding: 0 12px; border: 1px solid var(--border-light); background: #fff; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: var(--text-primary); font-family: inherit; }
+.filter-btn:hover { background: #f5f5f5; }
+.filter-btn .fi { color: var(--primary-blue); }
+.filter-date-range { display: inline-flex; align-items: center; gap: 4px; height: 32px; border: 1px solid var(--border-light); padding: 0 8px; background: #fff; font-size: 12px; }
+.filter-date-range input { border: none; outline: none; width: 72px; font-size: 12px; font-family: inherit; text-align: center; color: var(--text-primary); background: transparent; }
+.filter-date-sep { color: #bbb; font-size: 11px; }
+.filter-date-cal { color: var(--error-red); font-size: 14px; cursor: pointer; margin-left: 2px; }
+.filter-right { margin-left: auto; display: flex; gap: 4px; }
+
+/* KPI Cards */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-shrink: 0; }
+.kpi-card { background: #fff; border: 1px solid var(--border-gray); padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+.kpi-card-header { display: flex; align-items: center; justify-content: space-between; }
+.kpi-title { font-size: 11px; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; display: flex; align-items: center; gap: 4px; }
+.kpi-icon { font-size: 20px; opacity: 0.4; }
+.kpi-value { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.kpi-sub { font-size: 11px; display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.kpi-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; }
+.badge-up { background: #FAEAEA; color: var(--error-red); border: 1px solid #E0AAAA; }
+.badge-dn { background: #E6F3EF; color: var(--teal); border: 1px solid #A8D5C5; }
+.badge-neutral { background: #EBF2FA; color: var(--primary-blue); border: 1px solid #B8D4EE; }
+.kpi-trend-up { font-size: 11px; font-weight: 700; color: var(--error-red); }
+.kpi-trend-dn { font-size: 11px; font-weight: 700; color: var(--teal); }
+.kpi-base { font-size: 10px; color: #999; }
+
+/* Mid Row: Trend + Source */
+.mid-row { display: grid; grid-template-columns: 380px 1fr; gap: 8px; flex-shrink: 0; }
+.chart-panel { background: #fff; border: 1px solid var(--border-gray); padding: 12px; }
+.chart-title { font-size: 12px; font-weight: 700; color: var(--text-primary); padding-bottom: 8px; border-bottom: 1px solid var(--border-gray); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.bar-group { margin-bottom: 8px; }
+.bar-group-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; display: flex; justify-content: space-between; }
+.bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.bar-month { font-size: 10px; color: var(--text-secondary); width: 44px; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; height: 14px; background: var(--bg-gray); border: 1px solid var(--border-gray); overflow: hidden; }
+.bar-fill { height: 100%; }
+.bar-fill-steel { background: var(--primary-blue); }
+.bar-fill-al { background: #6B4FA0; }
+.bar-val { font-size: 10px; font-weight: 700; width: 48px; text-align: right; flex-shrink: 0; }
+
+/* Source panel */
+.source-panel { background: #fff; border: 1px solid var(--border-gray); padding: 12px; overflow-y: auto; }
+.source-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-gray); }
+.source-row:last-child { border-bottom: none; }
+.source-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+.src-lme { background: #EBF2FA; color: var(--primary-blue); border: 1px solid #B8D4EE; }
+.src-posco { background: #E6F3EF; color: var(--teal); border: 1px solid #A8D5C5; }
+.src-krx { background: #FFF3E0; color: var(--amber); border: 1px solid #F0C080; }
+.src-cb { background: #F5F0FF; color: #6B4FA0; border: 1px solid #C4A8E8; }
+.source-info { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.source-info strong { color: var(--text-primary); font-weight: 600; }
+
+/* Grid */
+.grid-panel { flex: 1; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border-gray); }
+.grid-panel-header { height: 36px; background: var(--bg-gray); border-bottom: 1px solid var(--border-gray); display: flex; align-items: center; padding: 0 8px; gap: 6px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.grid-panel-header .header-right { margin-left: auto; display: flex; gap: 4px; }
+.grid-wrap { flex: 1; overflow: auto; }
+.grid-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.grid-table th { height: 40px; background: var(--bg-gray); border: 1px solid var(--border-gray); padding: 0 8px; font-weight: 600; font-size: 11px; text-align: center; position: sticky; top: 0; z-index: 5; }
+.grid-table td { height: 32px; border: 1px solid var(--border-gray); padding: 0 8px; font-size: 11px; }
+.td-c { text-align: center; }
+.td-r { text-align: right; }
+.text-link { color: var(--primary-blue); text-decoration: underline; cursor: pointer; }
+.chg-up { color: var(--error-red); font-weight: 600; }
+.chg-dn { color: var(--teal); font-weight: 600; }
+.chg-flat { color: #888; }
+.row-latest { background: #EBF2FA !important; }
+.row-hover:hover { background: #F5F9FF; cursor: pointer; }
+.status-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border: 1px solid; }
+.status-confirmed { background: #E6F3EF; color: var(--teal); border-color: #A8D5C5; }
+.status-pending { background: #FFF8F0; color: var(--amber); border-color: #F0C080; }
+
+/* Bottom tab bar */
+.bottom-tab-bar { height: 32px; background: var(--bg-gray); display: flex; align-items: center; border-top: 1px solid var(--border-gray); flex-shrink: 0; }
+.bottom-tab-item { display: flex; align-items: center; padding: 0 14px; height: 100%; font-size: 12px; background: #E1E1E1; border-right: 1px solid var(--border-gray); cursor: pointer; gap: 6px; }
+.bottom-tab-item.active { background: var(--secondary-blue); color: #fff; }
+.tab-close { font-size: 10px; opacity: 0.7; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: #fff; border: 1px solid var(--border-gray); width: 560px; display: flex; flex-direction: column; }
+.modal-header { height: 40px; background: var(--secondary-blue); color: #fff; display: flex; align-items: center; padding: 0 16px; font-size: 13px; font-weight: 700; gap: 8px; flex-shrink: 0; }
+.modal-close-btn { margin-left: auto; background: transparent; border: none; color: #fff; font-size: 18px; cursor: pointer; opacity: 0.8; }
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 11px; font-weight: 700; color: #333; }
+.form-label .req { color: var(--error-red); margin-left: 2px; }
+.form-control { height: 32px; border: 1px solid var(--border-light); padding: 0 8px; font-size: 12px; background: #fff; font-family: inherit; }
+.form-select-m { height: 32px; border: 1px solid var(--border-light); padding: 0 28px 0 8px; font-size: 12px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A32D2D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center; appearance: none; cursor: pointer; font-family: inherit; width: 100%; }
+.modal-footer { height: 48px; background: var(--bg-gray); border-top: 1px solid var(--border-gray); display: flex; align-items: center; justify-content: flex-end; padding: 0 16px; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- GNB -->
+  <div class="gnb-real">
+    <div class="gnb-left">
+      <span class="gnb-logo-text">동희산업 개발구매</span>
+      <div class="gnb-divider"></div>
+      <span class="gnb-menu">원가·재료비 관리</span>
+    </div>
+    <div class="gnb-right">
+      <i class="bi bi-house gnb-icon"></i>
+      <i class="bi bi-grid gnb-icon"></i>
+      <span>개발구매팀 ( 김동희 )</span>
+      <i class="bi bi-box-arrow-right gnb-icon"></i>
+    </div>
+  </div>
+
+  <!-- Page Title -->
+  <div class="page-title-bar">
+    <i class="bi bi-currency-exchange" style="color:var(--primary-blue);"></i>
+    LME·시세 관리
+    <span class="title-path">M03 &gt; 원가·재료비 관리 &gt; LME·시세 관리</span>
+  </div>
+
+  <div class="main-single">
+
+    <!-- Filter Bar — CLAUDE.md 확정 표준 (검색창 + 필터 + 날짜 + 우측 액션) -->
+    <div class="filter-bar-row">
+      <!-- 1. Search -->
+      <div class="filter-search">
+        <input type="text" placeholder="Search">
+        <span class="filter-search-icon"><i class="bi bi-search"></i></span>
+      </div>
+      <!-- 2. 필터 버튼 -->
+      <button class="filter-btn">
+        <i class="bi bi-funnel fi"></i> 필터
+      </button>
+      <!-- 3. 품목 구분 -->
+      <button class="filter-btn">
+        <i class="bi bi-bar-chart-line fi"></i> 품목
+      </button>
+      <!-- 4. 날짜 범위 -->
+      <div class="filter-date-range">
+        <input type="text" value="2025-07" placeholder="시작">
+        <span class="filter-date-sep">~</span>
+        <input type="text" value="2026-05" placeholder="종료">
+        <i class="bi bi-calendar3 filter-date-cal"></i>
+      </div>
+      <!-- 우측 액션 -->
+      <div class="filter-right">
+        <button class="btn btn-outline" onclick="document.getElementById('modalReg').classList.add('open')"><i class="bi bi-plus-circle"></i> 신규</button>
+        <button class="btn btn-default" id="btnEdit"><i class="bi bi-pencil"></i> 수정</button>
+        <button class="btn btn-outline-red" id="btnDel"><i class="bi bi-trash"></i> 삭제</button>
+        <button class="btn btn-icon" title="Excel 다운로드"><i class="bi bi-file-earmark-excel"></i></button>
+      </div>
+    </div>
+
+    <!-- KPI 4 Cards -->
+    <div class="kpi-row">
+
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-minecart-loaded"></i> 강판 HRC</span>
+          <i class="bi bi-bar-chart-line kpi-icon" style="color:var(--primary-blue);"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--primary-blue);">$638 <span style="font-size:14px;font-weight:400;">/ton</span></div>
+        <div class="kpi-sub">
+          <span class="kpi-trend-up"><i class="bi bi-arrow-up-short"></i>+2.7%</span>
+          <span class="kpi-base">vs 전월 $621</span>
+          <span class="kpi-badge badge-up">상승</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-cpu"></i> 알루미늄 (Al)</span>
+          <i class="bi bi-bar-chart-line kpi-icon" style="color:#6B4FA0;"></i>
+        </div>
+        <div class="kpi-value" style="color:#6B4FA0;">$2,480 <span style="font-size:14px;font-weight:400;">/ton</span></div>
+        <div class="kpi-sub">
+          <span class="kpi-trend-up"><i class="bi bi-arrow-up-short"></i>+1.1%</span>
+          <span class="kpi-base">vs 전월 $2,453</span>
+          <span class="kpi-badge badge-up">상승</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-droplet-half"></i> WTI 원유</span>
+          <i class="bi bi-bar-chart-line kpi-icon" style="color:var(--amber);"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--amber);">$72.5 <span style="font-size:14px;font-weight:400;">/bbl</span></div>
+        <div class="kpi-sub">
+          <span class="kpi-trend-up"><i class="bi bi-arrow-up-short"></i>+1.0%</span>
+          <span class="kpi-base">vs 전월 $71.8</span>
+          <span class="kpi-badge badge-up">상승</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title"><i class="bi bi-currency-dollar"></i> 환율 (USD/KRW)</span>
+          <i class="bi bi-graph-up kpi-icon" style="color:var(--error-red);"></i>
+        </div>
+        <div class="kpi-value" style="color:var(--error-red);">1,385 <span style="font-size:14px;font-weight:400;">원</span></div>
+        <div class="kpi-sub">
+          <span class="kpi-trend-up"><i class="bi bi-arrow-up-short"></i>+1.2%</span>
+          <span class="kpi-base">vs 전월 1,368</span>
+          <span class="kpi-badge badge-up">원화약세</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mid Row: Trend Chart + Source Info -->
+    <div class="mid-row">
+
+      <!-- 6개월 가격 트렌드 -->
+      <div class="chart-panel">
+        <div class="chart-title"><i class="bi bi-activity" style="color:var(--primary-blue);"></i> 6개월 LME 시세 추이</div>
+
+        <!-- 강판 HRC -->
+        <div class="bar-group">
+          <div class="bar-group-label">
+            <span><i class="bi bi-circle-fill" style="color:var(--primary-blue);font-size:8px;"></i> 강판 HRC ($/ton)</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2025-12</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-steel" style="width:91%;"></div></div>
+            <span class="bar-val" style="color:var(--primary-blue);">621</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-01</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-steel" style="width:90%;"></div></div>
+            <span class="bar-val" style="color:var(--primary-blue);">618</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-02</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-steel" style="width:89%;"></div></div>
+            <span class="bar-val" style="color:var(--primary-blue);">608</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-03</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-steel" style="width:90%;"></div></div>
+            <span class="bar-val" style="color:var(--primary-blue);">615</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-04</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-steel" style="width:91%;"></div></div>
+            <span class="bar-val" style="color:var(--primary-blue);">621</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month" style="font-weight:700;color:#222;">2026-05</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-steel" style="width:93%;"></div></div>
+            <span class="bar-val" style="color:var(--primary-blue);font-weight:700;">638</span>
+          </div>
+        </div>
+
+        <!-- 알루미늄 -->
+        <div class="bar-group" style="margin-top:4px;">
+          <div class="bar-group-label">
+            <span><i class="bi bi-circle-fill" style="color:#6B4FA0;font-size:8px;"></i> 알루미늄 Al ($/ton) ÷10 표시</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2025-12</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-al" style="width:88%;"></div></div>
+            <span class="bar-val" style="color:#6B4FA0;">2,418</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-01</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-al" style="width:89%;"></div></div>
+            <span class="bar-val" style="color:#6B4FA0;">2,438</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-02</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-al" style="width:88%;"></div></div>
+            <span class="bar-val" style="color:#6B4FA0;">2,426</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-03</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-al" style="width:89%;"></div></div>
+            <span class="bar-val" style="color:#6B4FA0;">2,440</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month">2026-04</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-al" style="width:89%;"></div></div>
+            <span class="bar-val" style="color:#6B4FA0;">2,453</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-month" style="font-weight:700;color:#222;">2026-05</span>
+            <div class="bar-track"><div class="bar-fill bar-fill-al" style="width:90%;"></div></div>
+            <span class="bar-val" style="color:#6B4FA0;font-weight:700;">2,480</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 출처 및 적용 안내 -->
+      <div class="source-panel">
+        <div class="chart-title"><i class="bi bi-info-circle" style="color:var(--secondary-blue);"></i> 시세 출처 및 적용 기준</div>
+
+        <div class="source-row">
+          <span class="source-badge src-lme">LME</span>
+          <div class="source-info">
+            <strong>강판(HRC) · 알루미늄(Al) · 구리(Cu) · 니켈(Ni)</strong><br>
+            London Metal Exchange 월말 공식 종가 (Official Settlement Price). 단위: USD/ton.
+          </div>
+        </div>
+        <div class="source-row">
+          <span class="source-badge src-posco">POSCO</span>
+          <div class="source-info">
+            <strong>강판 SPFC / SPFH 내수 기준가</strong><br>
+            POSCO 공식 내수판가 기준. 단위: KRW/ton (JPY 연동 환산 포함). 월 1회 고시.
+          </div>
+        </div>
+        <div class="source-row">
+          <span class="source-badge src-krx">한국석유공사</span>
+          <div class="source-info">
+            <strong>WTI 원유 · HDPE 국제 시세</strong><br>
+            WTI Spot Price (월말 기준), HDPE CIF Korea (Platts 기준). 단위: USD/bbl, USD/MT.
+          </div>
+        </div>
+        <div class="source-row">
+          <span class="source-badge src-cb">한국은행</span>
+          <div class="source-info">
+            <strong>USD/KRW · JPY100/KRW 환율</strong><br>
+            한국은행 매매기준율 (월말 기준). 재료비 산출 시 동 환율 자동 연동.
+          </div>
+        </div>
+
+        <div style="margin-top:10px;padding:8px;background:#F5F5F5;border:1px solid var(--border-gray);font-size:11px;color:var(--text-secondary);line-height:1.6;">
+          <i class="bi bi-lightbulb" style="color:var(--amber);"></i>
+          <strong style="color:var(--text-primary);">적용 기준:</strong>
+          신규 등록된 시세는 익월 소재별 재료비 산출(M03-001)에 자동 반영됩니다.
+          수동 수정 시 산출 담당자 확인 후 저장이 필요합니다.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Grid: LME 시세 이력 -->
+    <div class="grid-panel">
+      <div class="grid-panel-header">
+        <i class="bi bi-table" style="color:var(--primary-blue);"></i>
+        LME·시세 이력 (월별)
+        <span style="font-size:11px;color:#888;font-weight:400;margin-left:4px;">총 11건</span>
+        <div class="header-right">
+          <button class="btn btn-icon" style="height:28px;width:28px;font-size:11px;" title="Excel"><i class="bi bi-file-earmark-excel"></i></button>
+        </div>
+      </div>
+      <div class="grid-wrap">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th style="width:36px;"><input type="checkbox" id="chkAll" onchange="toggleAll(this)"></th>
+              <th style="width:36px;">No.</th>
+              <th style="width:80px;">기준년월</th>
+              <th style="width:56px;">상태</th>
+              <th style="width:90px;">강판HRC<br><span style="font-weight:400;">($/ton)</span></th>
+              <th style="width:60px;">전월비</th>
+              <th style="width:90px;">Al LME<br><span style="font-weight:400;">($/ton)</span></th>
+              <th style="width:60px;">전월비</th>
+              <th style="width:90px;">Cu LME<br><span style="font-weight:400;">($/ton)</span></th>
+              <th style="width:60px;">전월비</th>
+              <th style="width:90px;">Ni LME<br><span style="font-weight:400;">($/ton)</span></th>
+              <th style="width:60px;">전월비</th>
+              <th style="width:80px;">WTI<br><span style="font-weight:400;">($/bbl)</span></th>
+              <th style="width:80px;">HDPE<br><span style="font-weight:400;">($/MT)</span></th>
+              <th style="width:75px;">USD/KRW</th>
+              <th style="width:80px;">JPY100/KRW</th>
+              <th style="width:80px;">등록일</th>
+              <th style="min-width:80px;">출처</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody">
+            <!-- JS로 렌더링 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /main-single -->
+
+  <!-- Bottom Tab Bar -->
+  <div class="bottom-tab-bar">
+    <div class="bottom-tab-item">소재별 재료비 산출 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item active">LME·시세 관리 <span class="tab-close">✕</span></div>
+    <div class="bottom-tab-item">단가 이력 관리 <span class="tab-close">✕</span></div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<!-- 신규 등록 Modal -->
+<div class="modal-overlay" id="modalReg">
+  <div class="modal-box">
+    <div class="modal-header">
+      <i class="bi bi-plus-circle"></i>
+      LME·시세 신규 등록
+      <button class="modal-close-btn" onclick="document.getElementById('modalReg').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <div class="form-group">
+          <label class="form-label">기준년월 <span class="req">*</span></label>
+          <input type="text" class="form-control" placeholder="예: 2026-06" value="">
+        </div>
+        <div class="form-group">
+          <label class="form-label">출처</label>
+          <select class="form-select-m">
+            <option>LME Official</option>
+            <option>POSCO</option>
+            <option>한국석유공사</option>
+            <option>수동 입력</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-row triple">
+        <div class="form-group">
+          <label class="form-label">강판 HRC ($/ton) <span class="req">*</span></label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">알루미늄 Al ($/ton)</label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">구리 Cu ($/ton)</label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+      </div>
+      <div class="modal-row triple">
+        <div class="form-group">
+          <label class="form-label">니켈 Ni ($/ton)</label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WTI 원유 ($/bbl)</label>
+          <input type="text" class="form-control" placeholder="0.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">HDPE ($/MT)</label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="form-group">
+          <label class="form-label">USD/KRW 환율 <span class="req">*</span></label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">JPY100/KRW 환율</label>
+          <input type="text" class="form-control" placeholder="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">비고</label>
+        <input type="text" class="form-control" placeholder="특이사항 입력">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="document.getElementById('modalReg').classList.remove('open')">취소</button>
+      <button class="btn btn-primary"><i class="bi bi-save"></i> 저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  { date:"2026-05", steel:638, al:2480, cu:9286, ni:17150, oil:72.5, hdpe:1342, usdKrw:1385, jpyKrw:924, src:"LME Official", reg:"2026-06-01", status:"confirmed" },
+  { date:"2026-04", steel:621, al:2453, cu:9210, ni:17020, oil:71.8, hdpe:1328, usdKrw:1368, jpyKrw:921, src:"LME Official", reg:"2026-05-02", status:"confirmed" },
+  { date:"2026-03", steel:615, al:2440, cu:9175, ni:16920, oil:70.2, hdpe:1312, usdKrw:1352, jpyKrw:918, src:"LME Official", reg:"2026-04-01", status:"confirmed" },
+  { date:"2026-02", steel:608, al:2426, cu:9102, ni:16850, oil:69.5, hdpe:1298, usdKrw:1345, jpyKrw:916, src:"LME Official", reg:"2026-03-02", status:"confirmed" },
+  { date:"2026-01", steel:618, al:2438, cu:9080, ni:16780, oil:68.8, hdpe:1285, usdKrw:1335, jpyKrw:912, src:"LME Official", reg:"2026-02-01", status:"confirmed" },
+  { date:"2025-12", steel:621, al:2418, cu:9142, ni:16800, oil:72.5, hdpe:1342, usdKrw:1342, jpyKrw:908, src:"LME Official", reg:"2026-01-02", status:"confirmed" },
+  { date:"2025-11", steel:608, al:2390, cu:9050, ni:16500, oil:71.2, hdpe:1320, usdKrw:1338, jpyKrw:905, src:"LME Official", reg:"2025-12-01", status:"confirmed" },
+  { date:"2025-10", steel:595, al:2365, cu:8980, ni:16200, oil:69.8, hdpe:1295, usdKrw:1325, jpyKrw:902, src:"LME Official", reg:"2025-11-03", status:"confirmed" },
+  { date:"2025-09", steel:612, al:2400, cu:9100, ni:16600, oil:73.1, hdpe:1355, usdKrw:1310, jpyKrw:898, src:"LME Official", reg:"2025-10-01", status:"confirmed" },
+  { date:"2025-08", steel:598, al:2350, cu:8920, ni:16100, oil:70.5, hdpe:1308, usdKrw:1298, jpyKrw:895, src:"LME Official", reg:"2025-09-01", status:"confirmed" },
+  { date:"2025-07", steel:585, al:2320, cu:8850, ni:15900, oil:68.9, hdpe:1275, usdKrw:1285, jpyKrw:892, src:"LME Official", reg:"2025-08-01", status:"confirmed" }
+];
+
+function chgHtml(curr, prev) {
+  if (!prev) return '<span class="chg-flat">—</span>';
+  const pct = ((curr - prev) / prev * 100).toFixed(1);
+  if (pct > 0) return `<span class="chg-up"><i class="bi bi-arrow-up-short"></i>+${pct}%</span>`;
+  if (pct < 0) return `<span class="chg-dn"><i class="bi bi-arrow-down-short"></i>${pct}%</span>`;
+  return `<span class="chg-flat">0.0%</span>`;
+}
+
+function renderGrid() {
+  const tbody = document.getElementById('gridBody');
+  let html = '';
+  DATA.forEach((r, i) => {
+    const prev = DATA[i + 1];
+    const isLatest = i === 0;
+    const rowCls = isLatest ? 'row-latest row-hover' : 'row-hover';
+    const statusHtml = `<span class="status-badge status-${r.status}">${r.status === 'confirmed' ? '확정' : '검토'}</span>`;
+    html += `
+    <tr class="${rowCls}" onclick="selectRow(this)">
+      <td class="td-c"><input type="checkbox" class="row-chk"></td>
+      <td class="td-c">${i + 1}</td>
+      <td class="td-c" style="font-weight:${isLatest ? '700' : '400'};">${r.date}</td>
+      <td class="td-c">${statusHtml}</td>
+      <td class="td-r">${r.steel.toLocaleString()}</td>
+      <td class="td-c">${chgHtml(r.steel, prev?.steel)}</td>
+      <td class="td-r">${r.al.toLocaleString()}</td>
+      <td class="td-c">${chgHtml(r.al, prev?.al)}</td>
+      <td class="td-r">${r.cu.toLocaleString()}</td>
+      <td class="td-c">${chgHtml(r.cu, prev?.cu)}</td>
+      <td class="td-r">${r.ni.toLocaleString()}</td>
+      <td class="td-c">${chgHtml(r.ni, prev?.ni)}</td>
+      <td class="td-r">${r.oil}</td>
+      <td class="td-r">${r.hdpe.toLocaleString()}</td>
+      <td class="td-r">${r.usdKrw.toLocaleString()}</td>
+      <td class="td-r">${r.jpyKrw}</td>
+      <td class="td-c">${r.reg}</td>
+      <td style="font-size:10px;color:var(--text-secondary);">${r.src}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function selectRow(tr) {
+  document.querySelectorAll('#gridBody tr').forEach(r => r.style.outline = '');
+  tr.style.outline = '2px solid var(--primary-blue)';
+}
+
+function toggleAll(chk) {
+  document.querySelectorAll('.row-chk').forEach(c => c.checked = chk.checked);
+}
+
+renderGrid();
+</script>
+</body>
+</html>

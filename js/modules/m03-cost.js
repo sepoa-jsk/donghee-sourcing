@@ -365,3 +365,610 @@ window.render_M03_001 = function(container) {
   }
   setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 };
+
+/* ============================================================
+   render_M03_002 — LME·시세 관리
+   패턴 : 패턴 2 (LME 배너 + 인사이트 카드 + 필터 + 그리드)
+   ============================================================ */
+window.render_M03_002 = function(container) {
+  container.style.padding = '0';
+
+  const lmePrices = MockData.getAll('lmePrice');
+
+  /* 2026년 데이터 추가 (mock) */
+  const fullData = [
+    { date:'2026-05', steel:638, al:2480, cu:9286, ni:17150, oil:72.5, hdpe:1342, usdKrw:1385, jpyKrw:924 },
+    { date:'2026-04', steel:621, al:2453, cu:9210, ni:17020, oil:71.8, hdpe:1328, usdKrw:1368, jpyKrw:921 },
+    { date:'2026-03', steel:615, al:2440, cu:9175, ni:16920, oil:70.2, hdpe:1312, usdKrw:1352, jpyKrw:918 },
+    { date:'2026-02', steel:608, al:2426, cu:9102, ni:16850, oil:69.5, hdpe:1298, usdKrw:1345, jpyKrw:916 },
+    { date:'2026-01', steel:618, al:2438, cu:9080, ni:16780, oil:68.8, hdpe:1285, usdKrw:1335, jpyKrw:912 },
+    ...lmePrices.map(r => ({ ...r, hdpe: 1300, jpyKrw: 908 }))
+  ];
+  const latest = fullData[0];
+  const prev   = fullData[1];
+
+  function chg(curr, pr) {
+    if (!pr) return '—';
+    const p = ((curr - pr) / pr * 100).toFixed(1);
+    const col = p > 0 ? '#b91c1c' : p < 0 ? '#0f6e56' : '#888';
+    const icon = p > 0 ? '▲' : p < 0 ? '▼' : '─';
+    return `<span style="color:${col};font-weight:600;">${icon}${p > 0 ? '+' : ''}${p}%</span>`;
+  }
+
+  const rows = fullData.map((r, i) => {
+    const p   = fullData[i + 1];
+    const sel = i === 0 ? 'style="background:#EBF2FB;"' : '';
+    return `<tr class="lme-row" data-idx="${i}" onclick="m03002_selectRow(this)" ${sel}>
+      <td class="center"><input type="checkbox" class="lme-chk"></td>
+      <td class="center" style="font-weight:${i===0?'700':'400'};">${r.date}</td>
+      <td class="right">${CalcEngine.formatNumber(r.steel)}</td>
+      <td class="center">${chg(r.steel, p?.steel)}</td>
+      <td class="right">${CalcEngine.formatNumber(r.al)}</td>
+      <td class="center">${chg(r.al, p?.al)}</td>
+      <td class="right">${CalcEngine.formatNumber(r.cu)}</td>
+      <td class="center">${chg(r.cu, p?.cu)}</td>
+      <td class="right">${CalcEngine.formatNumber(r.ni)}</td>
+      <td class="center">${chg(r.ni, p?.ni)}</td>
+      <td class="right">${r.oil}</td>
+      <td class="right">${r.hdpe ? CalcEngine.formatNumber(r.hdpe) : '—'}</td>
+      <td class="right">${CalcEngine.formatNumber(r.usdKrw)}</td>
+      <td class="right">${r.jpyKrw || '—'}</td>
+      <td class="center" style="font-size:11px;color:var(--text-muted);">LME Official</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;overflow:hidden;">
+
+    <!-- 필터바 — M01 표준과 동일 -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <input type="text" id="m03002-search" placeholder="Search" oninput="m03002_filter()">
+        <i data-lucide="search"></i>
+      </div>
+      <button class="filter-btn" onclick="m03002_toggleFilter(this)"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+      <button class="filter-btn" id="m03002-item-btn"><i data-lucide="bar-chart-2" class="icon-blue"></i> 품목</button>
+      <div class="filter-date-range">
+        <input type="text" id="m03002-date-from" value="2025-07" readonly>
+        <span class="date-separator">~</span>
+        <input type="text" id="m03002-date-to" value="2026-05" readonly>
+        <i data-lucide="calendar" class="icon-red"></i>
+      </div>
+      <div class="filter-right">
+        <button class="btn btn-outline-blue" onclick="m03002_openReg()"><i data-lucide="plus"></i> 신규</button>
+        <button class="btn" id="m03002-btn-edit" onclick="m03002_edit()"><i data-lucide="pencil"></i> 수정</button>
+        <button class="btn btn-outline-red" id="m03002-btn-del" onclick="m03002_del()"><i data-lucide="trash-2"></i> 삭제</button>
+      </div>
+    </div>
+
+    <!-- 인사이트 카드 4개 (필터 아래) -->
+    <div class="insight-cards" style="padding:12px 16px 4px;">
+      <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="bar-chart-2"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">$${latest.steel}</span>
+          <span class="insight-card-label">강판 HRC ($/ton)</span>
+          <span style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:2px;">▲ +${((latest.steel-prev.steel)/prev.steel*100).toFixed(1)}% vs 전월</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon" style="background:#F5F0FF;"><i data-lucide="cpu" style="color:#6B4FA0;"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:#6B4FA0;">$${CalcEngine.formatNumber(latest.al)}</span>
+          <span class="insight-card-label">알루미늄 Al ($/ton)</span>
+          <span style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:2px;">▲ +${((latest.al-prev.al)/prev.al*100).toFixed(1)}% vs 전월</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon amber"><i data-lucide="droplet"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:#854F0B;">$${latest.oil}</span>
+          <span class="insight-card-label">WTI 원유 ($/bbl)</span>
+          <span style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:2px;">▲ +${((latest.oil-prev.oil)/prev.oil*100).toFixed(1)}% vs 전월</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon" style="background:#FFF1F2;"><i data-lucide="trending-up" style="color:#b91c1c;"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:#b91c1c;">${CalcEngine.formatNumber(latest.usdKrw)}</span>
+          <span class="insight-card-label">USD/KRW 환율</span>
+          <span style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:2px;">▲ +${((latest.usdKrw-prev.usdKrw)/prev.usdKrw*100).toFixed(1)}% (원화 약세)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 그리드 -->
+    <div style="flex:1;overflow:auto;padding:0 16px 12px;">
+      <div class="grid-container" style="height:100%;">
+        <table class="grid-table" style="min-width:1100px;">
+          <thead>
+            <tr>
+              <th style="width:36px;"><input type="checkbox" id="m03002-chkAll" onchange="document.querySelectorAll('.lme-chk').forEach(c=>c.checked=this.checked)"></th>
+              <th style="width:80px;">기준년월</th>
+              <th style="width:90px;">강판HRC<br><span style="font-weight:400;font-size:11px;">($/ton)</span></th>
+              <th style="width:56px;">전월비</th>
+              <th style="width:90px;">Al LME<br><span style="font-weight:400;font-size:11px;">($/ton)</span></th>
+              <th style="width:56px;">전월비</th>
+              <th style="width:90px;">Cu LME<br><span style="font-weight:400;font-size:11px;">($/ton)</span></th>
+              <th style="width:56px;">전월비</th>
+              <th style="width:90px;">Ni LME<br><span style="font-weight:400;font-size:11px;">($/ton)</span></th>
+              <th style="width:56px;">전월비</th>
+              <th style="width:75px;">WTI<br><span style="font-weight:400;font-size:11px;">($/bbl)</span></th>
+              <th style="width:80px;">HDPE<br><span style="font-weight:400;font-size:11px;">($/MT)</span></th>
+              <th style="width:80px;">USD/KRW</th>
+              <th style="width:80px;">JPY100/KRW</th>
+              <th style="min-width:80px;">출처</th>
+            </tr>
+          </thead>
+          <tbody id="m03002-tbody">
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 등록 모달 -->
+    <div id="m03002-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;">
+      <div style="background:#fff;border:1px solid #ccc;width:520px;display:flex;flex-direction:column;border-radius:4px;overflow:hidden;">
+        <div style="height:40px;background:#0D3F7A;color:#fff;display:flex;align-items:center;padding:0 16px;font-size:13px;font-weight:700;gap:8px;">
+          <i data-lucide="plus-circle" style="width:14px;height:14px;"></i>
+          LME·시세 신규 등록
+          <button onclick="document.getElementById('m03002-modal').style.display='none';" style="margin-left:auto;background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer;line-height:1;">×</button>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="form-label">기준년월 <span style="color:#ef4444;">*</span></label><input class="form-input" id="m03002-f-date" placeholder="예: 2026-06"></div>
+            <div><label class="form-label">출처</label>
+              <select class="form-select" id="m03002-f-src">
+                <option>LME Official</option><option>POSCO</option><option>한국석유공사</option><option>수동 입력</option>
+              </select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div><label class="form-label">강판 HRC ($/ton) <span style="color:#ef4444;">*</span></label><input class="form-input" id="m03002-f-steel" placeholder="0" type="number"></div>
+            <div><label class="form-label">Al ($/ton)</label><input class="form-input" id="m03002-f-al" placeholder="0" type="number"></div>
+            <div><label class="form-label">Cu ($/ton)</label><input class="form-input" id="m03002-f-cu" placeholder="0" type="number"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div><label class="form-label">Ni ($/ton)</label><input class="form-input" id="m03002-f-ni" placeholder="0" type="number"></div>
+            <div><label class="form-label">WTI ($/bbl)</label><input class="form-input" id="m03002-f-oil" placeholder="0.0" type="number" step="0.1"></div>
+            <div><label class="form-label">HDPE ($/MT)</label><input class="form-input" id="m03002-f-hdpe" placeholder="0" type="number"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="form-label">USD/KRW <span style="color:#ef4444;">*</span></label><input class="form-input" id="m03002-f-usd" placeholder="0" type="number"></div>
+            <div><label class="form-label">JPY100/KRW</label><input class="form-input" id="m03002-f-jpy" placeholder="0" type="number"></div>
+          </div>
+          <div><label class="form-label">비고</label><input class="form-input" id="m03002-f-note" placeholder="특이사항 입력"></div>
+        </div>
+        <div style="height:48px;background:#F1F1F1;border-top:1px solid #DDD;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;gap:6px;">
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('m03002-modal').style.display='none';">취소</button>
+          <button class="btn btn-primary btn-sm" onclick="m03002_save()">
+            <i data-lucide="save" style="width:13px;height:13px;"></i> 저장
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+};
+
+window.m03002_toggleFilter = function(btn) {
+  btn.classList.toggle('active');
+};
+
+window.m03002_selectRow = function(tr) {
+  document.querySelectorAll('.lme-row').forEach(r => r.style.outline = '');
+  tr.style.outline = '2px solid #185FA5';
+};
+
+window.m03002_filter = function() {
+  const q = (document.getElementById('m03002-search')?.value || '').toLowerCase();
+  document.querySelectorAll('.lme-row').forEach(tr => {
+    const date = tr.children[1]?.textContent || '';
+    tr.style.display = date.toLowerCase().includes(q) ? '' : 'none';
+  });
+};
+
+window.m03002_openReg = function() {
+  const modal = document.getElementById('m03002-modal');
+  if (modal) { modal.style.display = 'flex'; }
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+};
+
+window.m03002_edit = function() {
+  Common.showToast('수정할 행을 선택하세요', 'info');
+};
+
+window.m03002_del = function() {
+  const checked = document.querySelectorAll('.lme-chk:checked');
+  if (checked.length === 0) { Common.showToast('삭제할 항목을 선택하세요', 'warning'); return; }
+  Common.showToast(`${checked.length}건 삭제 처리됨 (데모)`, 'success');
+};
+
+window.m03002_save = function() {
+  const date = document.getElementById('m03002-f-date')?.value;
+  const steel = document.getElementById('m03002-f-steel')?.value;
+  const usd = document.getElementById('m03002-f-usd')?.value;
+  if (!date) { Common.showToast('기준년월을 입력하세요', 'warning'); return; }
+  if (!steel) { Common.showToast('강판 HRC 시세를 입력하세요', 'warning'); return; }
+  if (!usd) { Common.showToast('USD/KRW 환율을 입력하세요', 'warning'); return; }
+  document.getElementById('m03002-modal').style.display = 'none';
+  Common.showToast(`${date} LME 시세 등록 완료`, 'success');
+};
+
+/* ============================================================
+   render_M03_003 — 단가 이력 관리
+   패턴 : 패턴 5-B (좌 그리드 60% + 우 상세 40%)
+   생성일 : 2026-06-02
+   ============================================================ */
+window.render_M03_003 = function(container) {
+  container.style.padding = '0';
+
+  const partList  = MockData.getAll('partList');
+  const suppliers = MockData.getAll('suppliers');
+
+  const TYPE_CYCLE = ['전체', 'RFQ확정', '협상조정', 'ECN반영', '목표가조정', '초기등록'];
+  let typeCycleIdx = 0;
+  let searchQ      = '';
+  let typeFilter   = '전체';
+  let selectedId   = null;
+
+  function getData() { return MockData.getAll('priceHistory'); }
+
+  function supName(id) {
+    if (!id) return '-';
+    return suppliers.find(s => s.id === id)?.name || id;
+  }
+
+  function typeColor(t) {
+    return { 'RFQ확정':'#0747a6', '협상조정':'#92400e', 'ECN반영':'#e11d48',
+             '목표가조정':'#94a3b8', '초기등록':'#94a3b8' }[t] || '#222';
+  }
+
+  function rateCell(rate, prev) {
+    if (rate === null || rate === undefined || prev === null) return '<span style="color:#94a3b8;">-</span>';
+    const r = Number(rate);
+    const col = r > 0 ? '#e11d48' : r < 0 ? '#0f6e56' : '#94a3b8';
+    return `<span style="color:${col};font-weight:600;">${r > 0 ? '+' : ''}${r.toFixed(1)}%</span>`;
+  }
+
+  /* ── HTML 골격 ── */
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:12px 16px;box-sizing:border-box;overflow:hidden;">
+
+    <!-- 필터바 — M01 표준 100% 일치 -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <input type="text" id="m03003-search" placeholder="Search" oninput="m03003_onSearch(this.value)">
+        <i data-lucide="search"></i>
+      </div>
+      <button class="filter-btn" onclick="m03003_toggleFilter(this)"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+      <button class="filter-btn" id="m03003-type-btn" onclick="m03003_cycleType(this)"><i data-lucide="bar-chart-2" class="icon-blue"></i> <span id="m03003-type-label">변경유형</span></button>
+      <div class="filter-date-range">
+        <input type="text" id="m03003-date-from" value="2025/01/01" readonly>
+        <span class="date-separator">~</span>
+        <input type="text" id="m03003-date-to" value="2026/12/31" readonly>
+        <i data-lucide="calendar" class="icon-red"></i>
+      </div>
+      <div class="filter-right">
+        <button class="btn btn-outline-blue" onclick="m03003_showAddForm()"><i data-lucide="plus"></i> 신규등록</button>
+      </div>
+    </div>
+
+    <!-- 인사이트 카드 4개 -->
+    <div id="m03003-cards" class="insight-cards"></div>
+
+    <!-- 좌우 분할 -->
+    <div style="display:flex;flex:1;overflow:hidden;gap:12px;">
+
+      <!-- 좌측 그리드 (60%) -->
+      <div style="flex:0 0 60%;overflow-y:auto;display:flex;flex-direction:column;">
+        <div class="grid-container" style="flex:1;">
+          <table class="grid-table" style="min-width:680px;">
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" id="m03003-chk-all" onchange="document.querySelectorAll('.ph-chk').forEach(c=>c.checked=this.checked)"></th>
+                <th style="width:90px;" class="ss-col-center">변경일</th>
+                <th style="width:88px;" class="ss-col-center">Part No.</th>
+                <th class="ss-col-left">품명</th>
+                <th style="width:88px;" class="ss-col-center">변경유형</th>
+                <th style="width:88px;" class="ss-col-right">이전단가</th>
+                <th style="width:88px;" class="ss-col-right">확정단가</th>
+                <th style="width:76px;" class="ss-col-center">변동률</th>
+                <th style="width:100px;" class="ss-col-left">공급사</th>
+                <th style="width:68px;" class="ss-col-center">확정자</th>
+              </tr>
+            </thead>
+            <tbody id="m03003-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 우측 상세 패널 (40%) -->
+      <div id="m03003-detail" style="flex:0 0 calc(40% - 12px);overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:16px;background:#fff;">
+        <div id="m03003-detail-inner">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;color:var(--text-muted);font-size:13px;gap:10px;">
+            <i data-lucide="mouse-pointer-click" style="width:28px;height:28px;opacity:0.25;"></i>
+            <span>이력 행을 클릭하면 상세 내용이 표시됩니다</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 신규등록 모달 -->
+    <div id="m03003-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center;">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);width:540px;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,0.14);">
+        <div style="height:44px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:700;border-radius:var(--radius) var(--radius) 0 0;gap:8px;">
+          <i data-lucide="plus-circle"></i> 단가 이력 신규등록
+          <button onclick="document.getElementById('m03003-modal').style.display='none';" style="margin-left:auto;background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">×</button>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="form-label">Part No. <span style="color:var(--danger);">*</span></label>
+              <select class="form-input form-select" id="m03003-f-part" onchange="m03003_onPartChange(this.value)" style="width:100%;">
+                <option value="">-- 선택 --</option>
+                ${partList.map(p => `<option value="${p.partNo}">${p.partNo} — ${p.partName}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="form-label">변경일 <span style="color:var(--danger);">*</span></label>
+              <input type="date" class="form-input" id="m03003-f-date" style="width:100%;" value="${new Date().toISOString().slice(0,10)}">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="form-label">변경유형 <span style="color:var(--danger);">*</span></label>
+              <select class="form-input form-select" id="m03003-f-type" style="width:100%;">
+                <option>RFQ확정</option><option>협상조정</option><option>ECN반영</option><option>목표가조정</option><option>초기등록</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">공급사</label>
+              <select class="form-input form-select" id="m03003-f-sup" style="width:100%;">
+                <option value="">-- 미지정 --</option>
+                ${suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div>
+              <label class="form-label">이전단가</label>
+              <input type="number" class="form-input" id="m03003-f-prev" placeholder="자동 로드" style="width:100%;" oninput="m03003_calcRate()">
+            </div>
+            <div>
+              <label class="form-label">확정단가 <span style="color:var(--danger);">*</span></label>
+              <input type="number" class="form-input" id="m03003-f-new" placeholder="0" style="width:100%;" oninput="m03003_calcRate()">
+            </div>
+            <div>
+              <label class="form-label">변동률 (자동)</label>
+              <input type="text" class="form-input" id="m03003-f-rate" readonly style="width:100%;background:var(--bg-soft);color:var(--text-muted);" placeholder="자동계산">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">변경 사유</label>
+            <textarea class="form-input" id="m03003-f-reason" style="width:100%;height:60px;resize:vertical;" placeholder="단가 변경 사유를 입력하세요"></textarea>
+          </div>
+        </div>
+        <div style="height:52px;background:var(--bg-soft);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 16px;gap:8px;border-radius:0 0 var(--radius) var(--radius);">
+          <button class="btn" onclick="document.getElementById('m03003-modal').style.display='none';">취소</button>
+          <button class="btn btn-solid-blue" onclick="m03003_saveNew()"><i data-lucide="save"></i> 저장</button>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+
+  /* ── renderCards ── */
+  window.m03003_renderCards = function() {
+    const data   = getData();
+    const total  = data.length;
+    const upCnt  = data.filter(r => r.prevPrice !== null && r.newPrice > r.prevPrice).length;
+    const dnCnt  = data.filter(r => r.prevPrice !== null && r.newPrice < r.prevPrice).length;
+    const rates  = data.filter(r => r.changeRate !== null && r.prevPrice !== null).map(r => Math.abs(Number(r.changeRate)));
+    const avgR   = rates.length ? (rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(1) : '0.0';
+    const el     = document.getElementById('m03003-cards');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="history"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${total}</span>
+          <span class="insight-card-label">전체 이력</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon red"><i data-lucide="trending-up"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--danger);">${upCnt}</span>
+          <span class="insight-card-label">단가 인상</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon green"><i data-lucide="trending-down"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--success);">${dnCnt}</span>
+          <span class="insight-card-label">단가 인하</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon amber"><i data-lucide="percent"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:#92400e;">${avgR}%</span>
+          <span class="insight-card-label">평균 변동률</span>
+        </div>
+      </div>`;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── renderGrid ── */
+  window.m03003_renderGrid = function() {
+    const all      = getData();
+    const q        = searchQ.toLowerCase();
+    const filtered = all.filter(r => {
+      const mSearch = !q || r.partNo.toLowerCase().includes(q) || r.partName.includes(q) ||
+                      (r.supplierId && supName(r.supplierId).toLowerCase().includes(q));
+      const mType   = typeFilter === '전체' || r.changeType === typeFilter;
+      return mSearch && mType;
+    });
+    const tbody = document.getElementById('m03003-tbody');
+    if (!tbody) return;
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" class="center" style="padding:32px;color:var(--text-muted);">조회된 이력이 없습니다</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(r => {
+      const tCol   = typeColor(r.changeType);
+      const prevTd = r.prevPrice === null ? '<span style="color:#94a3b8;">-</span>' : CalcEngine.formatNumber(r.prevPrice);
+      const isSelected = r.id === selectedId;
+      return `<tr class="ph-row${isSelected ? ' selected' : ''}" data-id="${r.id}" onclick="m03003_selectRow('${r.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" class="ph-chk" onclick="event.stopPropagation()"></td>
+        <td class="center">${r.changeDate}</td>
+        <td class="center"><span class="code-link">${r.partNo}</span></td>
+        <td>${r.partName}</td>
+        <td class="center"><span style="color:${tCol};font-weight:500;">${r.changeType}</span></td>
+        <td class="right">${prevTd}</td>
+        <td class="right" style="font-weight:600;">${CalcEngine.formatNumber(r.newPrice)}</td>
+        <td class="center">${rateCell(r.changeRate, r.prevPrice)}</td>
+        <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;">${supName(r.supplierId)}</td>
+        <td class="center">${r.confirmedBy}</td>
+      </tr>`;
+    }).join('');
+  };
+
+  /* ── renderDetail ── */
+  window.m03003_renderDetail = function(id) {
+    const all      = getData();
+    const record   = all.find(r => r.id === id);
+    if (!record) return;
+    const timeline = all.filter(r => r.partNo === record.partNo)
+                        .sort((a, b) => a.changeDate.localeCompare(b.changeDate));
+    const el = document.getElementById('m03003-detail-inner');
+    if (!el) return;
+    el.innerHTML = `
+      <div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div style="font-size:15px;font-weight:700;color:var(--text-primary);">${record.partNo}</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">${record.partName}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">프로젝트: ${record.projectId}</div>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em;">단가 변동 타임라인</div>
+      <div class="ph-timeline">
+        ${timeline.map(r => {
+          const tCol    = typeColor(r.changeType);
+          const isAct   = r.id === id;
+          const rStr    = r.changeRate !== null && r.prevPrice !== null
+                          ? `${r.changeRate > 0 ? '+' : ''}${Number(r.changeRate).toFixed(1)}%` : null;
+          const rCol    = r.changeRate > 0 ? '#e11d48' : r.changeRate < 0 ? '#0f6e56' : '#94a3b8';
+          const prevStr = r.prevPrice !== null ? `${CalcEngine.formatNumber(r.prevPrice)} → ` : '';
+          return `<div class="ph-tl-item${isAct ? ' ph-tl-active' : ''}">
+            <div style="font-size:11px;color:var(--text-muted);">${r.changeDate}</div>
+            <div style="font-size:12px;font-weight:600;color:${tCol};margin:2px 0;">${r.changeType}</div>
+            <div style="font-size:12px;color:var(--text-primary);">${prevStr}<span style="font-weight:700;">${CalcEngine.formatNumber(r.newPrice)}</span>${rStr ? ` <span style="color:${rCol};">(${rStr})</span>` : ''}</div>
+            ${r.reason ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${r.reason}</div>` : ''}
+            ${r.rfqId  ? `<div style="font-size:11px;color:var(--primary);margin-top:2px;">연계 RFQ: ${r.rfqId}</div>` : ''}
+            ${r.ecnId  ? `<div style="font-size:11px;color:#e11d48;margin-top:2px;">연계 ECN: ${r.ecnId}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);">
+        확정자: <span style="color:var(--text-primary);font-weight:500;">${record.confirmedBy}</span>
+        &nbsp;·&nbsp; 확정일: <span style="color:var(--text-primary);">${record.changeDate}</span>
+      </div>`;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── 이벤트 핸들러 ── */
+  window.m03003_onSearch = function(val) {
+    searchQ = val;
+    m03003_renderGrid();
+  };
+
+  window.m03003_toggleFilter = function(btn) {
+    btn.classList.toggle('active');
+  };
+
+  window.m03003_cycleType = function(btn) {
+    typeCycleIdx  = (typeCycleIdx + 1) % TYPE_CYCLE.length;
+    typeFilter    = TYPE_CYCLE[typeCycleIdx];
+    const lbl     = document.getElementById('m03003-type-label');
+    if (lbl) lbl.textContent = typeFilter;
+    m03003_renderGrid();
+  };
+
+  window.m03003_selectRow = function(id) {
+    selectedId = id;
+    document.querySelectorAll('.ph-row').forEach(r => r.classList.remove('selected'));
+    document.querySelector('.ph-row[data-id="' + id + '"]')?.classList.add('selected');
+    m03003_renderDetail(id);
+  };
+
+  window.m03003_showAddForm = function() {
+    /* 이전단가 초기화 */
+    const prev = document.getElementById('m03003-f-prev');
+    const rate = document.getElementById('m03003-f-rate');
+    const part = document.getElementById('m03003-f-part');
+    if (prev) prev.value = '';
+    if (rate) rate.value = '';
+    if (part) part.value = '';
+    const modal = document.getElementById('m03003-modal');
+    if (modal) modal.style.display = 'flex';
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m03003_onPartChange = function(partNo) {
+    const p = partList.find(p => p.partNo === partNo);
+    const el = document.getElementById('m03003-f-prev');
+    if (el && p) el.value = p.fixedPrice ?? '';
+    m03003_calcRate();
+  };
+
+  window.m03003_calcRate = function() {
+    const prev = parseFloat(document.getElementById('m03003-f-prev')?.value);
+    const next = parseFloat(document.getElementById('m03003-f-new')?.value);
+    const el   = document.getElementById('m03003-f-rate');
+    if (!el) return;
+    if (!isNaN(prev) && !isNaN(next) && prev > 0) {
+      const r = ((next - prev) / prev * 100).toFixed(1);
+      el.value = `${r > 0 ? '+' : ''}${r}%`;
+    } else {
+      el.value = '';
+    }
+  };
+
+  window.m03003_saveNew = function() {
+    const partNo  = document.getElementById('m03003-f-part')?.value;
+    const dateVal = document.getElementById('m03003-f-date')?.value;
+    const typeVal = document.getElementById('m03003-f-type')?.value;
+    const prevVal = document.getElementById('m03003-f-prev')?.value;
+    const newVal  = document.getElementById('m03003-f-new')?.value;
+    const reason  = document.getElementById('m03003-f-reason')?.value;
+    const supVal  = document.getElementById('m03003-f-sup')?.value;
+    if (!partNo)  { Common.showToast('Part No.를 선택하세요', 'warning'); return; }
+    if (!dateVal) { Common.showToast('변경일을 입력하세요', 'warning'); return; }
+    if (!newVal)  { Common.showToast('확정단가를 입력하세요', 'warning'); return; }
+    const p         = partList.find(p => p.partNo === partNo);
+    const prevPrice = prevVal ? Number(prevVal) : null;
+    const newPrice  = Number(newVal);
+    const changeRate = prevPrice ? parseFloat(((newPrice - prevPrice) / prevPrice * 100).toFixed(1)) : null;
+    MockData.save('priceHistory', {
+      id: 'PH-NEW-' + Date.now(),
+      partNo, partName: p?.partName || partNo,
+      projectId: p?.projectId || '',
+      supplierId: supVal || null,
+      changeDate: dateVal,
+      changeType: typeVal,
+      prevPrice, newPrice, changeRate,
+      reason: reason || '',
+      confirmedBy: '김구매',
+      rfqId: null, ecnId: null
+    });
+    document.getElementById('m03003-modal').style.display = 'none';
+    Common.showToast(`${partNo} 단가 이력 등록 완료`, 'success');
+    m03003_renderCards();
+    m03003_renderGrid();
+  };
+
+  /* ── 초기 렌더 ── */
+  m03003_renderCards();
+  m03003_renderGrid();
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+};

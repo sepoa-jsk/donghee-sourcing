@@ -975,3 +975,10 @@ input[type="checkbox"] {
 .mb-8 { margin-bottom: 8px; }
 .mb-12 { margin-bottom: 12px; }
 .w-full { width: 100%; }
+
+/* ═══ 단가 이력 타임라인 (M03-003) ═══ */
+.ph-timeline { display: flex; flex-direction: column; margin-left: 8px; }
+.ph-tl-item { position: relative; padding: 0 0 16px 20px; border-left: 1px dashed var(--border); }
+.ph-tl-item::before { content: ''; position: absolute; left: -4px; top: 5px; width: 7px; height: 7px; background: var(--border-input); border-radius: 50%; }
+.ph-tl-item.ph-tl-active::before { background: var(--primary); }
+.ph-tl-item:last-child { border-left: none; padding-bottom: 0; }
