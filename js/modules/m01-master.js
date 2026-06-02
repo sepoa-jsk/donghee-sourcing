@@ -936,9 +936,9 @@ window.render_M01_002 = function(container) {
         <span style="width:36px;font-size:var(--font-s);font-weight:600;text-align:right;color:${b.color};">${b.val}점</span>
       </div>`).join('');
     const tradeRows = [
-      ['2024','NX5 SUV','로어 암 브라켓','₩850M','98.5%','12ppm','A'],
-      ['2024','소형 SUV','스태빌라이저','₩620M','97.2%','18ppm','B'],
-      ['2023','RV 플랫폼','코일 스프링 시트','₩480M','99.1%','8ppm','A'],
+      ['2024','NX5 SUV','로어 암 브라켓','850M','98.5%','12ppm','A'],
+      ['2024','소형 SUV','스태빌라이저','620M','97.2%','18ppm','B'],
+      ['2023','RV 플랫폼','코일 스프링 시트','480M','99.1%','8ppm','A'],
     ].map(r => {
       const gc = r[6]==='A'?'color:var(--success)':'color:var(--primary)';
       return `<tr><td class="center">${r[0]}</td><td class="left">${r[1]}</td><td class="left">${r[2]}</td><td class="right">${r[3]}</td><td class="center">${r[4]}</td><td class="center">${r[5]}</td><td class="center" style="${gc};font-weight:500;">${r[6]}</td></tr>`;
@@ -1321,7 +1321,7 @@ window.render_M01_004 = function(container) {
         <td class="center">${row.date}</td>
         <td class="right">$${v}</td>
         <td class="right">${row.usdKrw.toLocaleString('ko-KR')}</td>
-        <td class="right">₩${krw}</td>
+        <td class="right">${krw}</td>
         <td class="center" style="${dc};font-weight:500;">${arrow}${Math.abs(diff)}%</td>
       </tr>`;
     }).join('');
@@ -1347,7 +1347,7 @@ window.render_M01_004 = function(container) {
       ? items.map(it => `<tr>
           <td class="center">${it.id}</td><td class="center">${it.drawNo||'-'}</td>
           <td class="left">${it.name}</td><td class="right">${fmt(it.weight)}</td>
-          <td class="right">₩${fmt(it.basePrice)}</td>
+          <td class="right">${fmt(it.basePrice)}</td>
           <td class="center" style="${yc(it.active)};font-weight:500;">${it.active||'-'}</td>
         </tr>`).join('')
       : `<tr><td colspan="6" class="center" style="color:var(--text-muted);padding:20px;">이 소재를 사용하는 품목이 없습니다</td></tr>`;
@@ -1395,7 +1395,7 @@ window.render_M01_004 = function(container) {
       <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="layers"></i></div><div class="insight-card-body"><span class="insight-card-value">${mats.length}</span><span class="insight-card-label">등록 소재</span></div></div>
       <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="trending-up"></i></div><div class="insight-card-body"><span class="insight-card-value">$${lme.steel||621}</span><span class="insight-card-label">Steel HRC 최신</span></div></div>
       <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="trending-down"></i></div><div class="insight-card-body"><span class="insight-card-value">$${(lme.al||2418).toLocaleString('ko-KR')}</span><span class="insight-card-label">Al LME 최신</span></div></div>
-      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="dollar-sign"></i></div><div class="insight-card-body"><span class="insight-card-value">₩${(lme.usdKrw||1342).toLocaleString('ko-KR')}</span><span class="insight-card-label">USD/KRW 환율</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="dollar-sign"></i></div><div class="insight-card-body"><span class="insight-card-value">${(lme.usdKrw||1342).toLocaleString('ko-KR')}</span><span class="insight-card-label">USD/KRW 환율</span></div></div>
     `;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
@@ -1650,7 +1650,7 @@ window.render_M01_005 = function(container) {
     ].map(r => `<tr>
       <td class="center">${r[0]}</td><td class="center">${r[1]}</td>
       <td class="left">${r[2]}</td><td class="center">${r[3]}</td>
-      <td class="right">${r[4]}</td><td class="right">₩${r[5]}</td>
+      <td class="right">${r[4]}</td><td class="right">${r[5]}</td>
     </tr>`).join('');
     return box5('이 공정을 사용하는 품목',
       `<div class="grid-container"><table class="grid-table">
@@ -1694,7 +1694,7 @@ window.render_M01_005 = function(container) {
     el.innerHTML = `
       <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="settings-2"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length}</span><span class="insight-card-label">등록 공정</span></div></div>
       <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="cpu"></i></div><div class="insight-card-body"><span class="insight-card-value">${automated}</span><span class="insight-card-label">자동화 공정</span></div></div>
-      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="coins"></i></div><div class="insight-card-body"><span class="insight-card-value">₩${Number(totalCost).toLocaleString('ko-KR')}</span><span class="insight-card-label">총 단위 가공비</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="coins"></i></div><div class="insight-card-body"><span class="insight-card-value">${Number(totalCost).toLocaleString('ko-KR')}</span><span class="insight-card-label">총 단위 가공비</span></div></div>
     `;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
@@ -1971,9 +1971,9 @@ window.render_M01_003 = function(container) {
     const lmePrices = MockData.getAll('lmePrice');
     const latest = lmePrices[0] || {};
     const histRows = [
-      ['2025-12-01', '$621/ton', '1,342', '12%', '₩7,050', 'LME갱신', '시스템'],
-      ['2025-11-01', '$608/ton', '1,338', '12%', '₩6,920', 'LME갱신', '시스템'],
-      ['2025-10-01', '$595/ton', '1,325', '12%', '₩6,780', '초기등록', '김구매'],
+      ['2025-12-01', '$621/ton', '1,342', '12%', '7,050', 'LME갱신', '시스템'],
+      ['2025-11-01', '$608/ton', '1,338', '12%', '6,920', 'LME갱신', '시스템'],
+      ['2025-10-01', '$595/ton', '1,325', '12%', '6,780', '초기등록', '김구매'],
     ].map(r => `<tr>${r.map((v,i)=>`<td class="${i>=2&&i<=4?'right':'center'}">${v}</td>`).join('')}</tr>`).join('');
     return (
       box3('단가 정보',
@@ -1983,7 +1983,7 @@ window.render_M01_003 = function(container) {
         row3(fg3('LME연동여부',false,s3('it-lme',['Y','N'],d.lme||'Y')),
              fg3('LME코드',false,s3('it-lmecode',['LME-STEEL-HRC','LME-AL','LME-CU','LME-NICKEL','CRUDE-OIL','해당없음'],'LME-STEEL-HRC'))) +
         row3(fg3('할증률(%)',false,i3('it-surcharge','12','')),
-             fg3('최종적용단가',false,i3('it-finalprice',`₩${Number(d.basePrice||0).toLocaleString('ko-KR')}`, '',true)))
+             fg3('최종적용단가',false,i3('it-finalprice',`${Number(d.basePrice||0).toLocaleString('ko-KR')}`, '',true)))
       ) +
       box3('단가 변동 이력',
         `<div class="grid-container"><table class="grid-table">
@@ -1997,8 +1997,8 @@ window.render_M01_003 = function(container) {
   // ── 탭 5: 적용 프로젝트 ──
   window.m01003_tabProjects = function(item) {
     const projRows = [
-      ['PRJ-2025-001','NX5 SUV','서스펜션 어셈블리','P-S101','₩7,200','₩7,050','₩7,050','확정'],
-      ['PRJ-2025-004','수소 SUV','서스펜션 어셈블리','P-H101','₩7,500','-','-','미확정'],
+      ['PRJ-2025-001','NX5 SUV','서스펜션 어셈블리','P-S101','7,200','7,050','7,050','확정'],
+      ['PRJ-2025-004','수소 SUV','서스펜션 어셈블리','P-H101','7,500','-','-','미확정'],
     ].map(r => {
       const stColor = r[7]==='확정' ? 'color:var(--success);font-weight:500;' : 'color:var(--text-muted);font-weight:500;';
       return `<tr>

@@ -461,7 +461,7 @@ window.render_M02_001 = function(container) {
       '미확정': 'color:var(--text-muted);'
     };
 
-    const fmt = (n) => n != null ? '₩' + Number(n).toLocaleString() : '-';
+    const fmt = (n) => n != null ? Number(n).toLocaleString() : '-';
 
     let rows = '';
     assemblies.forEach(asm => {
@@ -564,7 +564,7 @@ window.render_M02_001 = function(container) {
     const el = document.getElementById('m02001-part-content');
     if (!el) return;
 
-    const fmt = (n) => n != null ? '₩' + Number(n).toLocaleString() : '-';
+    const fmt = (n) => n != null ? Number(n).toLocaleString() : '-';
 
     if (activePartTab === 'basic') {
       const matCost   = Math.round(part.calcPrice * 0.55);
@@ -716,10 +716,10 @@ window.render_M02_001 = function(container) {
         <tr>
           <td class="ss-col-center">${r.round}</td>
           <td class="ss-col-center">${r.date}</td>
-          <td class="ss-col-right">₩${r.calc.toLocaleString()}</td>
-          <td class="ss-col-right">₩${r.target.toLocaleString()}</td>
+          <td class="ss-col-right">${r.calc.toLocaleString()}</td>
+          <td class="ss-col-right">${r.target.toLocaleString()}</td>
           <td class="ss-col-right" style="color:${r.gap <= 0 ? 'var(--success)' : 'var(--danger)'};">
-            ${r.gap <= 0 ? '▼' : '▲'}₩${Math.abs(r.gap).toLocaleString()}
+            ${r.gap <= 0 ? '▼ ' : '▲ '}${Math.abs(r.gap).toLocaleString()}
           </td>
           <td class="ss-col-left">${r.note}</td>
         </tr>`).join('');
@@ -1006,7 +1006,7 @@ window.render_M02_002 = function(container) {
         supDisp = repNm + (extra > 0 ? ` <span style="color:var(--text-secondary);font-size:11px;">외 ${extra}</span>` : '');
       }
       const stStyle  = statusStyle[p.bomStatus] || '';
-      const ecnIcon  = p.ecn ? ' <i data-lucide="git-branch" style="width:12px;height:12px;color:#F59E0B;vertical-align:middle;"></i>' : '';
+      const ecnIcon  = p.ecn ? ' <span style="color:#F59E0B;font-size:11px;font-weight:600;margin-left:4px;">ECN</span>' : '';
 
       return `<tr class="${sel}" onclick="m02002_selectRow('${p.id}')" style="cursor:pointer;">
         <td class="center"><input type="checkbox" ${p.id === selectedId ? 'checked' : ''} onclick="event.stopPropagation();m02002_selectRow('${p.id}')"></td>

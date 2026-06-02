@@ -56,9 +56,9 @@ const CalcEngine = {
     return Math.round(num).toLocaleString('ko-KR');
   },
 
-  // 통화 포맷 (₩1,234,567)
+  // 통화 포맷 — 정책상 원화기호 미사용, 숫자만 출력
   formatCurrency(num) {
     if (num === null || num === undefined || isNaN(num)) return '-';
-    return '₩' + Math.round(num).toLocaleString('ko-KR');
+    return Math.round(num).toLocaleString('ko-KR');
   }
 };
