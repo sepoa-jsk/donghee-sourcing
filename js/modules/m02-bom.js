@@ -206,14 +206,14 @@ window.render_M02_001 = function(container) {
         </div>
       </div>
       <div class="insight-card">
-        <div class="insight-card-icon green"><i data-lucide="check-circle"></i></div>
+        <div class="insight-card-icon green"><i data-lucide="circle-check"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:var(--success);">${fixedParts}</span>
           <span class="insight-card-label">단가 확정</span>
         </div>
       </div>
       <div class="insight-card" style="border-color:var(--danger-border);">
-        <div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div>
+        <div class="insight-card-icon red"><i data-lucide="circle-alert"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:var(--danger);">${unfixedParts}</span>
           <span class="insight-card-label">단가 미확정</span>

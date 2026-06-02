@@ -200,7 +200,7 @@ window.render_M01_001 = function(container) {
         </div>
       </div>
       <div class="insight-card">
-        <div class="insight-card-icon green"><i data-lucide="play-circle"></i></div>
+        <div class="insight-card-icon green"><i data-lucide="circle-play"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value">${inProgress}</span>
           <span class="insight-card-label">진행 중 (P1~P4)</span>
@@ -214,7 +214,7 @@ window.render_M01_001 = function(container) {
         </div>
       </div>
       <div class="insight-card">
-        <div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div>
+        <div class="insight-card-icon red"><i data-lucide="circle-alert"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value">3</span>
           <span class="insight-card-label">목표가 미승인</span>
@@ -1015,8 +1015,8 @@ window.render_M01_002 = function(container) {
     el.innerHTML = `
       <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="building-2"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length}</span><span class="insight-card-label">등록 협력사</span></div></div>
       <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="star"></i></div><div class="insight-card-body"><span class="insight-card-value">${avgScore}점</span><span class="insight-card-label">평균 종합점수</span></div></div>
-      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="alert-triangle"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskCaution}개</span><span class="insight-card-label">주의 협력사</span></div></div>
-      <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="shield-alert"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskDanger}개</span><span class="insight-card-label">위험 협력사</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="triangle-alert"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskCaution}개</span><span class="insight-card-label">주의 협력사</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="circle-alert"></i></div><div class="insight-card-body"><span class="insight-card-value">${riskDanger}개</span><span class="insight-card-label">위험 협력사</span></div></div>
     `;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
@@ -2080,9 +2080,9 @@ window.render_M01_003 = function(container) {
     if (!el) return;
     el.innerHTML = `
       <div class="insight-card"><div class="insight-card-icon blue"><i data-lucide="package"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length}</span><span class="insight-card-label">등록 품목</span></div></div>
-      <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="check-circle"></i></div><div class="insight-card-body"><span class="insight-card-value">${active}</span><span class="insight-card-label">활성 품목</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon green"><i data-lucide="circle-check"></i></div><div class="insight-card-body"><span class="insight-card-value">${active}</span><span class="insight-card-label">활성 품목</span></div></div>
       <div class="insight-card"><div class="insight-card-icon amber"><i data-lucide="git-branch"></i></div><div class="insight-card-body"><span class="insight-card-value">${withBom}</span><span class="insight-card-label">BOM 등록</span></div></div>
-      <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length - active}</span><span class="insight-card-label">비활성 품목</span></div></div>
+      <div class="insight-card"><div class="insight-card-icon red"><i data-lucide="circle-alert"></i></div><div class="insight-card-body"><span class="insight-card-value">${data.length - active}</span><span class="insight-card-label">비활성 품목</span></div></div>
     `;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
