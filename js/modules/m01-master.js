@@ -3,40 +3,86 @@
    ============================================================ */
 
 /* ── 공유 유틸: 데이터 기반 프로그레스 바 ── */
-function checkSupplierProgress(s) {
-  s = s || {};
+function checkSupplierProgress(supplier) {
+  supplier = supplier || {};
   const steps = [
-    { label:'기본정보',   desc:'회사·사업자 정보',    check: !!(s.name && s.bizNo) },
-    { label:'사업자 검증', desc:'등록번호·신용 확인',   check: !!(s.bizNo && s.creditGrade) },
-    { label:'공급 역량',  desc:'소재·설비·생산능력',   check: !!(s.tier && s.managed === 'Y') },
-    { label:'서류·승인',  desc:'인증서·첨부·결재',     check: !!(s.contract === 'Y' && s.grade) },
+    {
+      label: '기본정보',
+      desc:  '회사명·사업자번호·대표자',
+      check: !!(supplier.name && supplier.bizNo)
+    },
+    {
+      label: '사업자 검증',
+      desc:  '사업자 유효·신용등급',
+      check: !!(supplier.bizNo && supplier.creditGrade && supplier.creditGrade !== '')
+    },
+    {
+      label: '인증·품질',
+      desc:  'IATF/ISO 유효 인증 보유',
+      check: !!(supplier.grade && supplier.grade !== 'D')
+    },
+    {
+      label: '계약·승인',
+      desc:  '거래계약 체결·등급 부여',
+      check: !!(supplier.contract === 'Y' && supplier.grade)
+    }
   ];
   const doneCount = steps.filter(s => s.check).length;
-  return { steps, doneCount, rate: Math.round((doneCount / 4) * 100) };
+  const rate = Math.round((doneCount / 4) * 100);
+  return { steps, doneCount, rate };
 }
 
-function checkItemProgress(d) {
-  d = d || {};
+function checkItemProgress(item) {
+  item = item || {};
   const steps = [
-    { label:'기본정보',  desc:'품목·분류 정보',    check: !!(d.name && d.cat1) },
-    { label:'물성·공정', desc:'소재·가공 정보',    check: !!(d.material && d.weight) },
-    { label:'단가·LME', desc:'원가·시세 연동',     check: !!(d.basePrice && d.basePrice > 0) },
-    { label:'도면·확정', desc:'도면 첨부·등록 완료', check: !!(d.drawNo && d.active === 'Y') },
+    {
+      label: '기본정보',
+      desc:  '품목코드·품명·분류',
+      check: !!(item.name && item.cat1 && item.id)
+    },
+    {
+      label: '물성·규격',
+      desc:  '소재·중량 정보',
+      check: !!(item.material && item.weight && item.weight > 0)
+    },
+    {
+      label: '원가 정보',
+      desc:  '기준단가 설정 (LME 무관)',
+      check: !!(item.basePrice && item.basePrice > 0)
+    },
+    {
+      label: '도면·확정',
+      desc:  '도면번호·사용 승인',
+      check: !!(item.drawNo && item.active === 'Y')
+    }
   ];
   const doneCount = steps.filter(s => s.check).length;
-  return { steps, doneCount, rate: Math.round((doneCount / 4) * 100) };
+  const rate = Math.round((doneCount / 4) * 100);
+  return { steps, doneCount, rate };
 }
 
-function renderProgress(steps, doneCount, rate) {
+function renderProgress(data, progressLabel) {
+  const { steps, doneCount, rate } = data;
   const rateClass = rate === 100 ? 'complete' : rate < 50 ? 'warn' : '';
   let html = '<div class="reg-progress">';
   steps.forEach((step, i) => {
-    const status = step.check ? 'done' : 'incomplete';
+    const status  = step.check ? 'done' : 'incomplete';
     const numText = step.check ? '✓' : '!';
-    html += `<div class="reg-step ${status}"><span class="reg-step-num">${numText}</span><div class="reg-step-info"><span class="reg-step-label">${step.label}</span><span class="reg-step-desc">${step.desc}</span></div></div>`;
+    html += `<div class="reg-step ${status}">
+      <span class="reg-step-num">${numText}</span>
+      <div class="reg-step-info">
+        <span class="reg-step-label">${step.label}</span>
+        <span class="reg-step-desc">${step.desc}</span>
+      </div>
+    </div>`;
     if (i < 3) html += `<div class="reg-step-line ${step.check ? 'done' : ''}"></div>`;
   });
-  html += `<div class="reg-progress-summary"><div class="reg-progress-rate ${rateClass}">${rate}%</div><div class="reg-progress-text">${doneCount}/4 완료</div></div>`;
+  html += `
+    <div class="reg-progress-summary">
+      <div class="reg-progress-rate ${rateClass}">${rate}%</div>
+      <div class="reg-progress-text">${progressLabel}</div>
+      <div class="reg-progress-text">${doneCount}/4 완료</div>
+    </div>`;
   html += '</div>';
   return html;
 }
@@ -513,7 +559,7 @@ window.render_M01_002 = function(container) {
 
     // 프로그레스 바 렌더 (데이터 기반)
     const progData = checkSupplierProgress(detailMode === 'new' ? {} : (supp || {}));
-    document.getElementById('m01002-progress-wrap').innerHTML = renderProgress(progData.steps, progData.doneCount, progData.rate);
+    document.getElementById('m01002-progress-wrap').innerHTML = renderProgress(progData, '거래 자격 충족률');
 
     // 세로탭 렌더
     activeTab = '일반정보';
