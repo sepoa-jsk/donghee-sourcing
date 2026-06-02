@@ -199,30 +199,35 @@ window.render_M02_001 = function(container) {
     if (!el) return;
     el.innerHTML = `
       <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="git-branch"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value">${totalParts}</span>
           <span class="insight-card-label">전체 Part</span>
         </div>
       </div>
       <div class="insight-card">
+        <div class="insight-card-icon green"><i data-lucide="check-circle"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:var(--success);">${fixedParts}</span>
           <span class="insight-card-label">단가 확정</span>
         </div>
       </div>
       <div class="insight-card" style="border-color:var(--danger-border);">
+        <div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:var(--danger);">${unfixedParts}</span>
           <span class="insight-card-label">단가 미확정</span>
         </div>
       </div>
       <div class="insight-card" style="border-color:#FDE68A;">
+        <div class="insight-card-icon amber"><i data-lucide="history"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:#F59E0B;">${ecnParts}</span>
           <span class="insight-card-label">ECN 변경</span>
         </div>
       </div>
     `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
 
   window.m02001_renderGrid = function() {
