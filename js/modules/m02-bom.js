@@ -988,12 +988,23 @@ window.render_M02_002 = function(container) {
     }
 
     const projects = MockData.getAll('projects');
+    const allSup   = MockData.getAll('suppliers');
     const projName = (id) => { const p = projects.find(x => x.id === id); return p ? p.name : id; };
 
     const rows = data.map(p => {
       const sel      = p.id === selectedId ? 'selected' : '';
       const calcDisp = CalcEngine.formatCurrency(p.materialCost + p.processCost);
-      const supDisp  = p.supplierName || '<span style="color:var(--text-muted);">미연결</span>';
+      const supList  = p.suppliers || (p.supplierId ? [p.supplierId] : []);
+      let supDisp;
+      if (supList.length === 0) {
+        supDisp = '<span style="color:var(--text-muted);">미연결</span>';
+      } else {
+        const repId  = supList.includes(p.supplierId) ? p.supplierId : supList[0];
+        const repObj = allSup.find(s => s.id === repId);
+        const repNm  = repObj ? repObj.name : repId;
+        const extra  = supList.length - 1;
+        supDisp = repNm + (extra > 0 ? ` <span style="color:var(--text-secondary);font-size:11px;">외 ${extra}</span>` : '');
+      }
       const stStyle  = statusStyle[p.bomStatus] || '';
       const ecnIcon  = p.ecn ? ' <i data-lucide="git-branch" style="width:12px;height:12px;color:#F59E0B;vertical-align:middle;"></i>' : '';
 
@@ -1145,6 +1156,38 @@ window.render_M02_002 = function(container) {
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
 
+  /* ── 공급사 다중 선택 핸들러 ── */
+  window.m02002_onSupCheck = function(sid, isChecked) {
+    const radio = document.querySelector(`.mf-sup-final[data-sid="${sid}"]`);
+    const label = document.getElementById(`mf-sup-label-${sid}`);
+    if (!radio) return;
+
+    radio.disabled = !isChecked;
+    if (label) label.style.color = isChecked ? 'var(--text-primary)' : 'var(--text-muted)';
+
+    if (!isChecked) {
+      if (radio.checked) {
+        radio.checked = false;
+        const otherChecked = document.querySelectorAll('#mf-supplier-list .mf-sup-chk:checked');
+        if (otherChecked.length > 0) {
+          const newFinal = document.querySelector(`.mf-sup-final[data-sid="${otherChecked[0].dataset.sid}"]`);
+          if (newFinal) newFinal.checked = true;
+        }
+      }
+    } else {
+      const currentFinal = document.querySelector('#mf-supplier-list .mf-sup-final:checked');
+      if (!currentFinal) radio.checked = true;
+    }
+  };
+
+  window.m02002_onSupFinalChange = function(sid) {
+    const chk = document.querySelector(`.mf-sup-chk[data-sid="${sid}"]`);
+    if (chk && !chk.checked) {
+      chk.checked = true;
+      m02002_onSupCheck(sid, true);
+    }
+  };
+
   /* ── 신규 / 수정 모달 ── */
   window.m02002_showForm = function(mode) {
     if (mode === 'edit' && !selectedId) {
@@ -1158,14 +1201,24 @@ window.render_M02_002 = function(container) {
     const projOpts = projects.map(p =>
       `<option value="${p.id}" ${part.projectId === p.id ? 'selected' : ''}>${p.name}</option>`
     ).join('');
-    const supOpts = [
-      `<option value="">-- 미선정 --</option>`,
-      ...suppliers.map(s =>
-        `<option value="${s.id}" ${part.supplierId === s.id ? 'selected' : ''}>${s.name}</option>`)
-    ].join('');
     const statusOpts = ['미확정','검토중','RFQ중','Gap초과','확정'].map(s =>
       `<option value="${s}" ${part.bomStatus === s ? 'selected' : ''}>${s}</option>`
     ).join('');
+
+    const partSuppliers = part.suppliers || (part.supplierId ? [part.supplierId] : []);
+    const supRows = suppliers.map((s, idx) => {
+      const checked = partSuppliers.includes(s.id);
+      const isFinal = checked && part.supplierId === s.id;
+      const isLast  = idx === suppliers.length - 1;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:6px 10px;${isLast ? '' : 'border-bottom:1px solid #f0f0f0;'}font-size:13px;">
+        <input type="checkbox" class="mf-sup-chk" data-sid="${s.id}" ${checked ? 'checked' : ''} onchange="m02002_onSupCheck('${s.id}', this.checked)">
+        <span style="flex:1;">${s.name} <span style="color:var(--text-muted);font-size:11px;">(${s.id})</span></span>
+        <label id="mf-sup-label-${s.id}" style="display:flex;align-items:center;gap:4px;color:${checked ? 'var(--text-primary)' : 'var(--text-muted)'};">
+          <input type="radio" name="mf-sup-final" class="mf-sup-final" data-sid="${s.id}" ${isFinal ? 'checked' : ''} ${checked ? '' : 'disabled'} onchange="m02002_onSupFinalChange('${s.id}')">
+          <span style="font-size:12px;">최종</span>
+        </label>
+      </div>`;
+    }).join('');
 
     const formHtml = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;">
@@ -1202,12 +1255,15 @@ window.render_M02_002 = function(container) {
           <input class="form-input" id="mf-target" type="number" value="${part.targetPrice||''}" placeholder="0">
         </div>
         <div class="form-field">
-          <label class="form-label">공급사</label>
-          <select class="form-input form-select" id="mf-supplier">${supOpts}</select>
-        </div>
-        <div class="form-field">
           <label class="form-label">상태</label>
           <select class="form-input form-select" id="mf-status">${statusOpts}</select>
+        </div>
+        <div></div>
+        <div class="form-field" style="grid-column:span 2;">
+          <label class="form-label">공급사 연결 <span style="color:var(--text-muted);font-weight:normal;font-size:11px;">(다중 선택 가능)</span></label>
+          <div id="mf-supplier-list" style="border:1px solid var(--border);border-radius:4px;max-height:200px;overflow-y:auto;background:#fff;">
+            ${supRows}
+          </div>
         </div>
       </div>`;
 
@@ -1231,16 +1287,21 @@ window.render_M02_002 = function(container) {
     const matCost   = Number((document.getElementById('mf-matcost') || {}).value) || 0;
     const procCost  = Number((document.getElementById('mf-proccost')|| {}).value) || 0;
     const target    = Number((document.getElementById('mf-target')  || {}).value) || 0;
-    const supId     = (document.getElementById('mf-supplier') || {}).value || null;
     const status    = (document.getElementById('mf-status')   || {}).value || '미확정';
+
+    const checkedIds = Array.from(document.querySelectorAll('#mf-supplier-list .mf-sup-chk:checked')).map(el => el.dataset.sid);
+    const finalEl    = document.querySelector('#mf-supplier-list .mf-sup-final:checked');
+    let   finalId    = finalEl ? finalEl.dataset.sid : null;
+    if (checkedIds.length > 0 && (!finalId || !checkedIds.includes(finalId))) finalId = checkedIds[0];
+    if (checkedIds.length === 0) finalId = null;
 
     if (!partNo || !partName || !projectId || !material) {
       Common.showToast('필수 항목(Part No.·품명·프로젝트·소재)을 입력해주세요', 'info');
       return;
     }
 
-    const suppliers  = MockData.getAll('suppliers');
-    const supObj     = supId ? suppliers.find(s => s.id === supId) : null;
+    const allSup     = MockData.getAll('suppliers');
+    const finalObj   = finalId ? allSup.find(s => s.id === finalId) : null;
     const calcPrice  = matCost + procCost;
     const parts      = MockData.getAll('partList');
     const newId      = mode === 'new'
@@ -1251,8 +1312,8 @@ window.render_M02_002 = function(container) {
       id: newId, partNo, partName, projectId, material, weight,
       materialCost: matCost, processCost: procCost,
       calcPrice, targetPrice: target, fixedPrice: null,
-      supplierId: supId, supplierName: supObj ? supObj.name : null,
-      suppliers: supId ? [supId] : [],
+      supplierId: finalId, supplierName: finalObj ? finalObj.name : null,
+      suppliers: checkedIds,
       bomStatus: status, ecn: false,
       regDate: new Date().toISOString().slice(0, 10)
     };
