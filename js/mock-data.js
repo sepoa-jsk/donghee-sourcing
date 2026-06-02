@@ -144,6 +144,133 @@ const MockData = {
       { id: "PL-008", partNo: "P-H402", partName: "CFRP 보강층",         projectId: "PRJ-2025-004", material: "CFRP-T",   weight: 3100, materialCost: 24750,processCost: 12600,calcPrice: 45000, targetPrice: 42000, fixedPrice: null,  supplierId: "SUP-008", supplierName: "미래소재(주)", suppliers: ["SUP-008"],                       bomStatus: "Gap초과", ecn: false, regDate: "2025-11-01" },
       { id: "PL-009", partNo: "P-E101", partName: "배터리 마운트 브라켓", projectId: "PRJ-2025-002", material: "SPFH590",  weight: 4200, materialCost: 5225, processCost: 2660, calcPrice: 9500,  targetPrice: 9800,  fixedPrice: null,  supplierId: null,      supplierName: null,           suppliers: [],                                bomStatus: "미확정", ecn: false, regDate: "2025-12-01" },
       { id: "PL-010", partNo: "P-E102", partName: "전동식 조향 컬럼",    projectId: "PRJ-2025-002", material: "Al5052",   weight: 2850, materialCost: 8388, processCost: 4270, calcPrice: 15250, targetPrice: 16000, fixedPrice: null,  supplierId: null,      supplierName: null,           suppliers: [],                                bomStatus: "미확정", ecn: false, regDate: "2025-12-01" }
+    ],
+
+    ecnList: [
+      {
+        id: "ECN-2025-001", issueDate: "2025-10-15", source: "VAATZ",
+        reason: "LME 강판 시세 상승으로 스태빌라이저 링크 소재 변경 (SPFC440→SPFH590) 및 단가 조정",
+        projectId: "PRJ-2025-001", status: "조치완료",
+        changes: [
+          { partNo: "P-S102", partName: "스태빌라이저 링크", field: "소재", before: "SPFC440",  after: "SPFH590" },
+          { partNo: "P-S102", partName: "스태빌라이저 링크", field: "단가", before: "4800",     after: "5340" }
+        ],
+        impactedPartIds: ["P-S102"], costGap: 540, rfqNeededCount: 1,
+        history: [
+          { at: "2025-10-15 09:00", by: "시스템(VAATZ)", action: "ECN 수신" },
+          { at: "2025-10-16 14:30", by: "김구매",        action: "검토 시작" },
+          { at: "2025-10-20 11:00", by: "김구매",        action: "BOM에 반영 완료" }
+        ], createdAt: "2025-10-15 09:00"
+      },
+      {
+        id: "ECN-2025-002", issueDate: "2025-10-28", source: "VAATZ",
+        reason: "탱크 본체 설계 최적화로 중량 감소 — 경량화 목표 달성",
+        projectId: "PRJ-2025-001", status: "조치완료",
+        changes: [
+          { partNo: "P-F201", partName: "탱크 본체", field: "중량", before: "3800",  after: "3520" },
+          { partNo: "P-F201", partName: "탱크 본체", field: "단가", before: "17950", after: "17700" }
+        ],
+        impactedPartIds: ["P-F201"], costGap: -250, rfqNeededCount: 0,
+        history: [
+          { at: "2025-10-28 10:00", by: "시스템(VAATZ)", action: "ECN 수신" },
+          { at: "2025-10-30 09:30", by: "이소싱",        action: "단가 재산출 완료" },
+          { at: "2025-11-02 15:00", by: "이소싱",        action: "BOM에 반영 완료" }
+        ], createdAt: "2025-10-28 10:00"
+      },
+      {
+        id: "ECN-2025-003", issueDate: "2025-11-05", source: "PLM",
+        reason: "로어 암 브라켓 공정 강화 — 3축 CNC를 5축으로 변경하여 정밀도 향상",
+        projectId: "PRJ-2025-001", status: "검토중",
+        changes: [
+          { partNo: "P-S101", partName: "로어 암 브라켓", field: "공정", before: "CNC 3축", after: "CNC 5축" },
+          { partNo: "P-S101", partName: "로어 암 브라켓", field: "단가", before: "7050",    after: "8250" }
+        ],
+        impactedPartIds: ["P-S101"], costGap: 1200, rfqNeededCount: 1,
+        history: [
+          { at: "2025-11-05 11:00", by: "시스템(PLM)", action: "ECN 수신" },
+          { at: "2025-11-07 10:00", by: "박원가",      action: "원가 영향 분석 시작" }
+        ], createdAt: "2025-11-05 11:00"
+      },
+      {
+        id: "ECN-2025-004", issueDate: "2025-11-12", source: "VAATZ",
+        reason: "연료펌프 모듈 부품 공급 불안정으로 대체 소재 적용 긴급 검토 요청",
+        projectId: "PRJ-2025-001", status: "접수",
+        changes: [
+          { partNo: "P-F202", partName: "연료펌프 모듈", field: "소재", before: "수지+전장", after: "수지+전장(代)" }
+        ],
+        impactedPartIds: ["P-F202"], costGap: 800, rfqNeededCount: 2,
+        history: [
+          { at: "2025-11-12 08:30", by: "시스템(VAATZ)", action: "ECN 수신" }
+        ], createdAt: "2025-11-12 08:30"
+      },
+      {
+        id: "ECN-2025-005", issueDate: "2025-11-18", source: "PLM",
+        reason: "수소탱크 라이너 내압 강화 요건 상향 — Al6061에서 Al7075 변경, 중량 및 단가 영향 대규모",
+        projectId: "PRJ-2025-004", status: "검토중",
+        changes: [
+          { partNo: "P-H401", partName: "수소탱크 라이너", field: "소재", before: "Al6061", after: "Al7075" },
+          { partNo: "P-H401", partName: "수소탱크 라이너", field: "중량", before: "5200",   after: "5450" },
+          { partNo: "P-H401", partName: "수소탱크 라이너", field: "단가", before: "28500",  after: "34000" }
+        ],
+        impactedPartIds: ["P-H401"], costGap: 5500, rfqNeededCount: 1,
+        history: [
+          { at: "2025-11-18 14:00", by: "시스템(PLM)", action: "ECN 수신" },
+          { at: "2025-11-20 10:00", by: "김구매",      action: "소재팀 확인 요청" }
+        ], createdAt: "2025-11-18 14:00"
+      },
+      {
+        id: "ECN-2025-006", issueDate: "2025-11-22", source: "Manual",
+        reason: "코일 스프링 시트 목표단가 입력 오류 수정 요청 — 내부 시스템 오류",
+        projectId: "PRJ-2025-001", status: "반려",
+        changes: [
+          { partNo: "P-S103", partName: "코일 스프링 시트", field: "단가", before: "3100", after: "3050" }
+        ],
+        impactedPartIds: ["P-S103"], costGap: 0, rfqNeededCount: 0,
+        history: [
+          { at: "2025-11-22 09:00", by: "박원가",    action: "수동 등록" },
+          { at: "2025-11-23 16:00", by: "구매팀장",  action: "반려 — 정상 데이터 확인됨" }
+        ], createdAt: "2025-11-22 09:00"
+      },
+      {
+        id: "ECN-2025-007", issueDate: "2025-11-25", source: "VAATZ",
+        reason: "배터리 마운트 브라켓 설계 변경 — 경량화 목표 반영으로 중량 감소",
+        projectId: "PRJ-2025-002", status: "접수",
+        changes: [
+          { partNo: "P-E101", partName: "배터리 마운트 브라켓", field: "중량", before: "4200", after: "3900" },
+          { partNo: "P-E101", partName: "배터리 마운트 브라켓", field: "단가", before: "9500", after: "9200" }
+        ],
+        impactedPartIds: ["P-E101"], costGap: -300, rfqNeededCount: 0,
+        history: [
+          { at: "2025-11-25 07:45", by: "시스템(VAATZ)", action: "ECN 수신" }
+        ], createdAt: "2025-11-25 07:45"
+      },
+      {
+        id: "ECN-2025-008", issueDate: "2025-12-01", source: "PLM",
+        reason: "CFRP 보강층 접합 공정 추가 — 품질 개선을 위한 열처리 공정 삽입",
+        projectId: "PRJ-2025-004", status: "접수",
+        changes: [
+          { partNo: "P-H402", partName: "CFRP 보강층", field: "공정", before: "적층성형",     after: "적층성형+열처리" },
+          { partNo: "P-H402", partName: "CFRP 보강층", field: "단가", before: "45000",       after: "47000" }
+        ],
+        impactedPartIds: ["P-H402"], costGap: 2000, rfqNeededCount: 1,
+        history: [
+          { at: "2025-12-01 09:30", by: "시스템(PLM)", action: "ECN 수신" }
+        ], createdAt: "2025-12-01 09:30"
+      },
+      {
+        id: "ECN-2025-009", issueDate: "2025-12-04", source: "VAATZ",
+        reason: "연료 필러넥·코일 스프링 시트 2건 소재 동시 변경 — 공급망 재편 대응",
+        projectId: "PRJ-2025-001", status: "검토중",
+        changes: [
+          { partNo: "P-F203", partName: "연료 필러넥",      field: "소재", before: "STS304", after: "STS316L" },
+          { partNo: "P-S103", partName: "코일 스프링 시트", field: "소재", before: "SCM440", after: "SCM415" }
+        ],
+        impactedPartIds: ["P-F203", "P-S103"], costGap: 1500, rfqNeededCount: 2,
+        history: [
+          { at: "2025-12-04 09:15", by: "시스템(VAATZ)", action: "ECN 수신" },
+          { at: "2025-12-04 11:00", by: "이소싱",        action: "영향 분석 시작" }
+        ], createdAt: "2025-12-04 09:15"
+      }
     ]
   },
 

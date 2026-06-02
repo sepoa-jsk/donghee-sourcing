@@ -1348,3 +1348,510 @@ window.render_M02_002 = function(container) {
   m02002_renderGrid();
   setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 };
+
+/* ============================================================
+   M02-003  BOM 변경이력(ECN) — 수신·분석·연계 허브형
+   화면ID : M02-003
+   패턴   : 패턴 5-C (좌 그리드 + 우 상세패널)
+   생성일 : 2026-06-02
+   ============================================================ */
+
+window.render_M02_003 = function(container) {
+  container.style.padding = '0';
+
+  /* ecnList 미초기화 시 시드 투입 */
+  if (MockData.getAll('ecnList').length === 0) {
+    localStorage.setItem('dh_ecnList', JSON.stringify(MockData.seed.ecnList));
+  }
+
+  /* ── 상태 ── */
+  let searchText   = '';
+  let statusFilter = '';
+  let selectedId   = null;
+  const STATUS_CYCLE = ['', '접수', '검토중', '조치완료', '반려'];
+  let statusIdx = 0;
+
+  const statusStyle = {
+    '접수':   'color:var(--primary);font-weight:600;',
+    '검토중':  'color:#F59E0B;font-weight:600;',
+    '조치완료':'color:var(--success);font-weight:600;',
+    '반려':    'color:var(--text-muted);'
+  };
+
+  /* ── 레이아웃 ── */
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:0;">
+
+    <!-- 필터바 -->
+    <div class="filter-bar" style="padding:10px 16px 0;">
+      <div class="filter-search">
+        <input type="text" id="m02003-search" placeholder="Search" oninput="m02003_onSearch(this.value)">
+        <i data-lucide="search"></i>
+      </div>
+      <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+      <button class="filter-btn" id="m02003-status-btn" onclick="m02003_cycleStatus()"><i data-lucide="bar-chart-2" class="icon-blue"></i> <span id="m02003-status-label">상태</span></button>
+      <div class="filter-date-range">
+        <input type="text" value="2024/01/01" readonly>
+        <span class="date-separator">~</span>
+        <input type="text" value="2027/12/31" readonly>
+        <i data-lucide="calendar" class="icon-red"></i>
+      </div>
+      <div class="filter-right">
+        <button class="btn btn-outline-blue" onclick="m02003_showAddManual()"><i data-lucide="plus"></i> 수동 등록</button>
+      </div>
+    </div>
+
+    <!-- 인사이트 카드 -->
+    <div id="m02003-cards" class="insight-cards" style="padding:10px 16px;"></div>
+
+    <!-- 본문 좌우 분할 -->
+    <div style="display:flex;flex:1;overflow:hidden;">
+
+      <!-- 좌: 그리드 (60%) -->
+      <div style="flex:0 0 60%;overflow-y:auto;border-right:1px solid var(--border);">
+        <div id="m02003-grid" style="padding:0 16px 16px;"></div>
+      </div>
+
+      <!-- 우: 상세 패널 (40%) -->
+      <div style="flex:0 0 40%;overflow-y:auto;display:flex;flex-direction:column;">
+        <div id="m02003-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;">
+          <i data-lucide="mouse-pointer-click" style="width:32px;height:32px;margin-bottom:8px;"></i>
+          좌측 ECN을 선택하면 상세 정보가 표시됩니다
+        </div>
+        <div id="m02003-detail-panel" style="display:none;flex-direction:column;padding:14px 16px;gap:10px;"></div>
+      </div>
+
+    </div>
+  </div>`;
+
+  /* ══════════════════════════════════════════════
+     헬퍼
+  ══════════════════════════════════════════════ */
+
+  window.m02003_onSearch = function(val) {
+    searchText = val;
+    m02003_renderGrid();
+  };
+
+  window.m02003_cycleStatus = function() {
+    statusIdx = (statusIdx + 1) % STATUS_CYCLE.length;
+    statusFilter = STATUS_CYCLE[statusIdx];
+    const label = document.getElementById('m02003-status-label');
+    if (label) label.textContent = statusFilter || '상태';
+    m02003_renderGrid();
+  };
+
+  /* ── 인사이트 카드 ── */
+  window.m02003_renderCards = function() {
+    const list   = MockData.getAll('ecnList');
+    const total  = list.length;
+    const unprocCount = list.filter(e => e.status === '접수' || e.status === '검토중').length;
+    const doneCount   = list.filter(e => e.status === '조치완료').length;
+    const doneRate    = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+    const totalGap    = list.reduce((s, e) => s + (e.costGap || 0), 0);
+    const gapSign     = totalGap >= 0 ? '+' : '';
+
+    const el = document.getElementById('m02003-cards');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="file-text"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${total}</span>
+          <span class="insight-card-label">전체 ECN</span>
+        </div>
+      </div>
+      <div class="insight-card" style="border-color:var(--danger-border);">
+        <div class="insight-card-icon red"><i data-lucide="circle-alert"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--danger);">${unprocCount}</span>
+          <span class="insight-card-label">미처리</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon green"><i data-lucide="circle-check"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--success);">${doneRate}%</span>
+          <span class="insight-card-label">조치 완료율</span>
+        </div>
+      </div>
+      <div class="insight-card" style="border-color:#FDE68A;">
+        <div class="insight-card-icon amber"><i data-lucide="trending-up"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="font-size:14px;color:${totalGap >= 0 ? 'var(--danger)' : 'var(--success)'};">${gapSign}${CalcEngine.formatCurrency(Math.abs(totalGap))}</span>
+          <span class="insight-card-label">누적 단가 영향</span>
+        </div>
+      </div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── 그리드 ── */
+  window.m02003_renderGrid = function() {
+    let data = MockData.getAll('ecnList');
+
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(e =>
+        (e.id     || '').toLowerCase().includes(q) ||
+        (e.reason || '').toLowerCase().includes(q) ||
+        (e.source || '').toLowerCase().includes(q)
+      );
+    }
+    if (statusFilter) {
+      data = data.filter(e => e.status === statusFilter);
+    }
+
+    const projects = MockData.getAll('projects');
+    const projName = (id) => { const p = projects.find(x => x.id === id); return p ? p.name : id; };
+
+    const rows = data.map(e => {
+      const sel      = e.id === selectedId ? 'selected' : '';
+      const gap      = e.costGap || 0;
+      const gapColor = gap > 0 ? 'color:var(--danger);' : gap < 0 ? 'color:var(--success);' : 'color:var(--text-muted);';
+      const gapSign  = gap > 0 ? '+' : '';
+      const gapDisp  = gapSign + CalcEngine.formatCurrency(Math.abs(gap));
+      const stStyle  = statusStyle[e.status] || '';
+
+      return `<tr class="${sel}" onclick="m02003_selectRow('${e.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${e.id === selectedId ? 'checked' : ''} onclick="event.stopPropagation();m02003_selectRow('${e.id}')"></td>
+        <td class="center"><span class="code-link">${e.id}</span></td>
+        <td class="center" style="font-size:11px;">${e.issueDate}</td>
+        <td class="center">${e.source}</td>
+        <td class="left" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.reason}</td>
+        <td class="center" style="color:var(--text-secondary);font-size:11px;">${projName(e.projectId)}</td>
+        <td class="right" style="${gapColor}font-weight:600;">${gapDisp}</td>
+        <td class="center" style="${stStyle}">${e.status}</td>
+      </tr>`;
+    }).join('');
+
+    const el = document.getElementById('m02003-grid');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="grid-container">
+        <table class="grid-table">
+          <colgroup>
+            <col style="width:40px"><col style="width:110px"><col style="width:90px">
+            <col style="width:70px"><col><col style="width:100px">
+            <col style="width:90px"><col style="width:80px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox"></th>
+            <th>ECN 번호</th><th>발행일</th><th>발행처</th>
+            <th>변경 사유</th><th>적용 프로젝트</th>
+            <th class="right">단가 영향</th><th>처리 상태</th>
+          </tr></thead>
+          <tbody>${rows || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">조회된 ECN이 없습니다</td></tr>'}</tbody>
+        </table>
+      </div>`;
+  };
+
+  /* ── 행 선택 ── */
+  window.m02003_selectRow = function(id) {
+    selectedId = id;
+    m02003_renderGrid();
+
+    const list = MockData.getAll('ecnList');
+    const ecn  = list.find(e => e.id === id);
+    if (!ecn) return;
+
+    document.getElementById('m02003-detail-empty').style.display = 'none';
+    const panel = document.getElementById('m02003-detail-panel');
+    panel.style.display = 'flex';
+    m02003_renderDetail(ecn);
+  };
+
+  /* ── 상세 패널 렌더 ── */
+  window.m02003_renderDetail = function(ecn) {
+    const panel = document.getElementById('m02003-detail-panel');
+    if (!panel) return;
+
+    const projects = MockData.getAll('projects');
+    const parts    = MockData.getAll('partList');
+    const proj     = projects.find(x => x.id === ecn.projectId);
+
+    /* 영향 공급사 수 계산 */
+    const impactedParts = parts.filter(p => (ecn.impactedPartIds || []).includes(p.partNo));
+    const supplierSet   = new Set(impactedParts.flatMap(p => p.suppliers || (p.supplierId ? [p.supplierId] : [])));
+
+    /* Gap 표시 */
+    const gap      = ecn.costGap || 0;
+    const gapColor = gap > 0 ? 'var(--danger)' : gap < 0 ? 'var(--success)' : 'var(--text-muted)';
+    const gapSign  = gap > 0 ? '+' : '';
+
+    /* 변경 내역 Before/After 포맷 */
+    const fmtChange = (val, field) => {
+      if (field === '단가' || field === '중량') return CalcEngine.formatNumber(parseInt(val) || 0);
+      return val;
+    };
+
+    const diffRows = (ecn.changes || []).map(c => `
+      <tr>
+        <td class="center">${c.partNo}</td>
+        <td class="left" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.partName}</td>
+        <td class="center">${c.field}</td>
+        <td class="right" style="color:var(--text-muted);text-decoration:line-through;">${fmtChange(c.before, c.field)}</td>
+        <td class="right" style="color:var(--primary);font-weight:600;">${fmtChange(c.after, c.field)}</td>
+      </tr>`).join('');
+
+    /* 이력 (역순) */
+    const histHtml = [...(ecn.history || [])].reverse().map(h => `
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span style="color:var(--text-muted);width:125px;flex-shrink:0;">${h.at}</span>
+        <span style="color:var(--text-secondary);width:75px;flex-shrink:0;">${h.by}</span>
+        <span>${h.action}</span>
+      </div>`).join('');
+
+    const stStyle = statusStyle[ecn.status] || '';
+
+    panel.innerHTML = `
+      <!-- 헤더 -->
+      <div class="section-box" style="margin-bottom:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:6px;">${ecn.id}</div>
+        <div style="display:flex;gap:14px;font-size:12px;color:var(--text-secondary);flex-wrap:wrap;">
+          <span>발행일: <b style="color:var(--text-primary);">${ecn.issueDate}</b></span>
+          <span>발행처: <b style="color:var(--text-primary);">${ecn.source}</b></span>
+          <span>상태: <b style="${stStyle}">${ecn.status}</b></span>
+        </div>
+      </div>
+
+      <!-- 변경 정보 -->
+      <div class="section-box" style="margin-bottom:0;">
+        <div class="section-box-title">변경 정보</div>
+        <div class="form-field" style="margin-bottom:8px;">
+          <label class="form-label">변경 사유</label>
+          <div style="font-size:12px;color:var(--text-primary);line-height:1.5;padding:4px 0;">${ecn.reason}</div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">적용 프로젝트</label>
+          <div style="font-size:12px;color:var(--text-primary);padding:4px 0;">${proj ? proj.name : ecn.projectId}</div>
+        </div>
+      </div>
+
+      <!-- 영향 분석 카드 (4개) -->
+      <div style="display:flex;gap:6px;">
+        <div class="insight-card" style="flex:1;padding:8px 10px;">
+          <div class="insight-card-body">
+            <span class="insight-card-value" style="font-size:15px;color:var(--primary);">${(ecn.impactedPartIds||[]).length}</span>
+            <span class="insight-card-label">영향 Part</span>
+          </div>
+        </div>
+        <div class="insight-card" style="flex:1;padding:8px 10px;">
+          <div class="insight-card-body">
+            <span class="insight-card-value" style="font-size:15px;color:var(--primary);">${supplierSet.size}</span>
+            <span class="insight-card-label">영향 공급사</span>
+          </div>
+        </div>
+        <div class="insight-card" style="flex:1;padding:8px 10px;border-color:${gap > 0 ? 'var(--danger-border)' : gap < 0 ? 'var(--success-border)' : 'var(--border)'};">
+          <div class="insight-card-body">
+            <span class="insight-card-value" style="font-size:13px;color:${gapColor};">${gapSign}${CalcEngine.formatCurrency(Math.abs(gap))}</span>
+            <span class="insight-card-label">단가 영향(원)</span>
+          </div>
+        </div>
+        <div class="insight-card" style="flex:1;padding:8px 10px;border-color:var(--danger-border);">
+          <div class="insight-card-body">
+            <span class="insight-card-value" style="font-size:15px;color:var(--danger);">${ecn.rfqNeededCount||0}</span>
+            <span class="insight-card-label">재견적 필요</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Before/After Diff 그리드 -->
+      <div class="section-box" style="margin-bottom:0;">
+        <div class="section-box-title">변경 내역</div>
+        <div class="grid-container" style="margin-bottom:0;">
+          <table class="grid-table">
+            <colgroup>
+              <col style="width:86px"><col><col style="width:58px">
+              <col style="width:80px"><col style="width:80px">
+            </colgroup>
+            <thead><tr>
+              <th>Part No.</th><th>품명</th><th>항목</th>
+              <th class="right">Before</th><th class="right">After</th>
+            </tr></thead>
+            <tbody>${diffRows || '<tr><td colspan="5" class="center" style="padding:12px;color:var(--text-muted);">변경 내역 없음</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 후속 조치 -->
+      <div class="section-box" style="margin-bottom:0;">
+        <div class="section-box-title">후속 조치</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button class="btn btn-outline-blue" onclick="m02003_actionRfq()"><i data-lucide="send"></i> 재견적 요청</button>
+          <button class="btn btn-outline-blue" onclick="m02003_actionApproval()"><i data-lucide="file-check"></i> 단가 재확정 결재</button>
+          <button class="btn btn-solid-blue" onclick="m02003_applyToBom('${ecn.id}')"><i data-lucide="check"></i> BOM에 반영</button>
+          <button class="btn btn-outline-red" onclick="m02003_reject('${ecn.id}')"><i data-lucide="x"></i> 반려</button>
+        </div>
+      </div>
+
+      <!-- 처리 이력 -->
+      <div class="section-box" style="margin-bottom:0;">
+        <div class="section-box-title">처리 이력</div>
+        ${histHtml || '<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">이력 없음</div>'}
+      </div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── 후속 조치 함수 ── */
+  window.m02003_actionRfq = function() {
+    Common.showToast('RFQ 발송 화면으로 이동합니다', 'info');
+    App.navigate('M05-001');
+  };
+
+  window.m02003_actionApproval = function() {
+    Common.showToast('단가 재확정 결재 화면으로 이동합니다', 'info');
+    App.navigate('M07-003');
+  };
+
+  window.m02003_applyToBom = function(ecnId) {
+    const list = MockData.getAll('ecnList');
+    const ecn  = list.find(e => e.id === ecnId);
+    if (!ecn) return;
+    if (ecn.status === '조치완료') {
+      Common.showToast('이미 BOM에 반영된 ECN입니다', 'info');
+      return;
+    }
+    ecn.status = '조치완료';
+    ecn.history = ecn.history || [];
+    ecn.history.push({ at: new Date().toLocaleString('ko-KR'), by: '김구매', action: 'BOM에 반영 완료' });
+    MockData.save('ecnList', ecn);
+    Common.showToast('BOM에 반영되었습니다', 'success');
+    m02003_renderCards();
+    m02003_renderGrid();
+    m02003_renderDetail(ecn);
+  };
+
+  window.m02003_reject = function(ecnId) {
+    const list = MockData.getAll('ecnList');
+    const ecn  = list.find(e => e.id === ecnId);
+    if (!ecn) return;
+    if (ecn.status === '반려') {
+      Common.showToast('이미 반려된 ECN입니다', 'info');
+      return;
+    }
+    if (!confirm(`${ecnId}을(를) 반려 처리하시겠습니까?`)) return;
+    ecn.status = '반려';
+    ecn.history = ecn.history || [];
+    ecn.history.push({ at: new Date().toLocaleString('ko-KR'), by: '김구매', action: '반려 처리' });
+    MockData.save('ecnList', ecn);
+    Common.showToast('반려 처리되었습니다', 'info');
+    m02003_renderCards();
+    m02003_renderGrid();
+    m02003_renderDetail(ecn);
+  };
+
+  /* ── 수동 등록 모달 ── */
+  window.m02003_showAddManual = function() {
+    const projects = MockData.getAll('projects');
+    const parts    = MockData.getAll('partList');
+    const today    = new Date().toISOString().slice(0, 10);
+
+    const projOpts = projects.map(p =>
+      `<option value="${p.id}">${p.name}</option>`
+    ).join('');
+    const partOpts = ['<option value="">-- Part 선택 (선택사항) --</option>',
+      ...parts.map(p => `<option value="${p.partNo}">${p.partNo} ${p.partName}</option>`)
+    ].join('');
+    const fieldOpts = ['소재','중량','공정','단가'].map(f =>
+      `<option value="${f}">${f}</option>`
+    ).join('');
+
+    const formHtml = `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;">
+          <div class="form-field">
+            <label class="form-label">적용 프로젝트 <span class="required">*</span></label>
+            <select class="form-input form-select" id="ecn-project">
+              <option value="">-- 선택 --</option>${projOpts}
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">발행일 <span class="required">*</span></label>
+            <input class="form-input" type="date" id="ecn-date" value="${today}">
+          </div>
+          <div class="form-field" style="grid-column:span 2;">
+            <label class="form-label">변경 사유 <span class="required">*</span></label>
+            <textarea class="form-textarea" id="ecn-reason" rows="2" placeholder="변경 사유를 입력하세요"></textarea>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">변경 라인 (선택)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px 10px;">
+            <div class="form-field">
+              <label class="form-label">Part No.</label>
+              <select class="form-input form-select" id="ecn-partno">${partOpts}</select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">변경 항목</label>
+              <select class="form-input form-select" id="ecn-field">${fieldOpts}</select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Before</label>
+              <input class="form-input" id="ecn-before" placeholder="변경 전">
+            </div>
+            <div class="form-field">
+              <label class="form-label">After</label>
+              <input class="form-input" id="ecn-after" placeholder="변경 후">
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    Common.openModal(
+      'ECN 수동 등록',
+      formHtml,
+      [
+        { label: '등록', class: 'btn-solid-blue', onclick: 'm02003_saveManual()' },
+        { label: '취소', class: '',               onclick: 'Common.closeModal()' }
+      ]
+    );
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m02003_saveManual = function() {
+    const projId = (document.getElementById('ecn-project') || {}).value;
+    const date   = (document.getElementById('ecn-date')    || {}).value;
+    const reason = ((document.getElementById('ecn-reason') || {}).value || '').trim();
+    const partNo = (document.getElementById('ecn-partno')  || {}).value;
+    const field  = (document.getElementById('ecn-field')   || {}).value;
+    const before = ((document.getElementById('ecn-before') || {}).value || '').trim();
+    const after  = ((document.getElementById('ecn-after')  || {}).value || '').trim();
+
+    if (!projId || !date || !reason) {
+      Common.showToast('프로젝트·발행일·변경 사유는 필수입니다', 'info');
+      return;
+    }
+
+    const list   = MockData.getAll('ecnList');
+    const year   = new Date().getFullYear();
+    const newId  = 'ECN-' + year + '-' + String(list.length + 1).padStart(3, '0');
+    const parts  = MockData.getAll('partList');
+    const partObj = partNo ? parts.find(p => p.partNo === partNo) : null;
+    const now    = new Date().toLocaleString('ko-KR');
+
+    const ecn = {
+      id: newId, issueDate: date, source: 'Manual', reason,
+      projectId: projId, status: '접수',
+      changes: (partNo && field && before && after)
+        ? [{ partNo, partName: partObj ? partObj.partName : partNo, field, before, after }]
+        : [],
+      impactedPartIds: partNo ? [partNo] : [],
+      costGap: 0, rfqNeededCount: 0,
+      history: [{ at: now, by: '김구매', action: '수동 등록' }],
+      createdAt: now
+    };
+
+    MockData.save('ecnList', ecn);
+    Common.closeModal();
+    Common.showToast('ECN이 등록되었습니다', 'success');
+    selectedId = newId;
+    m02003_renderCards();
+    m02003_renderGrid();
+  };
+
+  /* ── 초기 렌더 ── */
+  m02003_renderCards();
+  m02003_renderGrid();
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+};
