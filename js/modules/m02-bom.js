@@ -37,8 +37,7 @@ window.render_M02_001 = function(container) {
           <i data-lucide="calendar" class="icon-red"></i>
         </div>
         <div class="filter-right">
-          <button class="btn btn-outline-blue" onclick="Common.showToast('BOM 생성 기능은 준비 중입니다','info')"><i data-lucide="plus"></i> BOM 생성</button>
-          <button class="btn" onclick="Common.showToast('Export 기능은 준비 중입니다','info')"><i data-lucide="download"></i> Export</button>
+          <button class="btn btn-outline-blue" onclick="m02001_showCreate()"><i data-lucide="plus"></i> BOM 생성</button>
         </div>
       </div>
 
@@ -200,35 +199,30 @@ window.render_M02_001 = function(container) {
     if (!el) return;
     el.innerHTML = `
       <div class="insight-card">
-        <div class="insight-card-icon blue"><i data-lucide="sitemap"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value">${totalParts}</span>
           <span class="insight-card-label">전체 Part</span>
         </div>
       </div>
       <div class="insight-card">
-        <div class="insight-card-icon green"><i data-lucide="check-circle"></i></div>
         <div class="insight-card-body">
-          <span class="insight-card-value">${fixedParts}</span>
+          <span class="insight-card-value" style="color:var(--success);">${fixedParts}</span>
           <span class="insight-card-label">단가 확정</span>
         </div>
       </div>
       <div class="insight-card" style="border-color:var(--danger-border);">
-        <div class="insight-card-icon red"><i data-lucide="alert-circle"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:var(--danger);">${unfixedParts}</span>
           <span class="insight-card-label">단가 미확정</span>
         </div>
       </div>
       <div class="insight-card" style="border-color:#FDE68A;">
-        <div class="insight-card-icon amber"><i data-lucide="git-branch"></i></div>
         <div class="insight-card-body">
           <span class="insight-card-value" style="color:#F59E0B;">${ecnParts}</span>
           <span class="insight-card-label">ECN 변경</span>
         </div>
       </div>
     `;
-    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
   };
 
   window.m02001_renderGrid = function() {
@@ -244,15 +238,6 @@ window.render_M02_001 = function(container) {
     }
 
     const bom = MockData.getObject('bom');
-    const assemblies = (bom && bom.assemblies) ? bom.assemblies : [];
-    let totalParts = 0, unfixedParts = 0;
-    assemblies.forEach(asm => {
-      (asm.parts || []).forEach(p => {
-        totalParts++;
-        if (p.fixedPrice == null) unfixedParts++;
-      });
-    });
-
     const phaseColor = { P1:'#185FA5', P2:'#0F6E56', P3:'#854F0B', P4:'#A32D2D', 'SOP완료':'#97A0AF' };
     const bomStatusStyle = {
       '작성중': `color:var(--primary);`,
@@ -261,15 +246,12 @@ window.render_M02_001 = function(container) {
     };
 
     const bomRev = (bom && bom.rev) ? bom.rev : '-';
-    const bomSt  = (bom && bom.status) ? bom.status : '-';
 
     let rows = data.map(p => {
-      const sel = p.id === selectedProjectId ? 'selected' : '';
-      const pc  = phaseColor[p.phase] || 'inherit';
+      const sel    = p.id === selectedProjectId ? 'selected' : '';
+      const pc     = phaseColor[p.phase] || 'inherit';
       const bstyle = bomStatusStyle[p.bomStatus] || '';
       const isBomProject = bom && bom.projectId === p.id;
-      const partCount  = isBomProject ? totalParts   : '-';
-      const unconfirmed = isBomProject ? unfixedParts : '-';
 
       return `<tr class="${sel}" onclick="m02001_openDetail('${p.id}')" style="cursor:pointer;">
         <td class="center"><input type="checkbox" ${p.id === selectedProjectId ? 'checked' : ''} onclick="event.stopPropagation()"></td>
@@ -282,8 +264,6 @@ window.render_M02_001 = function(container) {
         <td class="center">${p.sopDate||'-'}</td>
         <td class="center">${isBomProject ? bomRev : '-'}</td>
         <td class="center" style="${bstyle}">${p.bomStatus}</td>
-        <td class="right">${partCount}</td>
-        <td class="right" style="${unconfirmed > 0 ? 'color:var(--danger);font-weight:600;' : ''}">${unconfirmed}</td>
       </tr>`;
     }).join('');
 
@@ -293,22 +273,110 @@ window.render_M02_001 = function(container) {
       <div class="grid-container">
         <table class="grid-table">
           <colgroup>
-            <col style="width:40px"><col style="width:100px"><col style="width:160px">
-            <col style="width:70px"><col style="width:80px"><col style="width:90px">
-            <col style="width:80px"><col style="width:100px"><col style="width:70px">
-            <col style="width:80px"><col style="width:70px"><col style="width:70px">
+            <col style="width:40px"><col style="width:110px"><col style="width:180px">
+            <col style="width:70px"><col style="width:80px"><col style="width:100px">
+            <col style="width:80px"><col style="width:100px"><col style="width:75px">
+            <col style="width:85px">
           </colgroup>
           <thead><tr>
             <th><input type="checkbox"></th>
             <th>프로젝트ID</th><th>프로젝트명</th><th>OEM</th>
             <th>차종</th><th>플랫폼</th><th>진행Phase</th>
             <th>SOP목표일</th><th>BOM Rev</th><th>BOM상태</th>
-            <th class="right">총Part수</th><th class="right">미확정</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>`;
     setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── BOM 생성 모달 ── */
+  window.m02001_showCreate = function() {
+    const projects = MockData.getAll('projects');
+    const bom      = MockData.getObject('bom');
+    const bomProjId = bom && bom.projectId ? bom.projectId : null;
+
+    const projOpts = projects.map(p => {
+      const hasBom = p.id === bomProjId ? ' (BOM 있음)' : '';
+      return `<option value="${p.id}">${p.name}${hasBom}</option>`;
+    }).join('');
+
+    const copyOpts = projects.map(p =>
+      `<option value="${p.id}">${p.name}</option>`
+    ).join('');
+
+    const formHtml = `
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="form-field">
+          <label class="form-label">프로젝트 <span class="required">*</span></label>
+          <select class="form-input form-select form-input-m" id="bom-create-project">
+            <option value="">-- 프로젝트 선택 --</option>
+            ${projOpts}
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">BOM Rev</label>
+          <input class="form-input form-input-m" id="bom-create-rev" value="v01" placeholder="예: v01">
+        </div>
+        <div class="form-field">
+          <label class="form-label">생성 방식</label>
+          <select class="form-input form-select form-input-m" id="bom-create-type">
+            <option value="new">신규 빈 BOM</option>
+            <option value="vaatz">VAATZ E-BOM 수신</option>
+            <option value="copy">기존 프로젝트 복사</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">복사 원본 프로젝트</label>
+          <select class="form-input form-select form-input-m" id="bom-create-copy">
+            <option value="">-- 선택 --</option>
+            ${copyOpts}
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">진행 Phase</label>
+          <select class="form-input form-select form-input-m" id="bom-create-phase">
+            <option value="P1">P1</option>
+            <option value="P2">P2</option>
+            <option value="P3">P3</option>
+            <option value="P4">P4</option>
+          </select>
+        </div>
+      </div>`;
+
+    Common.openModal(
+      '신규 BOM 생성',
+      formHtml,
+      [
+        { label: '생성', class: 'btn-solid-blue', onclick: 'm02001_createBom()' },
+        { label: '취소', class: '',               onclick: 'Common.closeModal()' }
+      ]
+    );
+  };
+
+  window.m02001_createBom = function() {
+    const projectId = (document.getElementById('bom-create-project') || {}).value;
+    const rev       = ((document.getElementById('bom-create-rev')     || {}).value || 'v01').trim();
+    const phase     = (document.getElementById('bom-create-phase')    || {}).value || 'P1';
+
+    if (!projectId) {
+      Common.showToast('프로젝트를 선택해주세요', 'info');
+      return;
+    }
+
+    const projects = MockData.getAll('projects');
+    const proj     = projects.find(p => p.id === projectId);
+    if (!proj) return;
+
+    proj.bomStatus = '작성중';
+    proj.phase     = phase;
+    MockData.save('projects', proj);
+
+    Common.closeModal();
+    Common.showToast('BOM이 생성되었습니다', 'success');
+    m02001_renderGrid();
+    m02001_renderCards();
+    m02001_openDetail(projectId);
   };
 
   /* ══════════════════════════════════════════════════
@@ -411,11 +479,10 @@ window.render_M02_001 = function(container) {
         (asm.parts || []).forEach(p => {
           const ecnClass = p.ecn ? 'bom-ecn-row' : '';
           const selPart  = selectedPartId === p.partNo ? 'selected' : '';
-          const ecnIcon  = p.ecn ? ' <i data-lucide="git-branch" style="width:12px;height:12px;color:#F59E0B;vertical-align:middle;"></i>' : '';
           rows += `<tr class="${ecnClass} ${selPart}" onclick="m02001_selectPart('${p.partNo}','part')" style="cursor:pointer;">
             <td></td>
             <td class="ss-col-center" style="padding-left:24px;">${p.partNo}</td>
-            <td class="ss-col-left" style="padding-left:24px;">${p.name}${ecnIcon}</td>
+            <td class="ss-col-left" style="padding-left:24px;">${p.name}</td>
             <td class="ss-col-center">${p.material}</td>
             <td class="ss-col-right">${Number(p.weight).toLocaleString()}</td>
             <td class="ss-col-right">${fmt(p.targetPrice)}</td>
