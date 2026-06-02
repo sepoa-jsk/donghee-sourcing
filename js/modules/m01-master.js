@@ -1856,7 +1856,7 @@ window.render_M01_003 = function(container) {
 
     // 프로그레스 바 렌더 (데이터 기반)
     const progData = checkItemProgress(detailMode === 'new' ? {} : (item || {}));
-    document.getElementById('m01003-progress-wrap').innerHTML = renderProgress(progData.steps, progData.doneCount, progData.rate);
+    document.getElementById('m01003-progress-wrap').innerHTML = renderProgress(progData, 'BOM 투입 준비율');
 
     activeTab = '기본정보';
     m01003_renderVtabs();
@@ -2017,6 +2017,15 @@ window.render_M01_003 = function(container) {
   };
 
   // ── 탭 6: 도면·사양서 ──
+  const _fileBox3 = (lbl) => `<div style="flex:1;">
+    <div style="font-size:var(--font-s);font-weight:500;margin-bottom:8px;">${lbl}</div>
+    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:8px;">
+      <button class="btn" style="font-size:11px;margin-bottom:8px;"><i data-lucide="download"></i> AllDownLoad</button>
+      <div style="border:1px solid #E5E7EB;border-radius:var(--radius);background:#FAFBFC;min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:var(--font-xs);text-align:center;">파일을 드래그하거나<br>클릭하여 업로드</div>
+    </div>
+  </div>`;
+  const _fileRow3 = (l1, l2) => `<div style="display:flex;gap:24px;">${_fileBox3(l1)}${_fileBox3(l2)}</div>`;
+
   window.m01003_tabDrawing = function(item) {
     const d = item || {};
     const drawRows = [
@@ -2025,7 +2034,7 @@ window.render_M01_003 = function(container) {
       ['R01','DWG-S101-R01','2025-06-10','초기 등록','김설계'],
     ].map(r => `<tr><td class="center">${r[0]}</td><td class="center">${r[1]}</td><td class="center">${r[2]}</td><td class="left">${r[3]}</td><td class="center">${r[4]}</td></tr>`).join('');
     return (
-      box3('도면 첨부', _fileRow('도면 파일','사양서')) +
+      box3('도면 첨부', _fileRow3('도면 파일','사양서')) +
       box3('도면 이력',
         `<div class="grid-container"><table class="grid-table">
           <thead><tr><th>Rev</th><th>도면번호</th><th>변경일</th><th>변경사유</th><th>등록자</th></tr></thead>
