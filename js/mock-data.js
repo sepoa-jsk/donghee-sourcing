@@ -271,6 +271,17 @@ const MockData = {
           { at: "2025-12-04 11:00", by: "이소싱",        action: "영향 분석 시작" }
         ], createdAt: "2025-12-04 09:15"
       }
+    ],
+
+    importExportLog: [
+      { id: "LOG-001", at: "2025-11-28 10:30", type: "Import", projectId: "PRJ-2025-001", fileName: "NX5_BOM_v03.xlsx",              totalCount: 18, successCount: 18, failCount: 0, operator: "김구매", status: "완료" },
+      { id: "LOG-002", at: "2025-11-28 14:15", type: "Export", projectId: "PRJ-2025-001", fileName: "PRJ-2025-001_BOM_v04.xlsx",     totalCount: 18, successCount: 18, failCount: 0, operator: "김구매", status: "완료" },
+      { id: "LOG-003", at: "2025-12-01 09:00", type: "Import", projectId: "PRJ-2025-004", fileName: "수소SUV_BOM_v01.xlsx",          totalCount: 12, successCount: 10, failCount: 2, operator: "이소싱", status: "오류" },
+      { id: "LOG-004", at: "2025-12-02 11:30", type: "Export", projectId: "PRJ-2025-004", fileName: "PRJ-2025-004_BOM_v01.csv",     totalCount: 10, successCount: 10, failCount: 0, operator: "이소싱", status: "완료" },
+      { id: "LOG-005", at: "2025-12-03 09:15", type: "Import", projectId: "PRJ-2025-001", fileName: "NX5_BOM_v04.xlsx",              totalCount: 20, successCount: 20, failCount: 0, operator: "박원가", status: "완료" },
+      { id: "LOG-006", at: "2025-12-03 14:00", type: "Export", projectId: "PRJ-2025-002", fileName: "PRJ-2025-002_BOM_v01.xlsx",     totalCount:  8, successCount:  8, failCount: 0, operator: "박원가", status: "완료" },
+      { id: "LOG-007", at: "2025-12-04 10:00", type: "Import", projectId: "PRJ-2025-001", fileName: "NX5_ECN009_반영.xlsx",          totalCount:  4, successCount:  4, failCount: 0, operator: "김구매", status: "완료" },
+      { id: "LOG-008", at: "2025-12-04 16:30", type: "Export", projectId: "PRJ-2025-001", fileName: "PRJ-2025-001_BOM_v04_최종.xlsx",totalCount: 20, successCount: 20, failCount: 0, operator: "김구매", status: "완료" }
     ]
   },
 

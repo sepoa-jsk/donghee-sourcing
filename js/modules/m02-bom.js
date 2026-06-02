@@ -1855,3 +1855,317 @@ window.render_M02_003 = function(container) {
   m02003_renderGrid();
   setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 };
+
+/* ============================================================
+   M02-004  BOM Import / Export
+   화면ID : M02-004
+   패턴   : 패턴 3 변형 (상단 조작 패널 + 하단 이력 그리드)
+   생성일 : 2026-06-02
+   ============================================================ */
+
+window.render_M02_004 = function(container) {
+  container.style.padding = '0';
+
+  /* importExportLog 미초기화 시 시드 투입 */
+  if (MockData.getAll('importExportLog').length === 0) {
+    localStorage.setItem('dh_importExportLog', JSON.stringify(MockData.seed.importExportLog));
+  }
+
+  /* ── 프로젝트 옵션 사전 생성 ── */
+  const projects = MockData.getAll('projects');
+  const projOpts = projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+  /* ── 상태 ── */
+  let searchText = '';
+
+  /* ── 레이아웃 ── */
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:0;">
+
+    <!-- 필터바 -->
+    <div class="filter-bar" style="padding:10px 16px 0;">
+      <div class="filter-search">
+        <input type="text" id="m02004-search" placeholder="Search" oninput="m02004_onSearch(this.value)">
+        <i data-lucide="search"></i>
+      </div>
+      <div class="filter-right">
+        <button class="btn btn-soft-blue" onclick="m02004_downloadTemplate('BOM')"><i data-lucide="file-spreadsheet"></i> BOM 템플릿</button>
+        <button class="btn btn-soft-blue" onclick="m02004_downloadTemplate('PartList')"><i data-lucide="file-spreadsheet"></i> PartList 템플릿</button>
+      </div>
+    </div>
+
+    <!-- 인사이트 카드 -->
+    <div id="m02004-cards" class="insight-cards" style="padding:10px 16px;"></div>
+
+    <!-- Import / Export 조작 패널 -->
+    <div id="m02004-panels" style="display:flex;gap:16px;padding:0 16px 12px;flex-shrink:0;">
+
+      <!-- Import -->
+      <div class="section-box" style="flex:1;margin-bottom:0;">
+        <div class="section-box-title">BOM Import</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="form-field">
+            <label class="form-label">적용 프로젝트 <span class="required">*</span></label>
+            <select class="form-input form-select" id="m02004-import-project">
+              <option value="">-- 프로젝트 선택 --</option>${projOpts}
+            </select>
+          </div>
+          <div class="file-drop-area" onclick="document.getElementById('m02004-file-input').click();"
+               style="cursor:pointer;flex-direction:column;gap:6px;min-height:96px;">
+            <i data-lucide="upload-cloud" style="width:24px;height:24px;color:var(--text-muted);"></i>
+            <span id="m02004-file-name" style="font-size:13px;text-align:center;">Excel(.xlsx) 또는 CSV(.csv) 파일을 선택하세요</span>
+            <span style="font-size:11px;color:var(--text-muted);">클릭하여 파일 선택</span>
+            <input type="file" id="m02004-file-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="m02004_onFileChange(this)">
+          </div>
+          <button class="btn btn-solid-blue" id="m02004-import-btn" onclick="m02004_doImport()" disabled>
+            <i data-lucide="upload"></i> Import 실행
+          </button>
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div class="section-box" style="flex:1;margin-bottom:0;">
+        <div class="section-box-title">BOM Export</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="form-field">
+            <label class="form-label">적용 프로젝트 <span class="required">*</span></label>
+            <select class="form-input form-select" id="m02004-export-project">
+              <option value="">-- 프로젝트 선택 --</option>${projOpts}
+            </select>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="form-field" style="flex:1;">
+              <label class="form-label">BOM Rev</label>
+              <select class="form-input form-select" id="m02004-export-rev">
+                <option value="v04">v04 (최신)</option>
+                <option value="v03">v03</option>
+                <option value="v02">v02</option>
+              </select>
+            </div>
+            <div class="form-field" style="flex:1;">
+              <label class="form-label">포맷</label>
+              <div style="display:flex;gap:14px;align-items:center;height:32px;">
+                <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="m02004-fmt" value="Excel" checked> Excel</label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="m02004-fmt" value="CSV"> CSV</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">출력 범위</label>
+            <div style="display:flex;gap:14px;align-items:center;height:32px;">
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="m02004-scope" value="전체" checked> 전체 BOM</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="m02004-scope" value="변경"> 변경 Part (ECN)</label>
+            </div>
+          </div>
+          <button class="btn btn-outline-blue" onclick="m02004_doExport()">
+            <i data-lucide="download"></i> Export 다운로드
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이력 그리드 -->
+    <div id="m02004-grid" style="padding:0 16px 16px;"></div>
+
+  </div>`;
+
+  /* ══════════════════════════════════════════
+     헬퍼 함수들
+  ══════════════════════════════════════════ */
+
+  /* 이력 날짜 포맷 */
+  const nowStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  };
+
+  window.m02004_onSearch = function(val) {
+    searchText = val;
+    m02004_renderGrid();
+  };
+
+  window.m02004_downloadTemplate = function(type) {
+    Common.showToast(`${type} 템플릿 파일 다운로드를 시작합니다`, 'success');
+  };
+
+  /* ── 인사이트 카드 ── */
+  window.m02004_renderCards = function() {
+    const logs     = MockData.getAll('importExportLog');
+    const imports  = logs.filter(l => l.type === 'Import').length;
+    const exports  = logs.filter(l => l.type === 'Export').length;
+    const errors   = logs.filter(l => l.status === '오류').length;
+    const success  = logs.filter(l => l.status === '완료').length;
+    const rate     = logs.length > 0 ? Math.round((success / logs.length) * 100) : 0;
+
+    const el = document.getElementById('m02004-cards');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="upload"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${imports}</span>
+          <span class="insight-card-label">총 Import</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon green"><i data-lucide="download"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--success);">${exports}</span>
+          <span class="insight-card-label">총 Export</span>
+        </div>
+      </div>
+      <div class="insight-card" style="border-color:var(--danger-border);">
+        <div class="insight-card-icon red"><i data-lucide="circle-alert"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--danger);">${errors}</span>
+          <span class="insight-card-label">오류 발생</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon amber"><i data-lucide="percent"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--success);">${rate}%</span>
+          <span class="insight-card-label">처리 성공률</span>
+        </div>
+      </div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── 이력 그리드 ── */
+  window.m02004_renderGrid = function() {
+    let logs = [...MockData.getAll('importExportLog')].reverse(); // 최신순
+
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      logs = logs.filter(l =>
+        (l.fileName  || '').toLowerCase().includes(q) ||
+        (l.type      || '').toLowerCase().includes(q) ||
+        (l.operator  || '').toLowerCase().includes(q)
+      );
+    }
+
+    const projs   = MockData.getAll('projects');
+    const projNm  = (id) => { const p = projs.find(x => x.id === id); return p ? p.name : id; };
+    const typeStyle = { Import: 'color:var(--primary);font-weight:600;', Export: 'color:var(--success);font-weight:600;' };
+    const stStyle   = { 완료: 'color:var(--success);font-weight:600;', 오류: 'color:var(--danger);font-weight:600;' };
+
+    const rows = logs.map(l => `<tr>
+      <td class="center" style="font-size:11px;">${l.at}</td>
+      <td class="center" style="${typeStyle[l.type]||''}">${l.type}</td>
+      <td class="left" style="color:var(--text-secondary);font-size:11px;">${projNm(l.projectId)}</td>
+      <td class="left" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.fileName}</td>
+      <td class="right">${l.totalCount}</td>
+      <td class="center" style="font-size:11px;">
+        <span style="color:var(--success);">${l.successCount}</span>
+        ${l.failCount > 0 ? ` / <span style="color:var(--danger);">${l.failCount}</span>` : ''}
+      </td>
+      <td class="center">${l.operator}</td>
+      <td class="center" style="${stStyle[l.status]||''}">${l.status}</td>
+    </tr>`).join('');
+
+    const el = document.getElementById('m02004-grid');
+    if (!el) return;
+    el.innerHTML = `
+      <div style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;flex-shrink:0;">작업 이력</div>
+      <div class="grid-container">
+        <table class="grid-table">
+          <colgroup>
+            <col style="width:120px"><col style="width:70px"><col style="width:110px">
+            <col><col style="width:65px"><col style="width:75px">
+            <col style="width:70px"><col style="width:65px">
+          </colgroup>
+          <thead><tr>
+            <th>작업일시</th><th>구분</th><th>프로젝트</th>
+            <th>파일명</th><th class="right">처리건수</th>
+            <th>성공/실패</th><th>실행자</th><th>상태</th>
+          </tr></thead>
+          <tbody>${rows || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">이력이 없습니다</td></tr>'}</tbody>
+        </table>
+      </div>`;
+  };
+
+  /* ── 파일 선택 ── */
+  window.m02004_onFileChange = function(input) {
+    const name    = input.files && input.files[0] ? input.files[0].name : '';
+    const display = document.getElementById('m02004-file-name');
+    const btn     = document.getElementById('m02004-import-btn');
+    if (display) display.textContent = name || 'Excel(.xlsx) 또는 CSV(.csv) 파일을 선택하세요';
+    if (btn) btn.disabled = !name;
+  };
+
+  /* ── Import 실행 ── */
+  window.m02004_doImport = function() {
+    const projectId = (document.getElementById('m02004-import-project') || {}).value;
+    const fileInput = document.getElementById('m02004-file-input');
+    const fileName  = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
+
+    if (!projectId) { Common.showToast('프로젝트를 선택해주세요', 'info'); return; }
+    if (!fileName)  { Common.showToast('파일을 선택해주세요', 'info'); return; }
+
+    const total   = Math.floor(Math.random() * 16) + 5;
+    const fail    = Math.random() > 0.8 ? Math.floor(Math.random() * 3) + 1 : 0;
+    const success = total - fail;
+    const status  = fail > 0 ? '오류' : '완료';
+
+    const logs  = MockData.getAll('importExportLog');
+    const newId = 'LOG-' + String(logs.length + 1).padStart(3, '0');
+
+    MockData.save('importExportLog', {
+      id: newId, at: nowStr(), type: 'Import', projectId, fileName,
+      totalCount: total, successCount: success, failCount: fail,
+      operator: '김구매', status
+    });
+
+    if (fail > 0) {
+      Common.showToast(`Import 완료: ${success}건 성공, ${fail}건 오류`, 'info');
+    } else {
+      Common.showToast(`Import 완료: ${total}건 성공적으로 처리되었습니다`, 'success');
+    }
+
+    /* 파일 입력 초기화 */
+    if (fileInput) fileInput.value = '';
+    const display = document.getElementById('m02004-file-name');
+    const btn     = document.getElementById('m02004-import-btn');
+    if (display) display.textContent = 'Excel(.xlsx) 또는 CSV(.csv) 파일을 선택하세요';
+    if (btn)     btn.disabled = true;
+
+    m02004_renderCards();
+    m02004_renderGrid();
+  };
+
+  /* ── Export 다운로드 ── */
+  window.m02004_doExport = function() {
+    const projectId = (document.getElementById('m02004-export-project') || {}).value;
+    const rev       = (document.getElementById('m02004-export-rev')     || {}).value || 'v04';
+    const fmtEl     = document.querySelector('input[name="m02004-fmt"]:checked');
+    const scopeEl   = document.querySelector('input[name="m02004-scope"]:checked');
+    const format    = fmtEl   ? fmtEl.value   : 'Excel';
+    const scope     = scopeEl ? scopeEl.value  : '전체';
+
+    if (!projectId) { Common.showToast('프로젝트를 선택해주세요', 'info'); return; }
+
+    const ext      = format === 'CSV' ? '.csv' : '.xlsx';
+    const proj     = projects.find(p => p.id === projectId);
+    const scopeSfx = scope === '변경' ? '_ECN변경' : '';
+    const fileName = `${proj ? proj.id : projectId}_BOM_${rev}${scopeSfx}${ext}`;
+    const count    = scope === '변경' ? Math.floor(Math.random() * 5) + 2 : Math.floor(Math.random() * 16) + 5;
+
+    const logs  = MockData.getAll('importExportLog');
+    const newId = 'LOG-' + String(logs.length + 1).padStart(3, '0');
+
+    MockData.save('importExportLog', {
+      id: newId, at: nowStr(), type: 'Export', projectId, fileName,
+      totalCount: count, successCount: count, failCount: 0,
+      operator: '김구매', status: '완료'
+    });
+
+    Common.showToast(`${fileName} 다운로드 완료`, 'success');
+    m02004_renderCards();
+    m02004_renderGrid();
+  };
+
+  /* ── 초기 렌더 ── */
+  m02004_renderCards();
+  m02004_renderGrid();
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+};
