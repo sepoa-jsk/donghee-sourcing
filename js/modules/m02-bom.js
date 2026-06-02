@@ -733,3 +733,485 @@ window.render_M02_001 = function(container) {
   m02001_renderGrid();
   setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
 };
+
+/* ============================================================
+   M02-002  Part List 관리
+   화면ID : M02-002
+   패턴   : 패턴 5-C (좌 그리드 + 우 폼)
+   생성일 : 2026-06-02
+   ============================================================ */
+
+function checkPartListProgress(part) {
+  part = part || {};
+  const steps = [
+    {
+      label: '기본정보',
+      desc:  'Part No.·품명·프로젝트',
+      check: !!(part.partNo && part.partName && part.projectId)
+    },
+    {
+      label: '물성·규격',
+      desc:  '소재·중량 정보',
+      check: !!(part.material && part.weight && part.weight > 0)
+    },
+    {
+      label: '원가정보',
+      desc:  '재료비·가공비 산출',
+      check: !!(part.materialCost > 0 && part.processCost > 0)
+    },
+    {
+      label: '공급사 연결',
+      desc:  '공급사 지정 완료',
+      check: !!(part.supplierId)
+    }
+  ];
+  const doneCount = steps.filter(s => s.check).length;
+  const rate = Math.round((doneCount / 4) * 100);
+  return { steps, doneCount, rate };
+}
+
+window.render_M02_002 = function(container) {
+  container.style.padding = '0';
+
+  /* partList 미초기화 시 시드 투입 */
+  if (MockData.getAll('partList').length === 0) {
+    localStorage.setItem('dh_partList', JSON.stringify(MockData.seed.partList));
+  }
+
+  /* ── 상태 ── */
+  let searchText   = '';
+  let statusFilter = '';
+  let selectedId   = null;
+  const STATUS_CYCLE = ['', '확정', 'Gap초과', '검토중', 'RFQ중', '미확정'];
+  let statusIdx = 0;
+
+  /* ── 레이아웃 HTML ── */
+  container.innerHTML = `<div class="screen-wrapper" style="display:flex;flex-direction:column;height:100%;padding:0;">
+
+    <!-- 필터바 -->
+    <div class="filter-bar" style="padding:10px 16px 0;">
+      <div class="filter-search">
+        <input type="text" id="m02002-search" placeholder="Search" oninput="m02002_onSearch(this.value)">
+        <i data-lucide="search"></i>
+      </div>
+      <button class="filter-btn" onclick="Common.showToast('필터 기능은 준비 중입니다','info')"><i data-lucide="filter" class="icon-red"></i> 필터</button>
+      <button class="filter-btn" id="m02002-status-btn" onclick="m02002_cycleStatus()"><i data-lucide="bar-chart-2" class="icon-blue"></i> <span id="m02002-status-label">상태</span></button>
+      <div class="filter-date-range">
+        <input type="text" value="2024/01/01" readonly>
+        <span class="date-separator">~</span>
+        <input type="text" value="2027/12/31" readonly>
+        <i data-lucide="calendar" class="icon-red"></i>
+      </div>
+      <div class="filter-right">
+        <button class="btn btn-outline-blue" onclick="m02002_showForm('new')"><i data-lucide="plus"></i> 신규등록</button>
+        <button class="btn" onclick="m02002_showForm('edit')"><i data-lucide="pencil"></i> 수정</button>
+        <button class="btn btn-outline-red" onclick="m02002_delete()"><i data-lucide="trash-2"></i> 삭제</button>
+      </div>
+    </div>
+
+    <!-- 인사이트 카드 -->
+    <div id="m02002-cards" class="insight-cards" style="padding:10px 16px;"></div>
+
+    <!-- 본문 좌우 분할 -->
+    <div style="display:flex;flex:1;overflow:hidden;">
+
+      <!-- 좌: 그리드 (60%) -->
+      <div style="flex:0 0 60%;overflow-y:auto;border-right:1px solid var(--border);">
+        <div id="m02002-grid" style="padding:0 16px 16px;"></div>
+      </div>
+
+      <!-- 우: 상세 패널 (40%) -->
+      <div style="flex:0 0 40%;overflow-y:auto;display:flex;flex-direction:column;">
+        <div id="m02002-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;">
+          <i data-lucide="mouse-pointer-click" style="width:32px;height:32px;margin-bottom:8px;"></i>
+          좌측 Part를 선택하면 상세 정보가 표시됩니다
+        </div>
+        <div id="m02002-detail-panel" style="display:none;flex-direction:column;padding:14px 16px;gap:12px;"></div>
+      </div>
+
+    </div>
+  </div>`;
+
+  /* ══════════════════════════════════════════════════
+     헬퍼 함수들
+  ══════════════════════════════════════════════════ */
+
+  const statusStyle = {
+    '확정':   'color:var(--success);font-weight:600;',
+    'Gap초과': 'color:var(--danger);font-weight:600;',
+    '검토중':  'color:#F59E0B;font-weight:600;',
+    'RFQ중':   'color:var(--primary);font-weight:600;',
+    '미확정':  'color:var(--text-muted);'
+  };
+
+  window.m02002_onSearch = function(val) {
+    searchText = val;
+    m02002_renderGrid();
+  };
+
+  window.m02002_cycleStatus = function() {
+    statusIdx = (statusIdx + 1) % STATUS_CYCLE.length;
+    statusFilter = STATUS_CYCLE[statusIdx];
+    const label = document.getElementById('m02002-status-label');
+    if (label) label.textContent = statusFilter || '상태';
+    m02002_renderGrid();
+  };
+
+  window.m02002_renderCards = function() {
+    const parts = MockData.getAll('partList');
+    const total      = parts.length;
+    const withCost   = parts.filter(p => p.materialCost > 0 && p.processCost > 0).length;
+    const noSupplier = parts.filter(p => !p.supplierId).length;
+    const totalCost  = parts.reduce((s, p) => s + (p.calcPrice || 0), 0);
+
+    const el = document.getElementById('m02002-cards');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="insight-card">
+        <div class="insight-card-icon blue"><i data-lucide="list"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${total}</span>
+          <span class="insight-card-label">전체 Part</span>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-card-icon green"><i data-lucide="check-circle"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value">${withCost}</span>
+          <span class="insight-card-label">원가 산정 완료</span>
+        </div>
+      </div>
+      <div class="insight-card" style="border-color:var(--danger-border);">
+        <div class="insight-card-icon red"><i data-lucide="unlink"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="color:var(--danger);">${noSupplier}</span>
+          <span class="insight-card-label">공급사 미연결</span>
+        </div>
+      </div>
+      <div class="insight-card" style="border-color:#FDE68A;">
+        <div class="insight-card-icon amber"><i data-lucide="dollar-sign"></i></div>
+        <div class="insight-card-body">
+          <span class="insight-card-value" style="font-size:14px;">${CalcEngine.formatCurrency(totalCost)}</span>
+          <span class="insight-card-label">총 예상원가</span>
+        </div>
+      </div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m02002_renderGrid = function() {
+    let data = MockData.getAll('partList');
+
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      data = data.filter(p =>
+        (p.partNo   || '').toLowerCase().includes(q) ||
+        (p.partName || '').toLowerCase().includes(q) ||
+        (p.material || '').toLowerCase().includes(q) ||
+        (p.supplierName || '').toLowerCase().includes(q)
+      );
+    }
+    if (statusFilter) {
+      data = data.filter(p => p.bomStatus === statusFilter);
+    }
+
+    const projects = MockData.getAll('projects');
+    const projName = (id) => { const p = projects.find(x => x.id === id); return p ? p.name : id; };
+
+    const rows = data.map(p => {
+      const sel      = p.id === selectedId ? 'selected' : '';
+      const calcDisp = CalcEngine.formatCurrency(p.materialCost + p.processCost);
+      const supDisp  = p.supplierName || '<span style="color:var(--text-muted);">미연결</span>';
+      const stStyle  = statusStyle[p.bomStatus] || '';
+      const ecnIcon  = p.ecn ? ' <i data-lucide="git-branch" style="width:12px;height:12px;color:#F59E0B;vertical-align:middle;"></i>' : '';
+
+      return `<tr class="${sel}" onclick="m02002_selectRow('${p.id}')" style="cursor:pointer;">
+        <td class="center"><input type="checkbox" ${p.id === selectedId ? 'checked' : ''} onclick="event.stopPropagation();m02002_selectRow('${p.id}')"></td>
+        <td class="center"><span class="code-link">${p.partNo}</span>${ecnIcon}</td>
+        <td class="left">${p.partName}</td>
+        <td class="center" style="color:var(--text-secondary);font-size:11px;">${projName(p.projectId)}</td>
+        <td class="center">${p.material}</td>
+        <td class="right">${CalcEngine.formatNumber(p.weight)}</td>
+        <td class="right">${CalcEngine.formatCurrency(p.materialCost)}</td>
+        <td class="right">${CalcEngine.formatCurrency(p.processCost)}</td>
+        <td class="right" style="font-weight:600;">${calcDisp}</td>
+        <td class="left">${supDisp}</td>
+        <td class="center" style="${stStyle}">${p.bomStatus}</td>
+      </tr>`;
+    }).join('');
+
+    const el = document.getElementById('m02002-grid');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="grid-container">
+        <table class="grid-table">
+          <colgroup>
+            <col style="width:40px"><col style="width:100px"><col style="width:150px">
+            <col style="width:110px"><col style="width:80px"><col style="width:70px">
+            <col style="width:80px"><col style="width:80px"><col style="width:90px">
+            <col style="width:120px"><col style="width:80px">
+          </colgroup>
+          <thead><tr>
+            <th><input type="checkbox"></th>
+            <th>Part No.</th><th>품명</th><th>적용 프로젝트</th>
+            <th>소재</th><th class="right">중량(g)</th>
+            <th class="right">재료비</th><th class="right">가공비</th>
+            <th class="right">산출단가</th>
+            <th>공급사</th><th>상태</th>
+          </tr></thead>
+          <tbody>${rows || '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text-muted);">조회된 Part가 없습니다</td></tr>'}</tbody>
+        </table>
+      </div>`;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m02002_selectRow = function(id) {
+    selectedId = id;
+    m02002_renderGrid();
+
+    const parts = MockData.getAll('partList');
+    const part  = parts.find(p => p.id === id);
+    if (!part) return;
+
+    document.getElementById('m02002-detail-empty').style.display = 'none';
+    const panel = document.getElementById('m02002-detail-panel');
+    panel.style.display = 'flex';
+
+    m02002_renderDetail(part);
+  };
+
+  window.m02002_renderDetail = function(part) {
+    const panel    = document.getElementById('m02002-detail-panel');
+    if (!panel) return;
+
+    const suppliers = MockData.getAll('suppliers');
+    const projects  = MockData.getAll('projects');
+    const proj      = projects.find(x => x.id === part.projectId);
+    const gap       = CalcEngine.calcGap(part.targetPrice, part.calcPrice);
+    const gapRate   = CalcEngine.calcGapRate(part.targetPrice, part.calcPrice);
+    const gapHtml   = gap > 0
+      ? `<span style="color:var(--danger);font-weight:600;">▲ ${CalcEngine.formatCurrency(gap)} (${gapRate}% 초과)</span>`
+      : `<span style="color:var(--success);font-weight:600;">▼ ${CalcEngine.formatCurrency(Math.abs(gap))} (${Math.abs(gapRate)}% 절감)</span>`;
+
+    /* 공급사 다중 목록 */
+    const supList = (part.suppliers || []).map(sid => {
+      const s = suppliers.find(x => x.id === sid);
+      if (!s) return '';
+      const isFinal = sid === part.supplierId;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${isFinal ? '#f0fdf4' : 'var(--bg-page)'};border-radius:4px;margin-bottom:4px;border:1px solid ${isFinal ? '#bbf7d0' : 'var(--border)'};">
+        <i data-lucide="${isFinal ? 'check-circle' : 'circle'}" style="width:14px;height:14px;color:${isFinal ? 'var(--success)' : 'var(--text-muted)'};"></i>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:${isFinal ? '600' : '400'};color:var(--text-primary);">${s.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${s.code} · 등급 ${s.grade}</div>
+        </div>
+        ${isFinal ? '<span style="font-size:11px;color:var(--success);font-weight:600;">선정</span>' : ''}
+      </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+      <!-- Part 헤더 -->
+      <div style="padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <div style="font-size:15px;font-weight:700;color:var(--text-primary);">${part.partName}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${part.partNo} · ${proj ? proj.name : part.projectId}</div>
+      </div>
+
+      <!-- 데이터 완료율 프로그레스 -->
+      ${renderProgress(checkPartListProgress(part), 'Part 완성도')}
+
+      <!-- 기본정보 섹션 -->
+      <div class="section-box">
+        <div class="section-box-title">기본정보</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;">
+          <div class="form-field">
+            <label class="form-label">Part No.</label>
+            <input class="form-input" value="${part.partNo}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">품명</label>
+            <input class="form-input" value="${part.partName}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">소재</label>
+            <input class="form-input" value="${part.material}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">중량(g)</label>
+            <input class="form-input" value="${CalcEngine.formatNumber(part.weight)}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">재료비</label>
+            <input class="form-input" value="${CalcEngine.formatCurrency(part.materialCost)}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">가공비</label>
+            <input class="form-input" value="${CalcEngine.formatCurrency(part.processCost)}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">산출단가</label>
+            <input class="form-input" value="${CalcEngine.formatCurrency(part.calcPrice)}" readonly style="font-weight:600;">
+          </div>
+          <div class="form-field">
+            <label class="form-label">목표단가</label>
+            <input class="form-input" value="${CalcEngine.formatCurrency(part.targetPrice)}" readonly>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:10px;background:var(--bg-page);border-radius:4px;font-size:13px;">
+          <span style="color:var(--text-muted);">Gap: </span>${gapHtml}
+        </div>
+      </div>
+
+      <!-- 공급사 섹션 -->
+      <div class="section-box">
+        <div class="section-box-title">공급사</div>
+        ${supList || `<div style="display:flex;flex-direction:column;align-items:center;padding:20px;color:var(--text-muted);gap:8px;font-size:13px;">
+          <i data-lucide="unlink" style="width:24px;height:24px;"></i>
+          공급사 미연결
+          <button class="btn btn-outline-blue" style="margin-top:4px;" onclick="Common.showToast('RFQ 발송 기능은 준비 중입니다','info')"><i data-lucide="send"></i> RFQ 발송</button>
+        </div>`}
+      </div>
+    `;
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  /* ── 신규 / 수정 모달 ── */
+  window.m02002_showForm = function(mode) {
+    if (mode === 'edit' && !selectedId) {
+      Common.showToast('수정할 Part를 선택해주세요', 'info'); return;
+    }
+    const parts    = MockData.getAll('partList');
+    const projects = MockData.getAll('projects');
+    const suppliers = MockData.getAll('suppliers');
+    const part  = mode === 'edit' ? (parts.find(p => p.id === selectedId) || {}) : {};
+
+    const projOpts = projects.map(p =>
+      `<option value="${p.id}" ${part.projectId === p.id ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
+    const supOpts = [
+      `<option value="">-- 미선정 --</option>`,
+      ...suppliers.map(s =>
+        `<option value="${s.id}" ${part.supplierId === s.id ? 'selected' : ''}>${s.name}</option>`)
+    ].join('');
+    const statusOpts = ['미확정','검토중','RFQ중','Gap초과','확정'].map(s =>
+      `<option value="${s}" ${part.bomStatus === s ? 'selected' : ''}>${s}</option>`
+    ).join('');
+
+    const formHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;">
+        <div class="form-field">
+          <label class="form-label">Part No. <span class="required">*</span></label>
+          <input class="form-input" id="mf-partno" value="${part.partNo||''}" placeholder="P-XXXX">
+        </div>
+        <div class="form-field">
+          <label class="form-label">품명 <span class="required">*</span></label>
+          <input class="form-input" id="mf-partname" value="${part.partName||''}" placeholder="품명 입력">
+        </div>
+        <div class="form-field">
+          <label class="form-label">적용 프로젝트 <span class="required">*</span></label>
+          <select class="form-input form-select" id="mf-project">${projOpts}</select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">소재 <span class="required">*</span></label>
+          <input class="form-input" id="mf-material" value="${part.material||''}" placeholder="예: SPFC440">
+        </div>
+        <div class="form-field">
+          <label class="form-label">중량(g)</label>
+          <input class="form-input" id="mf-weight" type="number" value="${part.weight||''}" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">재료비</label>
+          <input class="form-input" id="mf-matcost" type="number" value="${part.materialCost||''}" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">가공비</label>
+          <input class="form-input" id="mf-proccost" type="number" value="${part.processCost||''}" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">목표단가</label>
+          <input class="form-input" id="mf-target" type="number" value="${part.targetPrice||''}" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">공급사</label>
+          <select class="form-input form-select" id="mf-supplier">${supOpts}</select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">상태</label>
+          <select class="form-input form-select" id="mf-status">${statusOpts}</select>
+        </div>
+      </div>`;
+
+    Common.openModal(
+      mode === 'new' ? 'Part 신규 등록' : 'Part 수정',
+      formHtml,
+      [
+        { label: '저장', class: 'btn-solid-blue', onclick: `m02002_saveModal('${mode}','${part.id||''}')` },
+        { label: '취소', class: '',               onclick: 'Common.closeModal()' }
+      ]
+    );
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+  };
+
+  window.m02002_saveModal = function(mode, existingId) {
+    const partNo    = (document.getElementById('mf-partno')   || {}).value?.trim();
+    const partName  = (document.getElementById('mf-partname') || {}).value?.trim();
+    const projectId = (document.getElementById('mf-project')  || {}).value;
+    const material  = (document.getElementById('mf-material') || {}).value?.trim();
+    const weight    = Number((document.getElementById('mf-weight')  || {}).value) || 0;
+    const matCost   = Number((document.getElementById('mf-matcost') || {}).value) || 0;
+    const procCost  = Number((document.getElementById('mf-proccost')|| {}).value) || 0;
+    const target    = Number((document.getElementById('mf-target')  || {}).value) || 0;
+    const supId     = (document.getElementById('mf-supplier') || {}).value || null;
+    const status    = (document.getElementById('mf-status')   || {}).value || '미확정';
+
+    if (!partNo || !partName || !projectId || !material) {
+      Common.showToast('필수 항목(Part No.·품명·프로젝트·소재)을 입력해주세요', 'info');
+      return;
+    }
+
+    const suppliers  = MockData.getAll('suppliers');
+    const supObj     = supId ? suppliers.find(s => s.id === supId) : null;
+    const calcPrice  = matCost + procCost;
+    const parts      = MockData.getAll('partList');
+    const newId      = mode === 'new'
+      ? ('PL-' + String(parts.length + 1).padStart(3, '0'))
+      : existingId;
+
+    const partData = {
+      id: newId, partNo, partName, projectId, material, weight,
+      materialCost: matCost, processCost: procCost,
+      calcPrice, targetPrice: target, fixedPrice: null,
+      supplierId: supId, supplierName: supObj ? supObj.name : null,
+      suppliers: supId ? [supId] : [],
+      bomStatus: status, ecn: false,
+      regDate: new Date().toISOString().slice(0, 10)
+    };
+
+    MockData.save('partList', partData);
+    Common.closeModal();
+    Common.showToast(mode === 'new' ? 'Part가 등록되었습니다' : 'Part 정보가 수정되었습니다', 'success');
+
+    selectedId = newId;
+    m02002_renderCards();
+    m02002_renderGrid();
+  };
+
+  /* ── 삭제 ── */
+  window.m02002_delete = function() {
+    if (!selectedId) { Common.showToast('삭제할 Part를 선택해주세요', 'info'); return; }
+    const parts = MockData.getAll('partList');
+    const part  = parts.find(p => p.id === selectedId);
+    if (!part) return;
+    if (!confirm(`"${part.partName}" (${part.partNo}) 을(를) 삭제하시겠습니까?`)) return;
+    MockData.remove('partList', selectedId);
+    selectedId = null;
+    document.getElementById('m02002-detail-empty').style.display = 'flex';
+    document.getElementById('m02002-detail-panel').style.display = 'none';
+    Common.showToast('Part가 삭제되었습니다', 'success');
+    m02002_renderCards();
+    m02002_renderGrid();
+  };
+
+  /* ── 초기 렌더 ── */
+  m02002_renderCards();
+  m02002_renderGrid();
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 0);
+};
