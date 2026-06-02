@@ -202,14 +202,37 @@ body {
   top: calc(var(--gnb-height) + var(--titlebar-height));
   left: 0; right: 0;
   bottom: var(--bottom-tab-height);
-  overflow-y: auto;
+  overflow: hidden;          /* 스크롤은 내부 그리드가 담당 */
   background: #fff;
   padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
 }
 .screen-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── 그리드 화면 레이아웃 체인 ──────────────────────────
+   [id$="-list"] : 필터바+카드+그리드 묶음 → screen-wrapper를 flex:1로 채움
+   [id$="-grid"] : 그리드 래퍼 → -list를 flex:1로 채우고 하단 5px 여백
+   ─────────────────────────────────────────────────── */
+[id$="-list"] {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+[id$="-grid"] {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 5px;
 }
 
 /* ═══ 하단 탭 ═══ */
@@ -499,7 +522,9 @@ body {
   border-radius: var(--radius);
   overflow-x: auto;
   overflow-y: auto;
-  margin-bottom: 5px;
+  margin-bottom: 0;          /* [id$="-grid"] padding-bottom:5px으로 대체 */
+  flex: 1;
+  min-height: 0;
 }
 .grid-table-wide { min-width: 1400px; }
 .grid-table {
